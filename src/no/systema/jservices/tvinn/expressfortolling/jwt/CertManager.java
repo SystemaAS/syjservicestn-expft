@@ -14,8 +14,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
-import javax.management.RuntimeErrorException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,11 +33,7 @@ public class CertManager {
     @Value("${expft.keystore.alias}")
     private String keystoreAlias;     
     
-    /** Base64 encoded certificate */
-    private String certificate;
-    private PrivateKey privateKey;
     private KeyStore keyStore;
-
 
     /**
      * loads certificate into Keystore and extract it into encoded form.
@@ -51,9 +45,6 @@ public class CertManager {
 		try {
 
 			loadCertificate();
-			
-			System.out.println("keystoreAlias="+keystoreAlias);
-			
 			
 			X509Certificate cert = (X509Certificate) keyStore.getCertificate(keystoreAlias);
 			encodedCertificate = Base64.getEncoder().encodeToString(cert.getEncoded());
@@ -84,8 +75,6 @@ public class CertManager {
 		
 	}
 	
-	
-
     /**
 	 * Looks i catalina.home/espedsg2/certificates/expft after File named with the prefix; Buypass ID-SYSTEMA
 	 * and loads it into KeyStore

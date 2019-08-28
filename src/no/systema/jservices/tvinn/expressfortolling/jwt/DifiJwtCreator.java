@@ -1,15 +1,7 @@
 package no.systema.jservices.tvinn.expressfortolling.jwt;
 
-import java.security.KeyFactory;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.UnrecoverableKeyException;
-import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Clock;
-import java.time.Duration;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
@@ -31,14 +23,26 @@ import io.jsonwebtoken.SignatureAlgorithm;
 @Service
 public class DifiJwtCreator {
 	private static Logger logger = Logger.getLogger(DifiJwtCreator.class.getName());
-	private Duration expiration;
 
 	@Autowired
 	private CertManager certificateManager;
 
+	/**
+	 * Audience - identifikator for ID-portens OIDC Provider. 
+	 * Se ID-portens well-known-endepunkt for aktuelt miljø for å finne riktig verdi.
+	 */
 	@Value("${expft.audience}")
 	String difiTokenAudienceUrl;
 
+	/**
+	 * expiration time - tidsstempel for når jwt’en utløper - 
+	 * MERK: Tidsstempelet tar utgangspunkt i UTC-tid 
+	 * MERK: ID-porten godtar kun maks levetid på jwt’en til 120 sekunder (exp - iat <= 120 )
+	 */
+	@Value("${expft.token.expiration}")
+	int expiration;
+	
+	
 	/**
 	 * Create a JWT based on X.509 certificate.
 	 * Certificate is issued per customer.
@@ -67,7 +71,7 @@ public class DifiJwtCreator {
 	            .claim("scope", "toll:ekspressfortolling")
 	            .setId(UUID.randomUUID().toString())
 	            .setIssuedAt(new Date(now))
-	            .setExpiration(new Date(now + expiration.toMillis()))
+	            .setExpiration(new Date(now + expiration))
 	            .signWith(SignatureAlgorithm.RS256, privateKey)
 	            .compact();
 		

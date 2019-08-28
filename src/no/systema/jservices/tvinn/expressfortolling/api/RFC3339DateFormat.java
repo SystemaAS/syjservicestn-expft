@@ -10,7 +10,7 @@
  * Do not edit the class manually.
  */
 
-package no.systema.jservices.tvinn.expressfortolling;
+package no.systema.jservices.tvinn.expressfortolling.api;
 
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.databind.util.ISO8601Utils;

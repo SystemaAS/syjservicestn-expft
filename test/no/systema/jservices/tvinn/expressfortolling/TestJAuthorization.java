@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.expressfortolling.jwt;
+package no.systema.jservices.tvinn.expressfortolling;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,25 +7,28 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
+import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
+
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:test-configuration.xml")
 @TestPropertySource(locations="classpath:application-test.properties")
-public class TestJDifiJwtCreator {
+public class TestJAuthorization {
 
 	@Autowired
-	DifiJwtCreator difiJwtCreator;
+	Authorization authorization;
 	
 	{
 		System.setProperty("catalina.home", "/usr/local/Cellar/tomcat/8.0.33/libexec");
 	}
 	
 	@Test
-	public void testCreateJwt() throws Exception {
+	public void testAccessTokenRequestPost() throws Exception {
 		
-		String jwt = difiJwtCreator.createRequestJwt();
+		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
 		
-		System.out.println("jwt = "+jwt);
+		System.out.println("responseDto = "+responseDto);
 		
 	}
 

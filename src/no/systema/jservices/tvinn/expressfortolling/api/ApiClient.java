@@ -1,39 +1,29 @@
-package no.systema.jservices.tvinn.expressfortolling;
+package no.systema.jservices.tvinn.expressfortolling.api;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.RequestEntity.BodyBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.BufferingClientHttpRequestFactory;
-import org.springframework.http.client.ClientHttpRequestExecution;
-import org.springframework.http.client.ClientHttpRequestInterceptor;
-import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -42,8 +32,30 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
+import no.systema.jservices.common.util.CommonResponseErrorHandler;
+
+/**
+  * Manage all client-side HTTP requests. 
+  * This class is using {@link org.springframework.web.client.RestTemplate RestTemplate} with a 
+ * {@linkplain CommonHttpRequestInterceptor} and {@linkplain CommonResponseErrorHandler)
+ *
+ * @author fredrikmoller
+ * @date 2019-08-28
+ */
 @Service
 public class ApiClient {
+	private static Logger logger = Logger.getLogger(ApiClient.class.getName());
+	
+    private HttpHeaders defaultHeaders = new HttpHeaders();
+    private RestTemplate restTemplate;
+    private HttpStatus statusCode;
+    private MultiValueMap<String, String> responseHeaders;
+    private DateFormat dateFormat;
+
+	@Value("${expft.basepath}")
+    private String basePath;
+    
     public enum CollectionFormat {
         CSV(","), TSV("\t"), SSV(" "), PIPES("|"), MULTI(null);
 
@@ -56,33 +68,13 @@ public class ApiClient {
             return StringUtils.collectionToDelimitedString(collection, separator);
         }
     }
+   
     
-    private boolean debugging = false;
-    
-    private HttpHeaders defaultHeaders = new HttpHeaders();
-    
-    private String basePath = "https://localhost/API";
-
-    private RestTemplate restTemplate;
-
-//    private Map<String, Authentication> authentications;
-
-    private HttpStatus statusCode;
-    private MultiValueMap<String, String> responseHeaders;
-    
-    private DateFormat dateFormat;
-
     public ApiClient() {
-        this.restTemplate = buildRestTemplate();
+        this.restTemplate = restTemplate();
         init();
     }
-    
-    @Autowired
-    public ApiClient(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-        init();
-    }
-    
+
     protected void init() {
         // Use RFC3339 format for date and datetime.
         // See http://xml2rfc.ietf.org/public/rfc/html/rfc3339.html#anchor14
@@ -94,13 +86,6 @@ public class ApiClient {
         // Set default User-Agent.
         setUserAgent("Toll klient");
 
-//        // Setup authentications (key: authentication name, value: authentication).
-//        authentications = new HashMap<String, Authentication>();
-//        authentications.put("ipp-application-type", new ApiKeyAuth("header", "ipp-application-type"));
-//        authentications.put("ipp-company-id", new ApiKeyAuth("header", "ipp-company-id"));
-//        authentications.put("vna_oauth", new OAuth());
-//        // Prevent the authentications from being modified.
-//        authentications = Collections.unmodifiableMap(authentications);
    }
     
     /**
@@ -163,37 +148,6 @@ public class ApiClient {
         return this;
     }
     
-    public void setDebugging(boolean debugging) {
-        List<ClientHttpRequestInterceptor> currentInterceptors = this.restTemplate.getInterceptors();
-        if(debugging) {
-            if (currentInterceptors == null) {
-                currentInterceptors = new ArrayList<ClientHttpRequestInterceptor>();
-            }
-            ClientHttpRequestInterceptor interceptor = new ApiClientHttpRequestInterceptor();
-            currentInterceptors.add(interceptor);
-            this.restTemplate.setInterceptors(currentInterceptors);
-        } else {
-            if (currentInterceptors != null && !currentInterceptors.isEmpty()) {
-                Iterator<ClientHttpRequestInterceptor> iter = currentInterceptors.iterator();
-                while (iter.hasNext()) {
-                    ClientHttpRequestInterceptor interceptor = iter.next();
-                    if (interceptor instanceof ApiClientHttpRequestInterceptor) {
-                        iter.remove();
-                    }
-                }
-                this.restTemplate.setInterceptors(currentInterceptors);
-            }
-        }
-        this.debugging = debugging;
-    }
-
-    /**
-     * Check that whether debugging is enabled for this API client.
-     * @return boolean true if this client is enabled for debugging, false otherwise
-     */
-    public boolean isDebugging() {
-        return debugging;
-    }
 
     /**
      * Get the date format used to parse/format date parameters.
@@ -302,6 +256,55 @@ public class ApiClient {
     }
 
     /**
+     * Converts a parameter to a {@link MultiValueMap} for use in REST requests
+     * @param collectionFormat The format to convert to
+     * @param name The name of the parameter
+     * @param value The parameter's value
+     * @return a Map containing the String value(s) of the input Object parameter
+     */
+    public MultiValueMap<String, Object> parameterToMultiObjectValueMap(CollectionFormat collectionFormat, String name, Object value) {
+        final MultiValueMap<String, Object> params = new LinkedMultiValueMap<String, Object>();
+
+        if (name == null || name.isEmpty() || value == null) {
+            return params;
+        }
+
+        if(collectionFormat == null) {
+            collectionFormat = CollectionFormat.CSV;
+        }
+
+        Collection<?> valueCollection = null;
+        if (value instanceof Collection) {
+            valueCollection = (Collection<?>) value;
+        } else {
+            params.add(name, parameterToString(value));
+            return params;
+        }
+
+        if (valueCollection.isEmpty()){
+            return params;
+        }
+
+        if (collectionFormat.equals(CollectionFormat.MULTI)) {
+            for (Object item : valueCollection) {
+                params.add(name, parameterToString(item));
+            }
+            return params;
+        }
+
+        List<String> values = new ArrayList<String>();
+        for(Object o : valueCollection) {
+            values.add(parameterToString(o));
+        }
+        params.add(name, collectionFormat.collectionToString(values));
+
+        return params;
+    }    
+    
+    
+    
+    
+    /**
     * Check if the given {@code String} is a JSON MIME.
     * @param mediaType the input MediaType
     * @return boolean true if the MediaType represents JSON, false otherwise
@@ -402,7 +405,6 @@ public class ApiClient {
      * @return The response body in chosen type
      */
     public <T> T invokeAPI(String path, HttpMethod method, MultiValueMap<String, String> queryParams, Object body, HttpHeaders headerParams, MultiValueMap<String, Object> formParams, List<MediaType> accept, MediaType contentType, ParameterizedTypeReference<T> returnType) throws RestClientException {
-//        updateParamsForAuth(authNames, queryParams, headerParams);
         
         final UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(basePath).path(path);
         if (queryParams != null) {
@@ -456,67 +458,22 @@ public class ApiClient {
         }
     }
 
-    /**
-     * Build the RestTemplate used to make HTTP requests.
-     * @return RestTemplate
-     */
-    protected RestTemplate buildRestTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-        // This allows us to read the response more than once - Necessary for debugging.
-        restTemplate.setRequestFactory(new BufferingClientHttpRequestFactory(restTemplate.getRequestFactory()));
-        return restTemplate;
-    }
 
+	/**
+	 * Initialize  {@linkplain RestTemplate} with {@linkplain MappingJackson2HttpMessageConverter} and <br>
+	 * a Interceptor, {@linkplain CommonHttpRequestInterceptor}
+	 * 
+	 * @return RestTemplate
+	 */
+    @Bean
+	public RestTemplate restTemplate(){
+    	//RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter(objectMapper())));
+    	RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setInterceptors(Arrays.asList(new CommonClientHttpRequestInterceptor()));
+		restTemplate.setErrorHandler(new CommonResponseErrorHandler());
+
+		return restTemplate;  
+		
+	}  
     
-    private class ApiClientHttpRequestInterceptor implements ClientHttpRequestInterceptor {
-        private final Log log = LogFactory.getLog(ApiClientHttpRequestInterceptor.class);
-
-        @Override
-        public ClientHttpResponse intercept(HttpRequest request, byte[] body, ClientHttpRequestExecution execution) throws IOException {
-            logRequest(request, body);
-            ClientHttpResponse response = execution.execute(request, body);
-            logResponse(response);
-            return response;
-        }
-
-        private void logRequest(HttpRequest request, byte[] body) throws UnsupportedEncodingException {
-            log.info("URI: " + request.getURI());
-            log.info("HTTP Method: " + request.getMethod());
-            log.info("HTTP Headers: " + headersToString(request.getHeaders()));
-            log.info("Request Body: " + new String(body, StandardCharsets.UTF_8));
-        }
-
-        private void logResponse(ClientHttpResponse response) throws IOException {
-            log.info("HTTP Status Code: " + response.getRawStatusCode());
-            log.info("Status Text: " + response.getStatusText());
-            log.info("HTTP Headers: " + headersToString(response.getHeaders()));
-            log.info("Response Body: " + bodyToString(response.getBody()));
-        }
-
-        private String headersToString(HttpHeaders headers) {
-            StringBuilder builder = new StringBuilder();
-            for(Entry<String, List<String>> entry : headers.entrySet()) {
-                builder.append(entry.getKey()).append("=[");
-                for(String value : entry.getValue()) {
-                    builder.append(value).append(",");
-                }
-                builder.setLength(builder.length() - 1); // Get rid of trailing comma
-                builder.append("],");
-            }
-            builder.setLength(builder.length() - 1); // Get rid of trailing comma
-            return builder.toString();
-        }
-        
-        private String bodyToString(InputStream body) throws IOException {
-            StringBuilder builder = new StringBuilder();
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(body, StandardCharsets.UTF_8));
-            String line = bufferedReader.readLine();
-            while (line != null) {
-                builder.append(line).append(System.lineSeparator());
-                line = bufferedReader.readLine();
-            }
-            bufferedReader.close();
-            return builder.toString();
-        }
-    }
 }
