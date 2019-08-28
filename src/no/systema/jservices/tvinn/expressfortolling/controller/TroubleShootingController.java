@@ -1,9 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.util.Log4jUtils;
-import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 /**
  * Internal use only!
@@ -34,9 +30,6 @@ public class TroubleShootingController {
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
-	
-	@Autowired
-	private ApiServices apiServices; 
 	
 	@Autowired
 	DifiJwtCreator difiJwtCreator;
