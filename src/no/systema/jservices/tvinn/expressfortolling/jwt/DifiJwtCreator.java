@@ -6,11 +6,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 
+import javax.xml.bind.DatatypeConverter;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -42,7 +45,6 @@ public class DifiJwtCreator {
 	@Value("${expft.token.expiration}")
 	int expiration;
 	
-	
 	/**
 	 * Create a JWT based on X.509 certificate.
 	 * Certificate is issued per customer.
@@ -53,6 +55,7 @@ public class DifiJwtCreator {
 
 		String encodedCertificate;
 		PrivateKey privateKey;
+		String jwt;
 		try {
 			encodedCertificate = certificateManager.getEncodedCertificate();
 			privateKey = certificateManager.getPrivateKey();
@@ -74,7 +77,20 @@ public class DifiJwtCreator {
 	            .setExpiration(new Date(now + expiration))
 	            .signWith(SignatureAlgorithm.RS256, privateKey)
 	            .compact();
-		
+	    
+	}
+	
+	/**
+	 * Convenience method for checking the JWT result.
+	 * 
+	 * @return payload values inside created JWT
+	 * @throws Exception
+	 */
+	public Claims decodeJWT() throws Exception{
+	    Claims claims = Jwts.parser()
+	            .setSigningKey(certificateManager.getPrivateKey())
+	            .parseClaimsJws(createRequestJwt()).getBody();
+	    return claims;
 	}
 
 }

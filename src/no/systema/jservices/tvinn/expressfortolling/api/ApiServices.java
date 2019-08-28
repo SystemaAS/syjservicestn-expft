@@ -54,6 +54,8 @@ public class ApiServices {
 		TokenResponseDto responseDto = new TokenResponseDto();
 		responseDto.setAccess_token("XYZ");
 		
+		logger.info("basePathVersion="+basePathVersion);
+		
 		Object postBody = null;
         
         String path = UriComponentsBuilder.fromPath(basePathVersion + "/transportation-company").build().toUriString();

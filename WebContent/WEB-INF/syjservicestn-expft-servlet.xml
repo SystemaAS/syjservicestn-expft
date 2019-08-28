@@ -13,22 +13,7 @@ http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 
 	<context:component-scan base-package="no.systema.*"/>
 	 
-	<!-- This will allow Wiring with annotations. [It is not the default]  -->
-	<context:annotation-config/>
-
 	<context:property-placeholder location="classpath:application.properties"/>
-
-	<mvc:annotation-driven />
-		
-	<!-- application properties -->
-	<bean id="placeholderConfigMM" class="no.systema.jservices.common.util.ApplicationPropertiesUtil">
-    	<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_OVERRIDE"/>
-    	<property name="locations">
-    		<list>
-        		<value>classpath:application.properties</value>
-    		</list>
-    	</property>
-	</bean>
 
 	<mvc:annotation-driven>
 	     <mvc:message-converters>

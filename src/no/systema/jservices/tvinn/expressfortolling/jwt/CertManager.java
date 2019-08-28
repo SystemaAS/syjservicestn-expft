@@ -14,6 +14,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,19 @@ public class CertManager {
     private String keystoreAlias;     
     
     private KeyStore keyStore;
+    
+    @PostConstruct
+    public void init() {
+    	try {
+    		
+			loadCertificate();
+			
+		} catch (Exception e) {
+			String message = "Error loading certificate!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+    }
 
     /**
      * loads certificate into Keystore and extract it into encoded form.
@@ -44,8 +59,6 @@ public class CertManager {
 		final String encodedCertificate;
 		try {
 
-			loadCertificate();
-			
 			X509Certificate cert = (X509Certificate) keyStore.getCertificate(keystoreAlias);
 			encodedCertificate = Base64.getEncoder().encodeToString(cert.getEncoded());
 
@@ -76,7 +89,7 @@ public class CertManager {
 	}
 	
     /**
-	 * Looks i catalina.home/espedsg2/certificates/expft after File named with the prefix; Buypass ID-SYSTEMA
+	 * Looks i catalina.home/espedsg2/certificates/expft after certificate-file
 	 * and loads it into KeyStore
 	 * 
 	 * @return InputStream the located .p12 file

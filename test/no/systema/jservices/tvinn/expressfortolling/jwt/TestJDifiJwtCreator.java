@@ -7,6 +7,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import io.jsonwebtoken.Claims;
+
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:test-configuration.xml")
@@ -29,4 +31,15 @@ public class TestJDifiJwtCreator {
 		
 	}
 
+	@Test
+	public void testDecodeJwt() throws Exception {
+		
+		Claims jwtClaims = difiJwtCreator.decodeJWT();
+		
+		System.out.println("jwtClaims = "+jwtClaims);
+		
+	}	
+	
+	
+	
 }
