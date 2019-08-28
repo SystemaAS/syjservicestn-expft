@@ -8,5 +8,5 @@
 	<bean id="apiClient" class="no.systema.jservices.tvinn.expressfortolling.api.ApiClient"/>
 	<bean id="apiServices" class="no.systema.jservices.tvinn.expressfortolling.api.ApiServices"/>
 	<bean id="authorization" class="no.systema.jservices.tvinn.expressfortolling.api.Authorization"/>
-    
+
 </beans>

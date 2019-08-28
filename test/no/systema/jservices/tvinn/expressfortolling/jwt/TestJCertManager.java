@@ -1,13 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling.jwt;
 
-import java.io.InputStream;
-import java.security.KeyStore;
 import java.security.PrivateKey;
-import java.security.cert.CertificateFactory;
-//import javax.security.cert.X509Certificate;
-import java.security.cert.X509Certificate;
-import java.util.Base64;
-import java.util.Enumeration;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +20,7 @@ public class TestJCertManager {
 	{
 		System.setProperty("catalina.home", "/usr/local/Cellar/tomcat/8.0.33/libexec");
 	}
-	
+
 	@Test
 	public void testCertManager() throws Exception {
 		

@@ -36,7 +36,7 @@ public class ApiServices {
 
 	@Autowired
 	Authorization authorization;
-	
+
 	@Value("${expft.basepath.version}")
     private String basePathVersion;	
 	 
@@ -52,6 +52,9 @@ public class ApiServices {
 	public List<String> getTransportationCompany() {
   
 		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		//For test, couldn't get Mockito to work correct.
+//		TokenResponseDto responseDto = new TokenResponseDto();
+//		responseDto.setAccess_token("XYZ");
 		
 		Object postBody = null;
         
