@@ -8,25 +8,25 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.util.Log4jUtils;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
+import no.systema.jservices.tvinn.expressfortolling.entities.TransportationCompanyDto;
 /**
  * @author fredrikmoller
  * @date 2019-09
  *
  */
-@Controller
+@RestController
 public class ExpressFortollingController {
 	private static Logger logger = Logger.getLogger(ExpressFortollingController.class.getName());
-
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -36,23 +36,22 @@ public class ExpressFortollingController {
 	
 	
 	/**
-	 * @Example: http://gw.systema.no:8080/syjservicestn-expft/transportationCompany.do?user=SYSTEMA&id=5
+	 * @Example: http://localhost:8080/syjservicestn-expft/transportationCompany.do?user=SYSTEMA&id=5
 	 */	
 	@RequestMapping(value="transportationCompany.do", method={RequestMethod.GET})
-	@ResponseBody
-	public String download(HttpSession session, HttpServletRequest request) {
-		StringBuilder sb = new StringBuilder("kilroy was here");
-	
-		logger.info("kilroy was here");
+	public List<TransportationCompanyDto> getTransportationCompany(HttpSession session, 
+																@RequestParam(value = "user", required = true) String user,
+																@RequestParam(value = "id", required = false) String id) {
+		logger.info("transportationCompany.do, id="+id);
 		
+		checkUser(user);
 		
-		List<String> payload = apiServices.getTransportationCompany();
+		List<TransportationCompanyDto> payload = apiServices.getTransportationCompany();
 		
-
-		return sb.toString();
+		session.invalidate();
+		return payload;
 
 	}
-
 
 	/**
 	 * 

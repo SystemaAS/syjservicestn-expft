@@ -1,18 +1,17 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import no.systema.jservices.tvinn.expressfortolling.entities.TransportationCompanyDto;
 
 @ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -42,7 +41,7 @@ public class TestJApiServices {
 //		when(authorization.accessTokenRequestPost()).thenReturn(responseDto);
 //		
 
-	    List<String> tc = apiServices.getTransportationCompany();
+	    List<TransportationCompanyDto> tc = apiServices.getTransportationCompany();
 		
 		System.out.println("tc = "+tc);
 		

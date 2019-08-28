@@ -10,8 +10,9 @@ It also include the JWT generation base on a certificate.
 1. First make call to OIDC, using customer enterprise certifikat for signing. Use the retrieved accessToken in API call. See DifiJwtCreator and CertManager.
 2. Do the API call. Se ApiServices
 
+### Troubleshooting
+1. Verify values in application.properties
+
 
 ## Dependencies
 - A valid certificate for signing need to be located in /espedsg2/certificates/expft
-- Mockito. Mockito is tool for enhanced tests. Download Jar from https://mvnrepository.com/artifact/org.mockito/mockito-all/2.0.2-beta
-	also see __https://www.baeldung.com/injecting-mocks-in-spring__

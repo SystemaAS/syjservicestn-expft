@@ -1,21 +1,19 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import no.systema.jservices.tvinn.expressfortolling.entities.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 
 /**
@@ -47,14 +45,14 @@ public class ApiServices {
 	 * Host: ekspressfortolling.toll.no
 	 * Version: 1
 	 * 
-	 * @return TODO
+	 * @return List<TransportationCompanyDto>
 	 */
-	public List<String> getTransportationCompany() {
+	public List<TransportationCompanyDto> getTransportationCompany() {
   
-		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+//		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
 		//For test, couldn't get Mockito to work correct.
-//		TokenResponseDto responseDto = new TokenResponseDto();
-//		responseDto.setAccess_token("XYZ");
+		TokenResponseDto responseDto = new TokenResponseDto();
+		responseDto.setAccess_token("XYZ");
 		
 		Object postBody = null;
         
@@ -73,9 +71,24 @@ public class ApiServices {
         final String[] contentTypes = {  };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
 
-        ParameterizedTypeReference<List<String>> returnType = new ParameterizedTypeReference<List<String>>() {};
-        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+//        ParameterizedTypeReference<List<TransportationCompanyDto>> returnType = new ParameterizedTypeReference<List<TransportationCompanyDto>>() {};
+//        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+
+        return testGetDtos();
+        
 		
+	}
+	
+	private List<TransportationCompanyDto> testGetDtos() {
+		List<TransportationCompanyDto> list = new ArrayList<TransportationCompanyDto>();
+		
+		TransportationCompanyDto dto = new TransportationCompanyDto();
+		dto.setId("5");
+		dto.setName("Transportør Blåveis");
+		
+		list.add(dto);
+		
+		return list;
 		
 	}
 	
