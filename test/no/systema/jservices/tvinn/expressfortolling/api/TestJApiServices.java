@@ -1,5 +1,8 @@
-package no.systema.jservices.tvinn.expressfortolling;
+package no.systema.jservices.tvinn.expressfortolling.api;
 
+import java.util.List;
+
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,28 +10,29 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
-import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
+import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:test-configuration.xml")
 @TestPropertySource(locations="classpath:application-test.properties")
-public class TestJAuthorization {
+public class TestJApiServices {
 
 	@Autowired
-	Authorization authorization;
+	ApiServices apiServices;
 	
 	{
 		System.setProperty("catalina.home", "/usr/local/Cellar/tomcat/8.0.33/libexec");
 	}
 	
+
+	
+	
 	@Test
-	public void testAccessTokenRequestPost() throws Exception {
+	public void testTransportationCompany() throws Exception {
+		List<String> tc = apiServices.getTransportationCompany();
 		
-		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
-		
-		System.out.println("responseDto = "+responseDto);
+		System.out.println("tc = "+tc);
 		
 	}
 
