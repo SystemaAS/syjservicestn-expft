@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
+import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
-import no.systema.jservices.tvinn.expressfortolling.entities.TransportationCompanyDto;
 /**
  * Main entrance for accessing Express fortolling API.
  * 

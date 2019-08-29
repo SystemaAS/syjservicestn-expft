@@ -11,7 +11,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import no.systema.jservices.tvinn.expressfortolling.entities.TransportationCompanyDto;
+import no.systema.jservices.common.dto.TransportationCompanyDto;
 
 @ActiveProfiles("test")
 @RunWith(SpringJUnit4ClassRunner.class)
