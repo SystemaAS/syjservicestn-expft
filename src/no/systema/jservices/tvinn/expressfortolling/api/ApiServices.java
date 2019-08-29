@@ -6,7 +6,9 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -49,14 +51,12 @@ public class ApiServices {
 	 */
 	public List<TransportationCompanyDto> getTransportationCompany() {
   
-//		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
 		//For test, couldn't get Mockito to work correct.
-		TokenResponseDto responseDto = new TokenResponseDto();
-		responseDto.setAccess_token("XYZ");
+//		TokenResponseDto responseDto = new TokenResponseDto();
+//		responseDto.setAccess_token("XYZ");
 		
-		logger.info("basePathVersion="+basePathVersion);
-		
-		Object postBody = null;
+		Object postBody = null; //Not in use
         
         String path = UriComponentsBuilder.fromPath(basePathVersion + "/transportation-company").build().toUriString();
         
@@ -73,10 +73,10 @@ public class ApiServices {
         final String[] contentTypes = {  };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
 
-//        ParameterizedTypeReference<List<TransportationCompanyDto>> returnType = new ParameterizedTypeReference<List<TransportationCompanyDto>>() {};
-//        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        ParameterizedTypeReference<List<TransportationCompanyDto>> returnType = new ParameterizedTypeReference<List<TransportationCompanyDto>>() {};
+        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
 
-        return testGetDtos();
+//        return testGetDtos();
         
 		
 	}
