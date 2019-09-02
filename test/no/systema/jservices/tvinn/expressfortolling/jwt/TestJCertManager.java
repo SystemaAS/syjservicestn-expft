@@ -9,23 +9,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import no.systema.jservices.tvinn.expressfortolling.TestJBase;
+
 @RunWith(SpringRunner.class)
 @ContextConfiguration("classpath:test-configuration.xml")
 @TestPropertySource(locations="classpath:application-test.properties")
-public class TestJCertManager {
+public class TestJCertManager extends TestJBase {
 
 	@Autowired
 	CertManager certManager;
-	
-	{
-		System.setProperty("catalina.home", "/usr/local/Cellar/tomcat/8.0.33/libexec");
-	}
 
 	@Test
 	public void testCertManager() throws Exception {
-		
 		String encodedCertificate =certManager.getEncodedCertificate();
-		
 		System.out.println("encodedCertificate= "+encodedCertificate);
 		
 		PrivateKey privateKey = certManager.getPrivateKey();

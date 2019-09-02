@@ -70,7 +70,8 @@ public class Authorization {
 
         ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
         
-        apiClient.setBasePath(difiTokenAudienceUrl); //Override
+        //TODO refactor outside
+        apiClient.setBasePath(difiTokenAudienceUrl);
         
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
     }	

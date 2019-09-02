@@ -39,7 +39,10 @@ public class ApiServices {
 
 	@Value("${expft.basepath.version}")
     private String basePathVersion;	
-	 
+
+	@Value("${expft.basepath}")
+    private String basePath;		
+	
 	/**
 	 * Get all transportation companies for which the logged in user is a customs representative.
 	 * GET /api/exf/ekspressfortolling/transportation-company
@@ -73,6 +76,9 @@ public class ApiServices {
         final String[] contentTypes = {  };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
 
+        //TODO refactor outside
+        apiClient.setBasePath(basePath);
+        
         ParameterizedTypeReference<List<TransportationCompanyDto>> returnType = new ParameterizedTypeReference<List<TransportationCompanyDto>>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
 
