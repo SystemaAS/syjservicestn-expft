@@ -30,6 +30,9 @@ public class DifiJwtCreator {
 	@Autowired
 	private CertManager certificateManager;
 
+	@Value("${expft.issuer}")
+	String issuer;
+	
 	/**
 	 * Audience - identifikator for ID-portens OIDC Provider. 
 	 * Se ID-portens well-known-endepunkt for aktuelt miljø for å finne riktig verdi.
@@ -69,8 +72,8 @@ public class DifiJwtCreator {
 	    return Jwts.builder()
 	            .setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
 	            .setAudience(difiTokenAudienceUrl)
-	            .setIssuer("oidc_tolletaten")
-	            .claim("iss_onbehalfof", "toll-onbehalfof")
+	            .setIssuer(issuer)
+//	            .claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
 	            .claim("scope", "toll:ekspressfortolling")
 	            .setId(UUID.randomUUID().toString())
 	            .setIssuedAt(new Date(now))

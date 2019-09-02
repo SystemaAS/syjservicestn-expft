@@ -8,6 +8,6 @@ import lombok.Data;
 */
 @Data
 public class TokenRequestDto {
-	private String grantType = "urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer";
+	private String grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
 	private String assertion;
 }
