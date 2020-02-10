@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
+import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 @ContextConfiguration("classpath:test-configuration.xml")
 @TestPropertySource(locations="classpath:application-test.properties")
 public class TestJAuthorization extends TestJBase {
+	private static Logger logger = Logger.getLogger(TestJAuthorization.class);
 
 	@Autowired
 	Authorization authorization;
@@ -24,7 +26,7 @@ public class TestJAuthorization extends TestJBase {
 	public void testAccessTokenRequestPost() throws Exception {
 		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
 		
-		System.out.println("responseDto = "+responseDto);
+		logger.info("responseDto = "+responseDto);
 		
 	}
 
