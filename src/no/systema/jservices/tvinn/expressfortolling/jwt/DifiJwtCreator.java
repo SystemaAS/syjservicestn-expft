@@ -69,17 +69,21 @@ public class DifiJwtCreator {
 		}
 
 		final long now = Clock.systemUTC().millis();
-	    return Jwts.builder()
-	            .setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
-	            .setAudience(difiTokenAudienceUrl)
-	            .setIssuer(issuer)
-//	            .claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
-	            .claim("scope", "toll:ekspressfortolling")
-	            .setId(UUID.randomUUID().toString())
-	            .setIssuedAt(new Date(now))
-	            .setExpiration(new Date(now + expiration))
-	            .signWith(SignatureAlgorithm.RS256, privateKey)
-	            .compact();
+		
+		String result =  Jwts.builder()
+	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
+	            	.setAudience(difiTokenAudienceUrl)
+	            	.setIssuer(issuer)
+//	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
+	            	.claim("scope", "toll:ekspressfortolling")
+	            	.setId(UUID.randomUUID().toString())
+	            	.setIssuedAt(new Date(now))
+	            	.setExpiration(new Date(now + expiration))
+	            	.signWith(SignatureAlgorithm.RS256, privateKey)
+	            	.compact();
+	    //logger.info("createRequestJwt:" + result);
+		return result;
+	    
 	    
 	}
 	
