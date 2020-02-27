@@ -47,7 +47,6 @@ public class TestJApiClientKurer {
 	
 private static final Logger logger = Logger.getLogger(TestJApiClientKurer.class);
 	
-	private RestTemplate restTemplate = restTemplate();
 	
 	@Value("${kurer.file.source.directory}")
     private String baseDir;
@@ -62,14 +61,5 @@ private static final Logger logger = Logger.getLogger(TestJApiClientKurer.class)
 	}
 	
 	
-	@Bean
-	public RestTemplate restTemplate(){
-    	//RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter(objectMapper())));
-    	RestTemplate restTemplate = new RestTemplate();
-		restTemplate.setInterceptors(Arrays.asList(new CommonClientHttpRequestInterceptor()));
-		restTemplate.setErrorHandler(new CommonResponseErrorHandler());
-
-		return restTemplate;  
-		
-	}  
+	
 }

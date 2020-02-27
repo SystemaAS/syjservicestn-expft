@@ -51,6 +51,7 @@ public class ApiClientKurer {
 					.map(x -> x.toString()).collect(Collectors.toList());
 			//files.forEach(System.out::println);
 			
+			//Send each file per restTemplate call
 			for(String fileName: files){
 				logger.info("A----->" + fileName);
 				//STEP (1) We extract the payload in bytes and put it in the HttpEntity as ByteArrayResource
