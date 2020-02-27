@@ -13,7 +13,10 @@ http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 
 	<context:component-scan base-package="no.systema.*"/>
 	 
-	<context:property-placeholder location="classpath:application.properties"/>
+	<context:property-placeholder location="classpath:application.properties" ignore-unresolvable="true" order="1"/>
+	<context:property-placeholder location="classpath:applicationkurer.properties" order="2"/>
+	
+	
 
 	<mvc:annotation-driven>
 	     <mvc:message-converters>
@@ -22,6 +25,13 @@ http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
 	   </mvc:message-converters>
 	</mvc:annotation-driven>
 	 
+	<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+       <!-- max upload size in bytes -->
+       <property name="maxUploadSize" value="20971520" /> <!-- 20MB -->
+       <!-- max size of file in memory (in bytes) -->
+       <property name="maxInMemorySize" value="1048576" /> <!-- 1MB -->
+    </bean>
+    
 	<bean id="dataTransactionManager"
   		class="org.springframework.jdbc.datasource.DataSourceTransactionManager"
   		scope="singleton">

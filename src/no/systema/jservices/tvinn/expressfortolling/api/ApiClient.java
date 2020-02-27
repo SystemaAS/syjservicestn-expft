@@ -423,9 +423,9 @@ public class ApiClient {
         addHeadersToRequest(defaultHeaders, requestBuilder);
         
         RequestEntity<Object> requestEntity = requestBuilder.body(selectBody(body, formParams, contentType));
-
+        logger.info(requestEntity.toString());
         ResponseEntity<T> responseEntity = restTemplate.exchange(requestEntity, returnType);
-        
+        //logger.info(responseEntity.toString());
         statusCode = responseEntity.getStatusCode();
         responseHeaders = responseEntity.getHeaders();
 
