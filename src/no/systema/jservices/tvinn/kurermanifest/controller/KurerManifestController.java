@@ -50,7 +50,7 @@ public class KurerManifestController {
 	private RestTemplate restTemplate;
 	
 	@Value("${kurer.file.source.directory}")
-    private String basePath;
+    private String baseDir;
     
 	/**
 	 * Sends files to the local end-point in order to test payload transmission from multipart client.
@@ -61,7 +61,7 @@ public class KurerManifestController {
 	@RequestMapping(value="testUpload.do", method={RequestMethod.GET})
 	public @ResponseBody String  testFileUploadByteArrayResource(HttpSession session) {
 		ApiClientKurer api = new ApiClientKurer();
-		String result = api.uploadPayloads(basePath);
+		String result = api.uploadPayloads(baseDir);
 		
 		return result;
 	}

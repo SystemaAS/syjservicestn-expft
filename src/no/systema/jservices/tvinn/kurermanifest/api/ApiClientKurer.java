@@ -44,9 +44,9 @@ public class ApiClientKurer {
 	 * 
 	 * @return
 	 */
-	public String uploadPayloads(String basePath){
+	public String uploadPayloads(String baseDir){
 		String retval = "init ?"; 
-		try (Stream<Path> walk = Files.walk(Paths.get(basePath))) {
+		try (Stream<Path> walk = Files.walk(Paths.get(baseDir))) {
 			List<String> files = walk.filter(Files::isRegularFile)
 					.map(x -> x.toString()).collect(Collectors.toList());
 			//files.forEach(System.out::println);

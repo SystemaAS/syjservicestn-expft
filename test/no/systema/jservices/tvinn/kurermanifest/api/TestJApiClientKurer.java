@@ -50,15 +50,14 @@ private static final Logger logger = Logger.getLogger(TestJApiClientKurer.class)
 	private RestTemplate restTemplate = restTemplate();
 	
 	@Value("${kurer.file.source.directory}")
-    private String basePath;
+    private String baseDir;
     
 
-	
 	@Test
 	public void  testFileUploadByteArrayResource() {
 	
 		ApiClientKurer api = new ApiClientKurer();
-		String result = api.uploadPayloads(basePath);
+		String result = api.uploadPayloads(baseDir);
 		logger.info(result);	
 	}
 	
