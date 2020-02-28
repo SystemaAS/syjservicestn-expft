@@ -2,6 +2,7 @@ package no.systema.jservices.tvinn.kurermanifest.controller;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -25,6 +26,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -33,6 +35,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -42,7 +45,8 @@ import no.systema.jservices.tvinn.kurermanifest.server.controller.UploadEndPoint
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 
-@Controller
+@RestController
+@RequestMapping("testUpload")
 public class KurerManifestController {
 	private static final Logger logger = Logger.getLogger(KurerManifestController.class);
 	
@@ -51,6 +55,9 @@ public class KurerManifestController {
 	
 	@Value("${kurer.file.source.directory}")
     private String baseDir;
+	
+	@Value("${kurer.upload.url}")
+    private String uploadUrl;
     
 	/**
 	 * Sends files to the local end-point in order to test payload transmission from multipart client.
@@ -58,12 +65,16 @@ public class KurerManifestController {
 	 * @param session
 	 * @return
 	 */
-	@RequestMapping(value="testUpload.do", method={RequestMethod.GET})
-	public @ResponseBody String  testFileUploadByteArrayResource(HttpSession session) {
+	@RequestMapping(method={RequestMethod.GET})
+	public ResponseEntity<String> testFileUploadByteArrayResource() {
 		ApiClientKurer api = new ApiClientKurer();
+		api.setUploadUrl(uploadUrl);
 		String result = api.uploadPayloads(baseDir);
-		
-		return result;
+		if(result!=null && result.startsWith("2")){
+			return new ResponseEntity<String>(HttpStatus.OK);
+		}else{
+			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+		}
 	}
 	
 	

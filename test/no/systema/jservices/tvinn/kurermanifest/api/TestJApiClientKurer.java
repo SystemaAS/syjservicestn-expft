@@ -51,11 +51,15 @@ private static final Logger logger = Logger.getLogger(TestJApiClientKurer.class)
 	@Value("${kurer.file.source.directory}")
     private String baseDir;
     
+	@Value("${kurer.upload.url}")
+    private String uploadUrl;
 
 	@Test
 	public void  testFileUploadByteArrayResource() {
 	
 		ApiClientKurer api = new ApiClientKurer();
+		api.setUploadUrl(uploadUrl);
+		
 		String result = api.uploadPayloads(baseDir);
 		logger.info(result);	
 	}
