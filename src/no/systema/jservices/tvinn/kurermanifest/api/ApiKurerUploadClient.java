@@ -63,8 +63,8 @@ public class ApiKurerUploadClient  {
 	 * @return
 	 */
 	public String uploadPayloads(String baseDir){
-		//get token auth
-		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
+		//get token authDto
+		TokenResponseDto authTokenDto = authorization.accessTokenForKurerRequestPost();
 		
 		String retval = "ERROR on REST"; 
 		try (Stream<Path> walk = Files.walk(Paths.get(baseDir))) {

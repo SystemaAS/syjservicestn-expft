@@ -33,12 +33,22 @@ public class DifiJwtCreator {
 	@Value("${expft.issuer}")
 	String issuer;
 	
+	@Value("${kurer.issuer}")
+	String issuerKurer;
+	
 	/**
 	 * Audience - identifikator for ID-portens OIDC Provider. 
 	 * Se ID-portens well-known-endepunkt for aktuelt miljø for å finne riktig verdi.
 	 */
 	@Value("${expft.audience}")
 	String difiTokenAudienceUrl;
+	
+	@Value("${kurer.audience}")
+	String difiTokenAudienceKurerUrl;
+	
+	
+	@Value("${kurer.scope}")
+	String scopeKurer;
 
 	/**
 	 * expiration time - tidsstempel for når jwt’en utløper - 
@@ -47,6 +57,9 @@ public class DifiJwtCreator {
 	 */
 	@Value("${expft.token.expiration}")
 	int expiration;
+	
+	@Value("${kurer.token.expiration}")
+	int expirationKurer;
 	
 	/**
 	 * Create a JWT based on X.509 certificate.
@@ -79,6 +92,46 @@ public class DifiJwtCreator {
 	            	.setId(UUID.randomUUID().toString())
 	            	.setIssuedAt(new Date(now))
 	            	.setExpiration(new Date(now + expiration))
+	            	.signWith(SignatureAlgorithm.RS256, privateKey)
+	            	.compact();
+	    //logger.info("createRequestJwt:" + result);
+		return result;
+	    
+	    
+	}
+	
+	
+	/**
+	 * Create a JWT based on X.509 certificate.
+	 * Certificate is issued per customer.
+	 * 
+	 * @return a String to provide in API calls.
+	 */
+	public String createRequestKurerJwt() {
+
+		String encodedCertificate;
+		PrivateKey privateKey;
+		String jwt;
+		try {
+			encodedCertificate = certificateManager.getEncodedCertificate();
+			privateKey = certificateManager.getPrivateKey();
+		} catch (Exception e) {
+			String message = "Could not manage X.509 in a correct way!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+
+		final long now = Clock.systemUTC().millis();
+		
+		String result =  Jwts.builder()
+	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
+	            	.setAudience(this.difiTokenAudienceKurerUrl)
+	            	.setIssuer(this.issuerKurer)
+//	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
+	            	.claim("scope", this.scopeKurer)
+	            	.setId(UUID.randomUUID().toString())
+	            	.setIssuedAt(new Date(now))
+	            	.setExpiration(new Date(now + this.expirationKurer))
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 	    //logger.info("createRequestJwt:" + result);

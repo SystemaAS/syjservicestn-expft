@@ -53,6 +53,7 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 	@Value("${kurer.upload.url}")
 	private String uploadUrl;
 
+	
 	@Autowired
 	ApiKurerUploadClient apiKurerUploadClient;
 
