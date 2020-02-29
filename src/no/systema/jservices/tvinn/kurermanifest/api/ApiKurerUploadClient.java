@@ -28,7 +28,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import lombok.Data;
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
