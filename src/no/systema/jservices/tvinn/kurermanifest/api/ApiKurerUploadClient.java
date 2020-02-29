@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -30,13 +31,18 @@ import org.springframework.web.client.RestTemplate;
 import lombok.Data;
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
+import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
+import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 
 @Service
-public class ApiClientKurer  {
-	private static final Logger logger = Logger.getLogger(ApiClientKurer.class);
+public class ApiKurerUploadClient  {
+	private static final Logger logger = Logger.getLogger(ApiKurerUploadClient.class);
 	private RestTemplate restTemplate;
+	
+	@Autowired
+	Authorization authorization;
 	
 	public URI uploadUrl;
 	public void setUploadUrl(String value){
@@ -47,7 +53,7 @@ public class ApiClientKurer  {
 		}
 	}
 	
-	public ApiClientKurer(){
+	public ApiKurerUploadClient(){
 		restTemplate = this.restTemplate();
 	}
 	
@@ -57,6 +63,9 @@ public class ApiClientKurer  {
 	 * @return
 	 */
 	public String uploadPayloads(String baseDir){
+		//get token auth
+		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
+		
 		String retval = "ERROR on REST"; 
 		try (Stream<Path> walk = Files.walk(Paths.get(baseDir))) {
 			List<String> files = walk.filter(Files::isRegularFile)
@@ -65,7 +74,7 @@ public class ApiClientKurer  {
 			
 			//Send each file per restTemplate call
 			for(String fileName: files){
-				retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName);
+				retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
 				
 			}
 			
@@ -85,7 +94,7 @@ public class ApiClientKurer  {
 	 * @throws Exception
 	 */
 	
-	private String upload_via_streaming(InputStream inputStream, String fileName) throws Exception {
+	private String upload_via_streaming(InputStream inputStream, String fileName, TokenResponseDto authTokenDto) throws Exception {
 
 	    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
 	    requestFactory.setBufferRequestBody(false);
@@ -99,10 +108,12 @@ public class ApiClientKurer  {
 	    MultiValueMap<String, Object> body = new LinkedMultiValueMap<String, Object>();
 	    body.add("user-file", inputStreamResource);
 
-	    HttpHeaders headers = new HttpHeaders();
-	    headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+	    HttpHeaders headerParams = new HttpHeaders();
+	    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+	    headerParams.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+	    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
 
-	    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body,headers);
+	    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body,headerParams);
 
 	    //String response = restTemplate.postForObject(this.uploadUrl, requestEntity, String.class);
 	    final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
@@ -129,7 +140,7 @@ public class ApiClientKurer  {
 	 * @param fileName
 	 * @return
 	 */
-	private String upload_via_byteArrayResource(String fileName) throws Exception {
+	private String upload_via_byteArrayResource(String fileName, TokenResponseDto authTokenDto) throws Exception {
 		
 		logger.info("A----->" + fileName);
 		//STEP (1) We extract the payload in bytes and put it in the HttpEntity as ByteArrayResource
@@ -145,15 +156,16 @@ public class ApiClientKurer  {
 		
 		
 		//STEP (2) We put the byteArrayResource as the body of the request. Content-type:multipart_form_data
-		HttpHeaders headers = new HttpHeaders();
-		headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-		
+		HttpHeaders headerParams = new HttpHeaders();
+	    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+	    headerParams.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+	    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
+
 		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
 		body.add("user-file", partsEntity);
 	
 		final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, HttpMethod.POST, new HttpEntity<>(body, headers), typeReference);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{

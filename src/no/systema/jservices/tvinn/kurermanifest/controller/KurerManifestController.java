@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.ModelAndView;
 
-import no.systema.jservices.tvinn.kurermanifest.api.ApiClientKurer;
+import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 import no.systema.jservices.tvinn.kurermanifest.server.controller.FileInfo;
 import no.systema.jservices.tvinn.kurermanifest.server.controller.UploadEndPointController;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
@@ -53,6 +53,9 @@ public class KurerManifestController {
 	@Autowired
 	private RestTemplate restTemplate;
 	
+	@Autowired
+	ApiKurerUploadClient apiKurerUploadClient;
+
 	@Value("${kurer.file.source.directory}")
     private String baseDir;
 	
@@ -67,20 +70,16 @@ public class KurerManifestController {
 	 */
 	@RequestMapping(method={RequestMethod.GET})
 	public ResponseEntity<String> testFileUploadByteArrayResource() {
-		ApiClientKurer api = new ApiClientKurer();
-		api.setUploadUrl(uploadUrl);
-		String result = api.uploadPayloads(baseDir);
+		
+		apiKurerUploadClient.setUploadUrl(uploadUrl);
+		
+		String result = apiKurerUploadClient.uploadPayloads(baseDir);
 		if(result!=null && result.startsWith("2")){
 			return new ResponseEntity<String>(HttpStatus.OK);
 		}else{
 			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
 		}
 	}
-	
-	
-	
-	
-	
 	
 }
 

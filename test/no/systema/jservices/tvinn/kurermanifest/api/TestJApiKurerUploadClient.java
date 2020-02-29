@@ -36,31 +36,33 @@ import org.springframework.web.client.RestTemplate;
 
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
+import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.kurermanifest.controller.KurerManifestController;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-configuration-kurer.xml")
 @TestPropertySource(locations="classpath:applicationkurer-test.properties")
-
-public class TestJApiClientKurer {
+public class TestJApiKurerUploadClient {
 	
-private static final Logger logger = Logger.getLogger(TestJApiClientKurer.class);
-	
+private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.class);
 	
 	@Value("${kurer.file.source.directory}")
-    private String baseDir;
-    
+	private String baseDir;
+	
 	@Value("${kurer.upload.url}")
-    private String uploadUrl;
+	private String uploadUrl;
 
+	@Autowired
+	ApiKurerUploadClient apiKurerUploadClient;
+
+	
 	@Test
 	public void  testFileUploadByteArrayResource() {
 	
-		ApiClientKurer api = new ApiClientKurer();
-		api.setUploadUrl(uploadUrl);
+		apiKurerUploadClient.setUploadUrl(uploadUrl);
 		
-		String result = api.uploadPayloads(baseDir);
+		String result = apiKurerUploadClient.uploadPayloads(baseDir);
 		logger.info(result);	
 	}
 	

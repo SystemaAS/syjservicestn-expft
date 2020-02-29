@@ -105,7 +105,11 @@ public class CertManager {
 	}	
 	
 	private InputStream getCertificateFile() throws FileNotFoundException {
-		String fullFilePath = CATALINA_HOME + file;
+		String fullFilePath = file;
+		
+		if(CATALINA_HOME!=null){
+			fullFilePath = CATALINA_HOME + file;
+		}
 		File certificateFile = FileUtils.getFile(fullFilePath);
 		
 		return new FileInputStream(certificateFile);
