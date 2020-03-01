@@ -128,7 +128,7 @@ public class DifiJwtCreator {
 		
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
-	            	.setHeaderParam(JwsHeader.TYPE, "JWT")
+	            	.setHeaderParam(JwsHeader.TYPE, JwsHeader.JWT_TYPE)
 	            	.setAudience(this.difiTokenAudienceKurerUrl)
 	            	.setIssuer(this.issuerKurer)
 //	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
@@ -139,7 +139,7 @@ public class DifiJwtCreator {
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 		
-		/* DEBUG payload
+		/* DEBUG payload 
 		try{
 			String[] pieces = result.split("\\.");
 			String b64header = pieces[0];
@@ -151,8 +151,8 @@ public class DifiJwtCreator {
 			
 		}catch(Exception e){
 			e.printStackTrace();
-		} */
-		
+		} 
+		*/
 		return result;
 	    
 	    
