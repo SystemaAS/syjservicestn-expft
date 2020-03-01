@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import javax.xml.bind.DatatypeConverter;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwsHeader;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 
@@ -94,7 +96,7 @@ public class DifiJwtCreator {
 	            	.setExpiration(new Date(now + expiration))
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
-	    //logger.info("createRequestJwt:" + result);
+	    logger.info("createRequestJwt:" + result);
 		return result;
 	    
 	    
@@ -123,8 +125,10 @@ public class DifiJwtCreator {
 
 		final long now = Clock.systemUTC().millis();
 		
+		
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
+	            	.setHeaderParam(JwsHeader.TYPE, "JWT")
 	            	.setAudience(this.difiTokenAudienceKurerUrl)
 	            	.setIssuer(this.issuerKurer)
 //	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
@@ -134,7 +138,21 @@ public class DifiJwtCreator {
 	            	.setExpiration(new Date(now + this.expirationKurer))
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
-	    //logger.info("createRequestJwt:" + result);
+		
+		/* DEBUG payload
+		try{
+			String[] pieces = result.split("\\.");
+			String b64header = pieces[0];
+			String b64payload = pieces[1];
+			String header = new String(Base64.decodeBase64(b64header), "UTF-8");
+			String payload = new String(Base64.decodeBase64(b64payload), "UTF-8");
+			logger.info(header);
+			logger.info(payload);
+			
+		}catch(Exception e){
+			e.printStackTrace();
+		} */
+		
 		return result;
 	    
 	    
