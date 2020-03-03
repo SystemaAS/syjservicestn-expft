@@ -13,7 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-configuration-kurer.xml")
-@TestPropertySource(locations="classpath:applicationkurer-test.properties")
+@TestPropertySource(locations="classpath:application-test.properties")
 public class TestJApiKurerUploadClient {
 	
 private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.class);
