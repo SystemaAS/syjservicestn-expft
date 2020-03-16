@@ -58,6 +58,8 @@ public class ApiKurerUploadClient  {
 	
 	
 	/**
+	 * This method uploads files as they are found.
+	 * All files are sent with the same token (fetched only once)
 	 * 
 	 * @return
 	 */
