@@ -2,6 +2,7 @@ package no.systema.jservices.tvinn.kurermanifest.api;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,6 +25,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -75,7 +78,11 @@ public class ApiKurerUploadClient  {
 			
 			//Send each file per restTemplate call
 			for(String fileName: files){
-				retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+				//Toll.no does take a json payload as String not as multipart
+				retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+				
+				//Toll.no does not take a file as Multipart
+				//retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
 				
 			}
 			
@@ -174,6 +181,35 @@ public class ApiKurerUploadClient  {
 		}
 		return exchange.getStatusCode().toString(); 
 	}
+	
+	/**
+	 * 
+	 * @param fileName
+	 * @param authTokenDto
+	 * @return
+	 * @throws Exception
+	 */
+	private String upload_via_jsonString(InputStream inputStream, String fileName, TokenResponseDto authTokenDto) throws Exception {
+		
+		logger.info("A----->" + fileName);
+		HttpHeaders headerParams = new HttpHeaders();
+		headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+	    //String input = "{\"id\": \"3b8e72e7-b543-4253-8d4f-4904756fe9de\"}";
+		String payload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+		//logger.info(payload);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, HttpMethod.POST, new HttpEntity<String>(payload, headerParams), String.class);
+		
+		if(exchange.getStatusCode().is2xxSuccessful()) {
+			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+		}else{
+			logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
+		}
+		return exchange.getStatusCode().toString(); 
+	}
+			
+	
+	
 	/**
 	 * 
 	 * @return
@@ -184,7 +220,9 @@ public class ApiKurerUploadClient  {
     	RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setInterceptors(Arrays.asList(new CommonClientHttpRequestInterceptor()));
 		restTemplate.setErrorHandler(new CommonResponseErrorHandler());
-
+		// Add the Jackson message converter for json-string payloads
+		restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+		
 		return restTemplate;  
 		
 	}  
