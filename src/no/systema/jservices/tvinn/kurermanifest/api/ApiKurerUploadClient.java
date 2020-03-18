@@ -120,7 +120,7 @@ public class ApiKurerUploadClient  {
 								logger.warn(e.toString());
 								
 							}else{
-								logger.warn(e.toString());
+								logger.error(e.toString());
 								logger.error("Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								
