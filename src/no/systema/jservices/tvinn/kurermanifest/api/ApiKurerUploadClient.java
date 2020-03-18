@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.kurermanifest.api;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +16,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.io.ByteArrayResource;
@@ -33,6 +35,7 @@ import org.springframework.web.client.RestTemplate;
 
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
+import no.systema.jservices.common.util.FileManager;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
@@ -42,6 +45,10 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 public class ApiKurerUploadClient  {
 	private static final Logger logger = Logger.getLogger(ApiKurerUploadClient.class);
 	private RestTemplate restTemplate;
+	private FileManager fileMgr = new FileManager();
+	
+	@Value("${kurer.file.limit.per.loop}")
+    private int maxLimitOfFilesPerLoop;
 	
 	@Autowired
 	Authorization authorization;
@@ -66,28 +73,70 @@ public class ApiKurerUploadClient  {
 	 * 
 	 * @return
 	 */
-	public String uploadPayloads(String baseDir){
-		//get token authDto
-		TokenResponseDto authTokenDto = authorization.accessTokenForKurerRequestPost();
+	public String uploadPayloads(String baseDir, String sentDir, String errorDir){
+		TokenResponseDto authTokenDto = null;
+		String retval = "204 NO Content or NO CALL on REST"; 
 		
-		String retval = "ERROR on REST"; 
-		try (Stream<Path> walk = Files.walk(Paths.get(baseDir))) {
-			List<String> files = walk.filter(Files::isRegularFile)
-					.map(x -> x.toString()).collect(Collectors.toList());
-			//files.forEach(System.out::println);
+		if (Files.exists(Paths.get(baseDir))) {
+			this.fileMgr.secureTargetDir(sentDir);
+			this.fileMgr.secureTargetDir(errorDir);
+			int counter = 0;
+		
+			try{
+				List<File> files = this.fileMgr.getValidFilesInDirectory(baseDir, new File(sentDir).getName().toString() , new File(errorDir).getName().toString());
+				//files.forEach(System.out::println);
+
+				//Send each file per restTemplate call
+				for(File file: files){
+					//String fileName = Paths.get(filePath).getFileName().toString();
+					counter++;
+					
+					//get token authDto only for the first iteration
+					if(counter==1){
+						authTokenDto = authorization.accessTokenForKurerRequestPost();
+					}
+					String fileName = file.getAbsolutePath();
+					//there is a bug in Toll.no for more than 2 files in the same REST loop ... ? To be researched ...
+					if (counter <= this.maxLimitOfFilesPerLoop){
+						try{
+							//Toll.no takes a json-payload as String
+							retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+							logger.info("#########:" + retval);
+							//Toll.no does not take a file as Multipart. Could be a reality in version 2
+							//retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+							
+							if(retval.startsWith("2")){
+								logger.info(Paths.get(fileName) + " " + Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
+								Path temp = Files.move( Paths.get(fileName), Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
+							}else{
+								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+							}
+						}catch(Exception e){
+							String AUTHENTICATON_FAIL = "403";
+							if(e.toString().contains(AUTHENTICATON_FAIL)){
+								//Do nothing with the file since the file could be grabbed in the next iteration
+								//There seems to be a bug at toll.no and the sending just gets the 403 until some new try...
+								logger.warn(e.toString());
+								
+							}else{
+								logger.warn(e.toString());
+								logger.error("Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								
+							}
+						}
+					}
+					
+				}
 			
-			//Send each file per restTemplate call
-			for(String fileName: files){
-				//Toll.no does take a json payload as String not as multipart
-				retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
-				
-				//Toll.no does not take a file as Multipart
-				//retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
-				
+			}catch(Exception e){
+				e.printStackTrace();
+				retval = "ERROR on REST";
 			}
 			
-		}catch(Exception e){
-			e.printStackTrace();
+		}else{
+			logger.error("No directory found: " + baseDir);
 		}
 		
 		return retval;
@@ -183,7 +232,7 @@ public class ApiKurerUploadClient  {
 	}
 	
 	/**
-	 * 
+	 * This method is used as long as toll.no does not uses multipart file end-point
 	 * @param fileName
 	 * @param authTokenDto
 	 * @return
@@ -203,7 +252,7 @@ public class ApiKurerUploadClient  {
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{
-			logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
+			logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
 		}
 		return exchange.getStatusCode().toString(); 
 	}

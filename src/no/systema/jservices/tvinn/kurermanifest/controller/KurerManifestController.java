@@ -14,7 +14,6 @@ import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 
 
 @RestController
-@RequestMapping("testUpload")
 public class KurerManifestController {
 	private static final Logger logger = Logger.getLogger(KurerManifestController.class);
 	
@@ -23,24 +22,66 @@ public class KurerManifestController {
 
 	@Value("${kurer.file.source.directory}")
     private String baseDir;
+	@Value("${kurer.file.source.directory.sent}")
+    private String sentDir;
+	@Value("${kurer.file.source.directory.error}")
+    private String errorDir;
 	
 	@Value("${kurer.upload.url}")
     private String uploadUrl;
+	
+	@Value("${kurer.upload.prod.url}")
+    private String uploadProdUrl;
+	
+	
     
 	/**
+	 * Test entry-point
 	 * Sends files to the local end-point in order to test payload transmission from multipart client.
 	 * 
 	 * @param session
 	 * @return
 	 */
-	@RequestMapping(method={RequestMethod.GET})
+	@RequestMapping(value="testUpload", method={RequestMethod.GET})
 	public ResponseEntity<String> testFileUploadByteArrayResource() {
 		
 		apiKurerUploadClient.setUploadUrl(uploadUrl);
 		
-		String result = apiKurerUploadClient.uploadPayloads(baseDir);
+		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
 		if(result!=null && result.startsWith("2")){
-			return new ResponseEntity<String>(HttpStatus.OK);
+			if(result.startsWith("204")){
+				//meaning no files to fetch
+				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
+				return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+			}else{
+				return new ResponseEntity<String>(HttpStatus.OK);
+			}
+		}else{
+			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+		}
+	}
+	
+	/**
+	 * Production entry-point
+	 * Sends files to the local end-point in order to prod. payload transmission from multipart client.
+	 *
+	 * @return
+	 * 
+	 */
+	@RequestMapping(value="prodUpload", method={RequestMethod.GET})
+	public ResponseEntity<String> prodFileUploadByteArrayResource() {
+		
+		apiKurerUploadClient.setUploadUrl(uploadProdUrl);
+		
+		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
+		if(result!=null && result.startsWith("2")){
+			if(result.startsWith("204")){
+				//meaning no files to fetch
+				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
+				return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+			}else{
+				return new ResponseEntity<String>(HttpStatus.OK);
+			}
 		}else{
 			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
 		}

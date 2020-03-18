@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.kurermanifest.api;
 
+import java.io.File;
+
 import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,9 +22,16 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 	
 	@Value("${kurer.file.source.directory}")
 	private String baseDir;
+	@Value("${kurer.file.source.directory.sent}")
+    private String sentDir;
+	@Value("${kurer.file.source.directory.error}")
+    private String errorDir;
 	
 	@Value("${kurer.upload.url}")
 	private String uploadUrl;
+	
+	@Value("${kurer.upload.prod.url}")
+	private String uploadProdUrl;
 
 	
 	@Autowired
@@ -30,13 +39,22 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 
 	
 	@Test
-	public void  testFileUploadByteArrayResource() {
+	public void  testFileUpload() {
 	
 		apiKurerUploadClient.setUploadUrl(uploadUrl);
 		
-		String result = apiKurerUploadClient.uploadPayloads(baseDir);
+		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
 		logger.info(result);	
 	}
+	
+	/*@Test
+	public void  testFileUploadProd() {
+	
+		apiKurerUploadClient.setUploadUrl(uploadProdUrl);
+		
+		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
+		logger.info(result);	
+	}*/
 	
 	
 	
