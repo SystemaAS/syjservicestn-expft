@@ -75,6 +75,7 @@ public class ApiKurerUploadClient  {
 	 */
 	public String uploadPayloads(String baseDir, String sentDir, String errorDir){
 		TokenResponseDto authTokenDto = null;
+		String OK_STATUS_INIT_NUMBER = "2";
 		String retval = "204 NO Content or NO CALL on REST"; 
 		
 		if (Files.exists(Paths.get(baseDir))) {
@@ -101,11 +102,11 @@ public class ApiKurerUploadClient  {
 						try{
 							//Toll.no takes a json-payload as String
 							retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
-							logger.info("#########:" + retval);
+							logger.info("######### OK:" + retval);
 							//Toll.no does not take a file as Multipart. Could be a reality in version 2
 							//retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
 							
-							if(retval.startsWith("2")){
+							if(retval.startsWith(OK_STATUS_INIT_NUMBER)){
 								logger.info(Paths.get(fileName) + " " + Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
 								Path temp = Files.move( Paths.get(fileName), Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
 							}else{
@@ -117,11 +118,11 @@ public class ApiKurerUploadClient  {
 							if(e.toString().contains(AUTHENTICATON_FAIL)){
 								//Do nothing with the file since the file could be grabbed in the next iteration
 								//There seems to be a bug at toll.no and the sending just gets the 403 until some new try...
-								logger.warn(e.toString());
+								logger.warn("######### ERROR:" + e.toString());
 								
 							}else{
 								logger.error(e.toString());
-								logger.error("Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								
 							}
