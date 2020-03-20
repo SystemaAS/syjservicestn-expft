@@ -93,12 +93,11 @@ public class ApiKurerUploadClient  {
 					counter++;
 					
 					//get token authDto only for the first iteration
-					if(counter==1){
-						authTokenDto = authorization.accessTokenForKurerRequestPost();
-					}
+					authTokenDto = authorization.accessTokenForKurerRequestPost();
+
 					String fileName = file.getAbsolutePath();
 					//there is a bug in Toll.no for more than 2 files in the same REST loop ... ? To be researched ...
-					if (counter <= this.maxLimitOfFilesPerLoop){
+					if (counter <= this.maxLimitOfFilesPerLoop && authTokenDto!=null){
 						try{
 							//Toll.no takes a json-payload as String
 							retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
@@ -245,20 +244,44 @@ public class ApiKurerUploadClient  {
 		HttpHeaders headerParams = new HttpHeaders();
 		headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
 		headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
-	    //String input = "{\"id\": \"3b8e72e7-b543-4253-8d4f-4904756fe9de\"}";
+		//String input = "{\"id\": \"3b8e72e7-b543-4253-8d4f-4904756fe9de\"}";
 		String payload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 		//logger.info(payload);
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, HttpMethod.POST, new HttpEntity<String>(payload, headerParams), String.class);
-		
+		//default method when file is sent for the first time (create)
+		HttpMethod httpMethod = HttpMethod.POST;
+		//if it is an update file it will have a prefix: <.../u_xxxxxxx.yyy>
+		if(fileName.toLowerCase().contains("u_")){
+			//PUT https://<env>/api/movement/manifest/{id}
+			this.uploadUrl = updateUrlForUpdate(fileName);
+			httpMethod = HttpMethod.PUT;
+		}
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, httpMethod, new HttpEntity<String>(payload, headerParams), String.class);
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{
-			logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
+			logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() );
 		}
 		return exchange.getStatusCode().toString(); 
 	}
-			
-	
+		
+	/**
+	 * 
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 */
+	private URI updateUrlForUpdate(String fileName) throws Exception{
+		URI retval = this.uploadUrl;
+		//extract the file id
+		int x = fileName.toLowerCase().indexOf("u_");
+		String temp = fileName.substring(x+2);
+		String id = temp.substring(0,temp.indexOf("."));
+		//PUT https://<env>/api/movement/manifest/{id}
+		String url = this.uploadUrl.toString() + "/"  + id;
+		retval = new URI(url);
+		
+		return retval;
+	}
 	
 	/**
 	 * 
