@@ -50,6 +50,9 @@ public class ApiKurerUploadClient  {
 	@Value("${kurer.file.limit.per.loop}")
     private int maxLimitOfFilesPerLoop;
 	
+	@Value("${kurer.file.source.directory.backup}")
+    private String backupDir;
+	
 	@Autowired
 	Authorization authorization;
 	
@@ -107,10 +110,12 @@ public class ApiKurerUploadClient  {
 							
 							if(retval.startsWith(OK_STATUS_INIT_NUMBER)){
 								logger.info(Paths.get(fileName) + " " + Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
-								Path temp = Files.move( Paths.get(fileName), Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
+								this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
+								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG);
+								
 							}else{
 								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
-								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG);
 							}
 						}catch(Exception e){
 							String AUTHENTICATON_FAIL = "403";
@@ -122,7 +127,7 @@ public class ApiKurerUploadClient  {
 							}else{
 								logger.error(e.toString());
 								logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
-								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG);
 								
 							}
 						}
