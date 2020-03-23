@@ -120,36 +120,25 @@ public class ApiKurerUploadClient  {
 							if(retval.startsWith(OK_STATUS_INIT_NUMBER)){
 								logger.info(Paths.get(fileName) + " " + Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
 								//this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
-								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG);
-								//log further in database via a service
-								this.logTransmission(fileName);
+								
+								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
+								//this transmission log is only used when the file was successfully delivered by REST
+								this.logTransmission(fileName, errorDir);
+								//now move the file to the OK-sent directory. The suffix in milliseconds won't match the file suffix in error db-log.
+								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG, FileManager.TIME_STAMP_SUFFIX_FLAG);
+								
 							}else{
 								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
-								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed);
+								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 							}
 						}catch(Exception e){
-							String AUTHENTICATON_FAIL = "403";
-							String CLIENT_FAIL = "4xxError";
-							String SERVER_FAIL = "5xxError";
+							retval = this.getError(e);
 							
-							String ERROR_CODE = "xxxError";
-							if(e.toString().contains(AUTHENTICATON_FAIL)){
-								ERROR_CODE = AUTHENTICATON_FAIL;
-								retval = ERROR_CODE;
-							}else if(e.toString().contains("4")){
-								ERROR_CODE = CLIENT_FAIL;
-								retval = ERROR_CODE;
-							}else if(e.toString().contains("5")){
-								ERROR_CODE = SERVER_FAIL;
-								retval = ERROR_CODE;
-							}
-							
-							logger.error(e.toString());
-							String errorFileRenamed= ERROR_CODE + "_" + Paths.get(fileName).getFileName().toString();
+							logger.error(retval);
+							String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
 							logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + errorFileRenamed));
-							this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed );
-							retval = ERROR_CODE;
+							this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 							
 						}
 					}
@@ -166,6 +155,28 @@ public class ApiKurerUploadClient  {
 		}
 		
 		return retval;
+	}
+	/**
+	 * 
+	 * @param e
+	 * @return
+	 */
+	private String getError(Exception e){
+		logger.error(e.toString());
+		String ERROR_CODE = "xxxError";
+		//types 
+		String AUTHENTICATON_FAIL = "403";
+		String CLIENT_FAIL = "4xxError";
+		String SERVER_FAIL = "5xxError";
+		
+		if(e.toString().contains(AUTHENTICATON_FAIL)){
+			ERROR_CODE = AUTHENTICATON_FAIL;
+		}else if(e.toString().contains("4")){
+			ERROR_CODE = CLIENT_FAIL;
+		}else if(e.toString().contains("5")){
+			ERROR_CODE = SERVER_FAIL;
+		}
+		return ERROR_CODE;
 	}
 
 	/**
@@ -337,11 +348,15 @@ public class ApiKurerUploadClient  {
 		
 	} 
 	/**
-	 * log on database through some service
+	 * log on database through some service. Send a copy to the errorDir if the log fails
 	 * 
 	 * @param fileName
+	 * @param errorDir
+	 * 
+	 * @return
 	 */
-	private void logTransmission(String fileName){
+	private boolean logTransmission(String fileName, String errorDir){
+		boolean retval = true;
 		try{
 			String uuid = this.getUUID(fileName);
 			//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62
@@ -362,9 +377,19 @@ public class ApiKurerUploadClient  {
 	    	if(jsonPayload!=null){
 	    		logger.info(jsonPayload);
 	    	}
+	    	
 		}catch(Exception e){
-			logger.error("ERROR on transmission log: " + e.toString());
+			logger.error("ERROR on TRANSMISSION log on RPG-service: " + e.toString());
+			String errorFileRenamed= "errorDbLog_" + Paths.get(fileName).getFileName().toString();
+			try{
+				//move the file and tag it as log-db-error. The file might have been deliver or not. This is just to tag the db-log function
+				this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.COPY_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
+			}catch(Exception e2){
+				e2.toString();
+			}
+			retval = false;
 		}
+		return retval;
 	}
 }
 

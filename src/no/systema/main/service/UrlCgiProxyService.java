@@ -38,7 +38,7 @@ public class UrlCgiProxyService{
 	 * @param urlParameters
 	 * @return
 	 */
-	public String getJsonContent(String urlStr, String urlParameters){
+	public String getJsonContent(String urlStr, String urlParameters) throws Exception{
 		StringBuffer buffer = new StringBuffer();
 		String utfPayload = null;
 		
@@ -66,8 +66,9 @@ public class UrlCgiProxyService{
 			//logger.info(utfPayload);
 			
 		}catch(Exception e){
-    		e.printStackTrace();
-    		logger.info("Error:", e);
+    		//e.printStackTrace();
+    		//logger.info("ERROR: " +  e.toString());
+			throw e;
     		
     	}
 		return utfPayload;
