@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,6 +40,7 @@ import no.systema.jservices.common.util.FileManager;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
+import no.systema.main.service.UrlCgiProxyService;
 
 
 @Service
@@ -50,8 +52,15 @@ public class ApiKurerUploadClient  {
 	@Value("${kurer.file.limit.per.loop}")
     private int maxLimitOfFilesPerLoop;
 	
-	@Value("${kurer.file.source.directory.backup}")
-    private String backupDir;
+	@Value("${kurer.file.log.service.root}")
+    private String HTTP_ROOT_CGI;
+	
+	@Value("${kurer.file.log.service.user}")
+    private String USER_CGI;
+	
+	
+	@Autowired
+	UrlCgiProxyService urlCgiProxyService;
 	
 	@Autowired
 	Authorization authorization;
@@ -79,7 +88,7 @@ public class ApiKurerUploadClient  {
 	public String uploadPayloads(String baseDir, String sentDir, String errorDir){
 		TokenResponseDto authTokenDto = null;
 		String OK_STATUS_INIT_NUMBER = "2";
-		String retval = "204 NO Content or NO CALL on REST"; 
+		String retval = "204_NO_Content"; 
 		
 		if (Files.exists(Paths.get(baseDir))) {
 			this.fileMgr.secureTargetDir(sentDir);
@@ -110,26 +119,38 @@ public class ApiKurerUploadClient  {
 							
 							if(retval.startsWith(OK_STATUS_INIT_NUMBER)){
 								logger.info(Paths.get(fileName) + " " + Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
-								this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
+								//this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
 								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG);
-								
+								//log further in database via a service
+								this.logTransmission(fileName);
 							}else{
 								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
-								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG);
+								String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
+								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed);
 							}
 						}catch(Exception e){
 							String AUTHENTICATON_FAIL = "403";
+							String CLIENT_FAIL = "4xxError";
+							String SERVER_FAIL = "5xxError";
+							
+							String ERROR_CODE = "xxxError";
 							if(e.toString().contains(AUTHENTICATON_FAIL)){
-								//Do nothing with the file since the file could be grabbed in the next iteration
-								//There seems to be a bug at toll.no and the sending just gets the 403 until some new try...
-								logger.warn("######### ERROR:" + e.toString());
-								
-							}else{
-								logger.error(e.toString());
-								logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
-								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG);
-								
+								ERROR_CODE = AUTHENTICATON_FAIL;
+								retval = ERROR_CODE;
+							}else if(e.toString().contains("4")){
+								ERROR_CODE = CLIENT_FAIL;
+								retval = ERROR_CODE;
+							}else if(e.toString().contains("5")){
+								ERROR_CODE = SERVER_FAIL;
+								retval = ERROR_CODE;
 							}
+							
+							logger.error(e.toString());
+							String errorFileRenamed= ERROR_CODE + "_" + Paths.get(fileName).getFileName().toString();
+							logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + errorFileRenamed));
+							this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed );
+							retval = ERROR_CODE;
+							
 						}
 					}
 					
@@ -137,7 +158,7 @@ public class ApiKurerUploadClient  {
 			
 			}catch(Exception e){
 				e.printStackTrace();
-				retval = "ERROR on REST";
+				retval = "ERROR_on_REST";
 			}
 			
 		}else{
@@ -254,8 +275,8 @@ public class ApiKurerUploadClient  {
 		//logger.info(payload);
 		//default method when file is sent for the first time (create)
 		HttpMethod httpMethod = HttpMethod.POST;
-		//if it is an update file it will have a prefix: <.../u_xxxxxxx.yyy>
-		if(fileName.toLowerCase().contains("u_")){
+		//if it is an update/delete file it will have a prefix: <.../u_xxxxxxx.yyy> or <.../d_xxxxxxx.yyy>> 
+		if(fileName.toLowerCase().startsWith("u_") || fileName.toLowerCase().startsWith("d_") ){
 			//PUT https://<env>/api/movement/manifest/{id}
 			this.uploadUrl = updateUrlForUpdate(fileName);
 			httpMethod = HttpMethod.PUT;
@@ -264,7 +285,8 @@ public class ApiKurerUploadClient  {
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{
-			logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() );
+			logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+			
 		}
 		return exchange.getStatusCode().toString(); 
 	}
@@ -277,15 +299,25 @@ public class ApiKurerUploadClient  {
 	 */
 	private URI updateUrlForUpdate(String fileName) throws Exception{
 		URI retval = this.uploadUrl;
-		//extract the file id
-		int x = fileName.toLowerCase().indexOf("u_");
-		String temp = fileName.substring(x+2);
-		String id = temp.substring(0,temp.indexOf("."));
 		//PUT https://<env>/api/movement/manifest/{id}
-		String url = this.uploadUrl.toString() + "/"  + id;
+		String url = this.uploadUrl.toString() + "/"  + this.getUUID(fileName);
 		retval = new URI(url);
 		
 		return retval;
+	}
+	/**
+	 * extracts the file id based on the file name
+	 * @param fileName
+	 * @return
+	 */
+	private String getUUID(String fileName){
+		String id = "_";
+		//extract the file id
+		int x = fileName.toLowerCase().indexOf("u_");
+		String temp = fileName.substring(x+2);
+		id = temp.substring(0,temp.indexOf("."));
+
+		return id;
 	}
 	
 	/**
@@ -303,6 +335,36 @@ public class ApiKurerUploadClient  {
 		
 		return restTemplate;  
 		
-	}  
+	} 
+	/**
+	 * log on database through some service
+	 * 
+	 * @param fileName
+	 */
+	private void logTransmission(String fileName){
+		try{
+			String uuid = this.getUUID(fileName);
+			//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62
+			String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad115r.pgm";
+			
+			//add URL-parameters
+			StringBuffer urlRequestParams = new StringBuffer();
+			urlRequestParams.append("user=" + this.USER_CGI);
+			urlRequestParams.append("&uuid=" + uuid);
+			
+			//session.setAttribute(TransportDispConstants.ACTIVE_URL_RPG_TRANSPORT_DISP, BASE_URL + "==>params: " + urlRequestParams.toString()); 
+	    	logger.info(Calendar.getInstance().getTime() + " CGI-start timestamp");
+	    	logger.info("URL: " + LOG_URL);
+	    	logger.info("URL PARAMS: " + urlRequestParams);
+	    	String jsonPayload = this.urlCgiProxyService.getJsonContent(LOG_URL, urlRequestParams.toString());
+	    	//Debug --> 
+	    	logger.info(Calendar.getInstance().getTime() +  " CGI-end timestamp");
+	    	if(jsonPayload!=null){
+	    		logger.info(jsonPayload);
+	    	}
+		}catch(Exception e){
+			logger.error("ERROR on transmission log: " + e.toString());
+		}
+	}
 }
 

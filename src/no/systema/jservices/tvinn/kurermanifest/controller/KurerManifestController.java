@@ -57,7 +57,14 @@ public class KurerManifestController {
 				return new ResponseEntity<String>(HttpStatus.OK);
 			}
 		}else{
-			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+			if(result.startsWith("4")){
+				return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+			}else if (result.startsWith("5")){
+				return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}else{
+				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+			}
+			
 		}
 	}
 	

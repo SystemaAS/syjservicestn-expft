@@ -11,6 +11,7 @@
 	<bean id="apiServices" class="no.systema.jservices.tvinn.expressfortolling.api.ApiServices"/>
 	
 	<bean id="apiKurerUploadClient" class="no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient"/>
+	<bean id="urlCgiProxyService" class="no.systema.main.service.UrlCgiProxyService"/>
 	
 	
 </beans>
