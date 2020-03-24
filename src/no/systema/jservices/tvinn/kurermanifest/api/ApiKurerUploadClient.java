@@ -32,6 +32,9 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.ResponseExtractor;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
@@ -41,7 +44,6 @@ import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
-import no.systema.main.service.UrlCgiProxyService;
 
 
 @Service
@@ -60,10 +62,10 @@ public class ApiKurerUploadClient  {
 	RestTransmissionLogger transmissionLogger;
 
 	
-	public URI uploadUrlUnmutable;
-	public void setUploadUrl(String value){
+	public URI uploadUrlImmutable;
+	public void setUploadUrlImmutable(String value){
 		try{
-			this.uploadUrlUnmutable = new URI(value);
+			this.uploadUrlImmutable = new URI(value);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -209,7 +211,7 @@ public class ApiKurerUploadClient  {
 
 	    //String response = restTemplate.postForObject(this.uploadUrl, requestEntity, String.class);
 	    final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlUnmutable, HttpMethod.POST, requestEntity, typeReference);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlImmutable, HttpMethod.POST, requestEntity, typeReference);
 		
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
@@ -257,7 +259,7 @@ public class ApiKurerUploadClient  {
 		body.add("user-file", partsEntity);
 	
 		final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlUnmutable, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlImmutable, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{
@@ -287,19 +289,29 @@ public class ApiKurerUploadClient  {
 		//if it is an update/delete file it will have a prefix: <.../u_xxxxxxx.yyy> or <.../d_xxxxxxx.yyy>> 
 		logger.info(fileName.toLowerCase());
 		
-		URI uploadUrlTemp = this.uploadUrlUnmutable;
+		URI uploadUrlTemp = this.uploadUrlImmutable;
 		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
 			//PUT https://<env>/api/movement/manifest/{id}
 			uploadUrlTemp = updateUrlForUpdate(fileName);
 			httpMethod = HttpMethod.PUT;
 		}
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(uploadUrlTemp, httpMethod, new HttpEntity<String>(payload, headerParams), String.class);
-		if(exchange.getStatusCode().is2xxSuccessful()) {
-			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
-		}else{
-			logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+		
+		//////START REST/////////
+		ResponseEntity<String> exchange = null;
+		try{
+			exchange = this.restTemplate.exchange(uploadUrlTemp, httpMethod, new HttpEntity<String>(payload, headerParams), String.class);
 			
+			if(exchange.getStatusCode().is2xxSuccessful()) {
+				logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+			}else{
+				logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+				
+			}
+		}catch(HttpClientErrorException e){
+			throw e;
 		}
+		////////END REST/////////
+		
 		return exchange.getStatusCode().toString(); 
 	}
 		
@@ -310,9 +322,9 @@ public class ApiKurerUploadClient  {
 	 * @throws Exception
 	 */
 	private URI updateUrlForUpdate(String fileName) throws Exception{
-		URI retval = this.uploadUrlUnmutable;
+		URI retval = this.uploadUrlImmutable;
 		//PUT https://<env>/api/movement/manifest/{id}
-		String url = this.uploadUrlUnmutable.toString() + "/"  + new Utils().getUUID(fileName);
+		String url = this.uploadUrlImmutable.toString() + "/"  + new Utils().getUUID(fileName);
 		retval = new URI(url);
 		
 		return retval;

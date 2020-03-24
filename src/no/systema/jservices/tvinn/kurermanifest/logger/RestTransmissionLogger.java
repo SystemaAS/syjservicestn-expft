@@ -39,27 +39,31 @@ public class RestTransmissionLogger {
 		boolean retval = true;
 		try{
 			String uuid = new Utils().getUUID(fileName);
-			//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62
-			String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad115r.pgm";
 			
-			//add URL-parameters
-			StringBuffer urlRequestParams = new StringBuffer();
-			urlRequestParams.append("user=" + this.USER_CGI);
-			urlRequestParams.append("&uuid=" + uuid);
-			if(errorCode!=null){
-				urlRequestParams.append("&error=" + errorCode);
+			if(uuid!=null && this.USER_CGI!=null){
+				//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62
+				String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad115r.pgm";
+				
+				//add URL-parameters
+				StringBuffer urlRequestParams = new StringBuffer();
+				urlRequestParams.append("user=" + this.USER_CGI);
+				urlRequestParams.append("&uuid=" + uuid);
+				if(errorCode!=null){
+					urlRequestParams.append("&error=" + errorCode);
+				}
+				//session.setAttribute(TransportDispConstants.ACTIVE_URL_RPG_TRANSPORT_DISP, BASE_URL + "==>params: " + urlRequestParams.toString()); 
+		    	logger.info(Calendar.getInstance().getTime() + " CGI-start timestamp");
+		    	logger.info("URL: " + LOG_URL);
+		    	logger.info("URL PARAMS: " + urlRequestParams);
+		    	String jsonPayload = this.urlCgiProxyService.getJsonContent(LOG_URL, urlRequestParams.toString());
+		    	//Debug --> 
+		    	logger.info(Calendar.getInstance().getTime() +  " CGI-end timestamp");
+		    	if(jsonPayload!=null){
+		    		logger.info(jsonPayload);
+		    	}
+			}else{
+				logger.fatal("uuid-param or user-param to URL-service missing ? ...");
 			}
-			//session.setAttribute(TransportDispConstants.ACTIVE_URL_RPG_TRANSPORT_DISP, BASE_URL + "==>params: " + urlRequestParams.toString()); 
-	    	logger.info(Calendar.getInstance().getTime() + " CGI-start timestamp");
-	    	logger.info("URL: " + LOG_URL);
-	    	logger.info("URL PARAMS: " + urlRequestParams);
-	    	String jsonPayload = this.urlCgiProxyService.getJsonContent(LOG_URL, urlRequestParams.toString());
-	    	//Debug --> 
-	    	logger.info(Calendar.getInstance().getTime() +  " CGI-end timestamp");
-	    	if(jsonPayload!=null){
-	    		logger.info(jsonPayload);
-	    	}
-	    	
 		}catch(Exception e){
 			logger.error("ERROR on TRANSMISSION log on RPG-service: " + e.toString());
 			String errorFileRenamed= "errorDbLog_" + Paths.get(fileName).getFileName().toString();

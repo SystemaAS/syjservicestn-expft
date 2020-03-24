@@ -45,7 +45,7 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 	@Test
 	public void  testFileUpload() {
 	
-		apiKurerUploadClient.setUploadUrl(uploadUrl);
+		apiKurerUploadClient.setUploadUrlImmutable(uploadUrl);
 		
 		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
 		logger.info(result);	

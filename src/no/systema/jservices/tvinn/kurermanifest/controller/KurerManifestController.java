@@ -45,7 +45,7 @@ public class KurerManifestController {
 	@RequestMapping(value="testUpload", method={RequestMethod.GET})
 	public ResponseEntity<String> testFileUploadByteArrayResource() {
 		
-		apiKurerUploadClient.setUploadUrl(uploadUrl);
+		apiKurerUploadClient.setUploadUrlImmutable(uploadUrl);
 		
 		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
 		if(result!=null && result.startsWith("2")){
@@ -78,7 +78,7 @@ public class KurerManifestController {
 	@RequestMapping(value="prodUpload", method={RequestMethod.GET})
 	public ResponseEntity<String> prodFileUploadByteArrayResource() {
 		
-		apiKurerUploadClient.setUploadUrl(uploadProdUrl);
+		apiKurerUploadClient.setUploadUrlImmutable(uploadProdUrl);
 		
 		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
 		if(result!=null && result.startsWith("2")){
