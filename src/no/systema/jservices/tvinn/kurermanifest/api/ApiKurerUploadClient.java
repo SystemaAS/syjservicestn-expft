@@ -49,6 +49,7 @@ public class ApiKurerUploadClient  {
 	private RestTemplate restTemplate;
 	private FileManager fileMgr = new FileManager();
 	
+	
 	@Value("${kurer.file.limit.per.loop}")
     private int maxLimitOfFilesPerLoop;
 	
@@ -96,8 +97,8 @@ public class ApiKurerUploadClient  {
 			int counter = 0;
 		
 			try{
-				List<File> files = this.fileMgr.getValidFilesInDirectory(baseDir, new File(sentDir).getName().toString() , new File(errorDir).getName().toString());
-				//files.forEach(System.out::println);
+				List<File> files = this.fileMgr.getValidFilesInDirectory(baseDir);
+				files.forEach(System.out::println);
 
 				//Send each file per restTemplate call
 				for(File file: files){
@@ -321,13 +322,27 @@ public class ApiKurerUploadClient  {
 	 * @param fileName
 	 * @return
 	 */
-	private String getUUID(String fileName){
+	public String getUUID(String fileNameAbsolutPath){
+		File file = new File(fileNameAbsolutPath);
+		String fileName = file.getName();
 		String id = "_";
 		//extract the file id
-		int x = fileName.toLowerCase().indexOf("u_");
-		String temp = fileName.substring(x+2);
-		id = temp.substring(0,temp.indexOf("."));
-
+		int x = -1;
+		if(fileName.toLowerCase().startsWith(FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().startsWith(FileUpdateFlag.D_.getCode()) ){
+			//update file
+			fileName.toLowerCase().indexOf(FileUpdateFlag.U_.getCode());
+			String temp = fileName.substring(x+3);
+			id = temp.substring(0,temp.indexOf("."));
+			
+		} else if(fileName.toLowerCase().startsWith(FileUpdateFlag.D_.getCode()) ){
+			fileName.toLowerCase().indexOf(FileUpdateFlag.D_.getCode());
+			String temp = fileName.substring(x+3);
+			id = temp.substring(0,temp.indexOf("."));
+			
+		} else{
+			//new file
+			id = fileName.substring(0,fileName.indexOf("."));
+		}
 		return id;
 	}
 	

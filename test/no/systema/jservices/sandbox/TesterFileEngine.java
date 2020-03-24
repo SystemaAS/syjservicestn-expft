@@ -62,10 +62,10 @@ public class TesterFileEngine {
 						.map(x -> x.toString()).collect(Collectors.toList());
 				files.forEach(System.out::println);
 				*/
-				List<File> files = fileMgr.getValidFilesInDirectory(baseDir, new File(sentDir).getName().toString() , new File(errorDir).getName().toString());
+				List<File> files = fileMgr.getValidFilesInDirectory(baseDir);
 				files.forEach(System.out::println);
 				
-				
+				/*
 				//Send each file per restTemplate call
 				for(File file: files){
 						String fileName = file.getAbsolutePath();
@@ -89,9 +89,9 @@ public class TesterFileEngine {
 								Path temp = Files.move( Paths.get(fileName), Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 							}
 						}
-
 				
-				}
+				
+				}*/
 				
 			}catch(Exception e){
 				e.toString();
