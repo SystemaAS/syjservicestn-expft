@@ -12,6 +12,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:test-configuration-kurer.xml")
@@ -32,10 +34,12 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 	
 	@Value("${kurer.upload.prod.url}")
 	private String uploadProdUrl;
-
 	
 	@Autowired
 	ApiKurerUploadClient apiKurerUploadClient;
+
+	@Autowired
+	RestTransmissionLogger transmissionLogger;
 
 	
 	@Test
@@ -46,6 +50,12 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
 		logger.info(result);	
 	}
+	/*
+	@Test
+	public void  testLogger() {
+		String fileName = "/zzz/test/u_12345.txt";
+		this.transmissionLogger.logTransmission(fileName, errorDir, null);
+	}*/
 	
 	/*@Test
 	public void  testFileUploadProd() {

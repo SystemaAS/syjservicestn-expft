@@ -9,6 +9,8 @@
 	
 	<bean id="apiClient" class="no.systema.jservices.tvinn.expressfortolling.api.ApiClient"/>
 	<bean id="apiServices" class="no.systema.jservices.tvinn.expressfortolling.api.ApiServices"/>
+	<bean id="transmissionLogger" class="no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger"/>
+	
 	
 	<bean id="apiKurerUploadClient" class="no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient"/>
 	<bean id="urlCgiProxyService" class="no.systema.main.service.UrlCgiProxyService"/>

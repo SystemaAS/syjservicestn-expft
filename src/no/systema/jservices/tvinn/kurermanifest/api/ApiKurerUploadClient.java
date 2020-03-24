@@ -39,6 +39,7 @@ import no.systema.jservices.common.util.CommonResponseErrorHandler;
 import no.systema.jservices.common.util.FileManager;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
+import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 import no.systema.main.service.UrlCgiProxyService;
 
@@ -49,27 +50,20 @@ public class ApiKurerUploadClient  {
 	private RestTemplate restTemplate;
 	private FileManager fileMgr = new FileManager();
 	
-	
 	@Value("${kurer.file.limit.per.loop}")
     private int maxLimitOfFilesPerLoop;
-	
-	@Value("${kurer.file.log.service.root}")
-    private String HTTP_ROOT_CGI;
-	
-	@Value("${kurer.file.log.service.user}")
-    private String USER_CGI;
-	
-	
-	@Autowired
-	UrlCgiProxyService urlCgiProxyService;
 	
 	@Autowired
 	Authorization authorization;
 	
-	public URI uploadUrl;
+	@Autowired
+	RestTransmissionLogger transmissionLogger;
+
+	
+	public URI uploadUrlUnmutable;
 	public void setUploadUrl(String value){
 		try{
-			this.uploadUrl = new URI(value);
+			this.uploadUrlUnmutable = new URI(value);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
@@ -123,14 +117,15 @@ public class ApiKurerUploadClient  {
 								//this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
 								
 								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
-								//this transmission log is only used when the file was successfully delivered by REST
-								this.logTransmission(fileName, errorDir);
+								this.transmissionLogger.logTransmission(fileName, errorDir, null);
 								//now move the file to the OK-sent directory. The suffix in milliseconds won't match the file suffix in error db-log.
 								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG, FileManager.TIME_STAMP_SUFFIX_FLAG);
 								
 							}else{
 								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
+								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
+								this.transmissionLogger.logTransmission(fileName, errorDir, retval);
 								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 							}
 						}catch(Exception e){
@@ -139,6 +134,8 @@ public class ApiKurerUploadClient  {
 							logger.error(retval);
 							String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
 							logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + errorFileRenamed));
+							//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
+							this.transmissionLogger.logTransmission(fileName, errorDir, retval);
 							this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 							
 						}
@@ -212,7 +209,7 @@ public class ApiKurerUploadClient  {
 
 	    //String response = restTemplate.postForObject(this.uploadUrl, requestEntity, String.class);
 	    final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, HttpMethod.POST, requestEntity, typeReference);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlUnmutable, HttpMethod.POST, requestEntity, typeReference);
 		
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
@@ -260,7 +257,7 @@ public class ApiKurerUploadClient  {
 		body.add("user-file", partsEntity);
 	
 		final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlUnmutable, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{
@@ -288,12 +285,15 @@ public class ApiKurerUploadClient  {
 		//default method when file is sent for the first time (create)
 		HttpMethod httpMethod = HttpMethod.POST;
 		//if it is an update/delete file it will have a prefix: <.../u_xxxxxxx.yyy> or <.../d_xxxxxxx.yyy>> 
-		if(fileName.toLowerCase().startsWith("u_") || fileName.toLowerCase().startsWith("d_") ){
+		logger.info(fileName.toLowerCase());
+		
+		URI uploadUrlTemp = this.uploadUrlUnmutable;
+		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
 			//PUT https://<env>/api/movement/manifest/{id}
-			this.uploadUrl = updateUrlForUpdate(fileName);
+			uploadUrlTemp = updateUrlForUpdate(fileName);
 			httpMethod = HttpMethod.PUT;
 		}
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrl, httpMethod, new HttpEntity<String>(payload, headerParams), String.class);
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(uploadUrlTemp, httpMethod, new HttpEntity<String>(payload, headerParams), String.class);
 		if(exchange.getStatusCode().is2xxSuccessful()) {
 			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 		}else{
@@ -310,40 +310,12 @@ public class ApiKurerUploadClient  {
 	 * @throws Exception
 	 */
 	private URI updateUrlForUpdate(String fileName) throws Exception{
-		URI retval = this.uploadUrl;
+		URI retval = this.uploadUrlUnmutable;
 		//PUT https://<env>/api/movement/manifest/{id}
-		String url = this.uploadUrl.toString() + "/"  + this.getUUID(fileName);
+		String url = this.uploadUrlUnmutable.toString() + "/"  + new Utils().getUUID(fileName);
 		retval = new URI(url);
 		
 		return retval;
-	}
-	/**
-	 * extracts the file id based on the file name
-	 * @param fileName
-	 * @return
-	 */
-	public String getUUID(String fileNameAbsolutPath){
-		File file = new File(fileNameAbsolutPath);
-		String fileName = file.getName();
-		String id = "_";
-		//extract the file id
-		int x = -1;
-		if(fileName.toLowerCase().startsWith(FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().startsWith(FileUpdateFlag.D_.getCode()) ){
-			//update file
-			fileName.toLowerCase().indexOf(FileUpdateFlag.U_.getCode());
-			String temp = fileName.substring(x+3);
-			id = temp.substring(0,temp.indexOf("."));
-			
-		} else if(fileName.toLowerCase().startsWith(FileUpdateFlag.D_.getCode()) ){
-			fileName.toLowerCase().indexOf(FileUpdateFlag.D_.getCode());
-			String temp = fileName.substring(x+3);
-			id = temp.substring(0,temp.indexOf("."));
-			
-		} else{
-			//new file
-			id = fileName.substring(0,fileName.indexOf("."));
-		}
-		return id;
 	}
 	
 	/**
@@ -362,49 +334,6 @@ public class ApiKurerUploadClient  {
 		return restTemplate;  
 		
 	} 
-	/**
-	 * log on database through some service. Send a copy to the errorDir if the log fails
-	 * 
-	 * @param fileName
-	 * @param errorDir
-	 * 
-	 * @return
-	 */
-	private boolean logTransmission(String fileName, String errorDir){
-		boolean retval = true;
-		try{
-			String uuid = this.getUUID(fileName);
-			//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62
-			String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad115r.pgm";
-			
-			//add URL-parameters
-			StringBuffer urlRequestParams = new StringBuffer();
-			urlRequestParams.append("user=" + this.USER_CGI);
-			urlRequestParams.append("&uuid=" + uuid);
-			
-			//session.setAttribute(TransportDispConstants.ACTIVE_URL_RPG_TRANSPORT_DISP, BASE_URL + "==>params: " + urlRequestParams.toString()); 
-	    	logger.info(Calendar.getInstance().getTime() + " CGI-start timestamp");
-	    	logger.info("URL: " + LOG_URL);
-	    	logger.info("URL PARAMS: " + urlRequestParams);
-	    	String jsonPayload = this.urlCgiProxyService.getJsonContent(LOG_URL, urlRequestParams.toString());
-	    	//Debug --> 
-	    	logger.info(Calendar.getInstance().getTime() +  " CGI-end timestamp");
-	    	if(jsonPayload!=null){
-	    		logger.info(jsonPayload);
-	    	}
-	    	
-		}catch(Exception e){
-			logger.error("ERROR on TRANSMISSION log on RPG-service: " + e.toString());
-			String errorFileRenamed= "errorDbLog_" + Paths.get(fileName).getFileName().toString();
-			try{
-				//move the file and tag it as log-db-error. The file might have been deliver or not. This is just to tag the db-log function
-				this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.COPY_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
-			}catch(Exception e2){
-				e2.toString();
-			}
-			retval = false;
-		}
-		return retval;
-	}
+	
 }
 
