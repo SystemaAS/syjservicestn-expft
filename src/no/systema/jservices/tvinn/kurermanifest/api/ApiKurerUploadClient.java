@@ -102,7 +102,7 @@ public class ApiKurerUploadClient  {
 					counter++;
 					
 					//get token authDto only for the first iteration
-					authTokenDto = authorization.accessTokenForKurerRequestPost();
+					authTokenDto = authorization.accessTokenForKurerRequestPost(this.uploadUrlImmutable.toString());
 
 					String fileName = file.getAbsolutePath();
 					//there is a bug in Toll.no for more than 2 files in the same REST loop ... ? To be researched ...

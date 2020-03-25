@@ -33,7 +33,8 @@ public class TestJAuthorization extends TestJBase {
 	
 	@Test
 	public void accessTokenForKurerRequestPost() throws Exception {
-		TokenResponseDto responseDto  = authorization.accessTokenForKurerRequestPost();
+		String urlUploadImmutable = "test";
+		TokenResponseDto responseDto  = authorization.accessTokenForKurerRequestPost(urlUploadImmutable);
 		
 		logger.info("responseDto = "+responseDto);
 		

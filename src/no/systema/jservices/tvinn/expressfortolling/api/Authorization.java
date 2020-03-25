@@ -87,14 +87,16 @@ public class Authorization {
      * @return TokenResponseDto the response, including the accesstoken
      * @throws RestClientException if an error occurs while attempting to invoke the API
      */
-    public TokenResponseDto accessTokenForKurerRequestPost() throws RestClientException {
+    public TokenResponseDto accessTokenForKurerRequestPost(String uploadUrlImmutable) throws RestClientException {
     	logger.info("accessTokenForKurerRequestPost(TokenRequestDto tokenRequest)");
     	Object postBody = null;  //Not in use
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
     	tokenRequest.setAssertion(difiJwtCreator.createRequestKurerJwt());
-        
-        String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+        String path = "";
+        if(uploadUrlImmutable !=null && uploadUrlImmutable.toLowerCase().contains("test")){
+        	path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+        }
         
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
