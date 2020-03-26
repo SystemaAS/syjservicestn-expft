@@ -283,11 +283,13 @@ public class ApiKurerUploadClient  {
 		
 		logger.info("A----->" + fileName);
 		HttpHeaders headerParams = new HttpHeaders();
-		headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		headerParams.setContentType(MediaType.APPLICATION_JSON);
 		headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
-		//String input = "{\"id\": \"3b8e72e7-b543-4253-8d4f-4904756fe9de\"}";
+		//payload
 		String payload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-		//logger.info(payload);
+		payload = new Utils().clearCarriageReturn(payload);
+		HttpEntity<String> entity = new HttpEntity<>(payload);
+		
 		//default method when file is sent for the first time (create)
 		HttpMethod httpMethod = HttpMethod.POST;
 		//if it is an update/delete file it will have a prefix: <.../u_xxxxxxx.yyy> or <.../d_xxxxxxx.yyy>> 
@@ -303,7 +305,7 @@ public class ApiKurerUploadClient  {
 		//////START REST/////////
 		ResponseEntity<String> exchange = null;
 		try{
-			exchange = this.restTemplate.exchange(uploadUrlTemp, httpMethod, new HttpEntity<String>(payload, headerParams), String.class);
+			exchange = this.restTemplate.exchange(uploadUrlTemp, httpMethod, new HttpEntity<String>(entity.getBody(), headerParams), String.class);
 			
 			if(exchange.getStatusCode().is2xxSuccessful()) {
 				logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());

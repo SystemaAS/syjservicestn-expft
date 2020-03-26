@@ -68,5 +68,18 @@ public class Utils {
 		return id;
 	}
 	
+	/**
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public String clearCarriageReturn(String value){
+		String payload = value;
+		payload = payload.replaceAll("\\n", "");
+		payload = payload.replaceAll("\\r", "");
+		
+		return payload;
+	}
+	
 	
 }
