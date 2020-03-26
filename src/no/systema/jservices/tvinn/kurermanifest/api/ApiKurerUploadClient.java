@@ -1,8 +1,10 @@
 package no.systema.jservices.tvinn.kurermanifest.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -27,9 +29,11 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
@@ -162,7 +166,7 @@ public class ApiKurerUploadClient  {
 	 * @return
 	 */
 	private String getError(Exception e){
-		logger.error(e.toString());
+		logger.error(e);
 		String ERROR_CODE = "xxxError";
 		//types 
 		String AUTHENTICATON_FAIL = "403";
@@ -308,12 +312,58 @@ public class ApiKurerUploadClient  {
 				
 			}
 		}catch(HttpClientErrorException e){
+			logger.error(e);
+			if(exchange!=null){
+				String responseBody = new String(this.getResponseBody(exchange), this.getCharset(exchange));
+				logger.error(responseBody);
+			}
 			throw e;
 		}
 		////////END REST/////////
 		
 		return exchange.getStatusCode().toString(); 
 	}
+	/**
+	 * test
+	 * @param exchange
+	 * @return
+	 */
+	private byte[] getResponseBody(ResponseEntity<String> exchange) {
+		byte[] retval = new byte[0];
+		try {
+			if(exchange!=null){
+				retval = exchange.getBody().getBytes();
+				return exchange.getBody().getBytes();
+			}
+		}
+		catch (Exception e) {
+			logger.info("::getResponseBody, ignoring Exception...::");
+			// ignore
+		}
+		
+		return retval;
+	}
+	
+	/**
+	 * Determine the charset of the response (for inclusion in a status exception).
+	 * @param response the response to inspect
+	 * @return the associated charset, or Charset.defaultCharset() if none
+	 */
+	private Charset getCharset(ResponseEntity<String> exchange) {
+		Charset charSet = Charset.defaultCharset();
+		if(exchange!=null){
+			HttpHeaders headers = exchange.getHeaders();
+			MediaType contentType = headers.getContentType();
+			if (contentType != null) {
+				if (contentType.getCharset() != null) {
+					charSet = contentType.getCharset();
+				}
+			}
+		}
+
+		return charSet;
+	}	
+
 		
 	/**
 	 * 
