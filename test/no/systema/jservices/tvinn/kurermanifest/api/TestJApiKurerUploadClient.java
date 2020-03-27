@@ -60,10 +60,12 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 	/*@Test
 	public void  testFileUploadProd() {
 	
-		apiKurerUploadClient.setUploadUrl(uploadProdUrl);
+		apiKurerUploadClient.setUploadUrlImmutable(uploadProdUrl);
 		
 		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
-		logger.info(result);	
+		if(result!=null && !result.toUpperCase().contains("ERROR")){
+			logger.info(result);	
+		}
 	}*/
 	
 	

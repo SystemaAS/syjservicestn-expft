@@ -31,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
@@ -150,8 +151,9 @@ public class ApiKurerUploadClient  {
 				}
 			
 			}catch(Exception e){
-				e.printStackTrace();
+				//e.printStackTrace();
 				retval = "ERROR_on_REST";
+				logger.fatal(retval);
 			}
 			
 		}else{
@@ -282,40 +284,46 @@ public class ApiKurerUploadClient  {
 	private String upload_via_jsonString(InputStream inputStream, String fileName, TokenResponseDto authTokenDto) throws Exception {
 		
 		logger.info("A----->" + fileName);
-		HttpHeaders headerParams = new HttpHeaders();
+		//json payload
+		String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+		jsonPayload = new Utils().clearCarriageReturn(jsonPayload);
+			
+		//json headers
+		HttpHeaders jsonHeaders = new HttpHeaders();
 		//it has to be JSON UTF8 otherwise it won't work
-		headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
-		headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
-		//payload
-		String body = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
-		body = new Utils().clearCarriageReturn(body);
-		HttpEntity<String> entity = new HttpEntity<String>(body, headerParams);
+		jsonHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		jsonHeaders.add(HttpHeaders.AUTHORIZATION, " Bearer " + authTokenDto.getAccess_token());
+		jsonHeaders.add("Accept", "application/json;charset=utf-8");
+		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, jsonHeaders);
 		
 		//default method when file is sent for the first time (create)
 		HttpMethod httpMethod = HttpMethod.POST;
-		//if it is an update/delete file it will have a prefix: <.../u_xxxxxxx.yyy> or <.../d_xxxxxxx.yyy>> 
-		logger.info(fileName.toLowerCase());
-		
-		URI uploadUrlTemp = this.uploadUrlImmutable;
+		URI url = this.uploadUrlImmutable;
+		//update file and not new...
 		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
 			//PUT https://<env>/api/movement/manifest/{id}
-			uploadUrlTemp = updateUrlForUpdate(fileName);
-			httpMethod = HttpMethod.PUT;
+			url = updateUrlForUpdate(fileName);
+			httpMethod = HttpMethod.PUT; //all updates must be done with PUT
 		}
 		
 		//////START REST/////////
 		ResponseEntity<String> exchange = null;
 		try{
-			exchange = this.restTemplate.exchange(uploadUrlTemp, httpMethod, entity, String.class);
-			
-			if(exchange.getStatusCode().is2xxSuccessful()) {
-				logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
-			}else{
-				logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
-				
+			//final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+			logger.info("before REST call");
+			exchange = this.restTemplate.exchange(url, httpMethod, entity, String.class);
+			logger.info("after REST call");
+			if(exchange!=null){
+				if(exchange.getStatusCode().is2xxSuccessful()) {
+					logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+				}else{
+					logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+					
+				}
 			}
 		}catch(HttpClientErrorException e){
 			logger.error(e);
+			
 			if(exchange!=null){
 				String responseBody = new String(this.getResponseBody(exchange), this.getCharset(exchange));
 				logger.error(responseBody);
@@ -393,8 +401,10 @@ public class ApiKurerUploadClient  {
     	RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setInterceptors(Arrays.asList(new CommonClientHttpRequestInterceptor()));
 		restTemplate.setErrorHandler(new CommonResponseErrorHandler());
-		// Add the Jackson message converter for json-string payloads
-		restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+		
+		// Add the Jackson message converter for json payloads
+		//restTemplate.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+		restTemplate.getMessageConverters().add(new StringHttpMessageConverter(Charset.forName("UTF-8")));
 		
 		return restTemplate;  
 		
