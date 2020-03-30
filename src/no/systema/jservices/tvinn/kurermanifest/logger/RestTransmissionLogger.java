@@ -41,7 +41,7 @@ public class RestTransmissionLogger {
 			String uuid = new Utils().getUUID(fileName);
 			
 			if(uuid!=null && this.USER_CGI!=null){
-				//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62
+				//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62(&error=4xx)
 				String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad115r.pgm";
 				
 				//add URL-parameters

@@ -93,10 +93,14 @@ public class Authorization {
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
     	tokenRequest.setAssertion(difiJwtCreator.createRequestKurerJwt());
-        String path = "";
+        
+    	String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+    	
+        /* without token ?? (different statements of support-people at toll.no
+    	String path = "";
         if(uploadUrlImmutable !=null && uploadUrlImmutable.toLowerCase().contains("test")){
         	path = UriComponentsBuilder.fromPath("/token").build().toUriString();
-        }
+        }*/
         
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
