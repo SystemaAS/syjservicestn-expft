@@ -29,7 +29,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.BufferingClientHttpRequestFactory;
+import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.ClientHttpResponse;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -134,18 +137,23 @@ public class ApiKurerUploadClient  {
 								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
 								this.transmissionLogger.logTransmission(fileName, errorDir, retval);
 								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
+								
 							}
-						}catch(Exception e){
+						}catch(HttpClientErrorException e){
+							//usually thrown with validation errors on json-paylaod such as invalid values in a field or lack of mandatory values.
+							String responseBody = e.getResponseBodyAsString();
+							logger.error("ERROR http code:" + e.getRawStatusCode());
+							logger.error("Response body:" + responseBody);
+							
 							retval = this.getError(e);
-							
-							logger.error(retval);
-							String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
-							logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + errorFileRenamed));
-							//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
-							this.transmissionLogger.logTransmission(fileName, errorDir, retval);
-							this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
-							
+							this.logError(retval, fileName, errorDir);
 						}
+						catch(Exception e){
+							//other more general exception 
+							retval = this.getError(e);
+							this.logError(retval, fileName, errorDir);	
+						}
+						
 					}
 					
 				}
@@ -183,6 +191,22 @@ public class ApiKurerUploadClient  {
 			ERROR_CODE = SERVER_FAIL;
 		}
 		return ERROR_CODE;
+	}
+	/**
+	 * 
+	 * @param retval
+	 * @param fileName
+	 * @param errorDir
+	 * @throws Exception
+	 */
+	private void logError(String retval, String fileName, String errorDir) throws Exception{
+		logger.error(retval);
+		String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
+		//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
+		this.transmissionLogger.logTransmission(fileName, errorDir, retval);
+		logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + errorFileRenamed));
+		this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
+		
 	}
 
 	/**
@@ -322,12 +346,9 @@ public class ApiKurerUploadClient  {
 				}
 			}
 		}catch(HttpClientErrorException e){
-			logger.error(e);
-			
-			if(exchange!=null){
-				String responseBody = new String(this.getResponseBody(exchange), this.getCharset(exchange));
-				logger.error(responseBody);
-			}
+			//DEBUG -->String responseBody = e.getResponseBodyAsString();
+			//DEBUG -->logger.error("ERROR http code:" + e.getRawStatusCode());
+			//DEBUG -->logger.error("Response body:" + responseBody);
 			throw e;
 		}
 		////////END REST/////////
@@ -397,9 +418,12 @@ public class ApiKurerUploadClient  {
 	 */
 	@Bean
 	public RestTemplate restTemplate(){
-    	//RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter(objectMapper())));
-    	RestTemplate restTemplate = new RestTemplate();
-		restTemplate.setInterceptors(Arrays.asList(new CommonClientHttpRequestInterceptor()));
+		//Too simple-->RestTemplate restTemplate = new RestTemplate();
+		
+		//this factory is required in order not to lose the response body when getting a HttpClientErrorException on restTemplate (in an Interceptor)
+		ClientHttpRequestFactory factory = new BufferingClientHttpRequestFactory(new HttpComponentsClientHttpRequestFactory());
+    	RestTemplate restTemplate = new RestTemplate(factory);
+    	restTemplate.setInterceptors(Collections.singletonList(new CommonClientHttpRequestInterceptor()));
 		restTemplate.setErrorHandler(new CommonResponseErrorHandler());
 		
 		// Add the Jackson message converter for json payloads

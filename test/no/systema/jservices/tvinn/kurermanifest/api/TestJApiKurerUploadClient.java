@@ -41,7 +41,7 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 	@Autowired
 	RestTransmissionLogger transmissionLogger;
 
-	/*
+	
 	@Test
 	public void  testFileUpload() {
 	
@@ -49,7 +49,7 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 		
 		String result = apiKurerUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
 		logger.info(result);	
-	}*/
+	}
 	
 	/*
 	@Test
@@ -58,7 +58,7 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 		this.transmissionLogger.logTransmission(fileName, errorDir, null);
 	}*/
 	
-	@Test
+	/*@Test
 	public void  testFileUploadProd() {
 	
 		apiKurerUploadClient.setUploadUrlImmutable(uploadProdUrl);
@@ -67,7 +67,7 @@ private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.
 		if(result!=null && !result.toUpperCase().contains("ERROR")){
 			logger.info(result);	
 		}
-	}
+	}*/
 	
 	
 	
