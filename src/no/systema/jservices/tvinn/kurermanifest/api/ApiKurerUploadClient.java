@@ -127,7 +127,7 @@ public class ApiKurerUploadClient  {
 								//this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
 								
 								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
-								this.transmissionLogger.logTransmission(fileName, errorDir, null);
+								this.transmissionLogger.logTransmission(fileName, errorDir, null, null);
 								//now move the file to the OK-sent directory. The suffix in milliseconds won't match the file suffix in error db-log.
 								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG, FileManager.TIME_STAMP_SUFFIX_FLAG);
 								
@@ -135,7 +135,7 @@ public class ApiKurerUploadClient  {
 								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
 								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
-								this.transmissionLogger.logTransmission(fileName, errorDir, retval);
+								this.transmissionLogger.logTransmission(fileName, errorDir, retval, retval);
 								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 								
 							}
@@ -146,12 +146,12 @@ public class ApiKurerUploadClient  {
 							logger.error("Response body:" + responseBody);
 							
 							retval = this.getError(e);
-							this.logError(retval, fileName, errorDir);
+							this.logError(retval, fileName, errorDir, responseBody);
 						}
 						catch(Exception e){
 							//other more general exception 
 							retval = this.getError(e);
-							this.logError(retval, fileName, errorDir);	
+							this.logError(retval, fileName, errorDir, "unexpected " + e.toString());	
 						}
 						
 					}
@@ -197,13 +197,15 @@ public class ApiKurerUploadClient  {
 	 * @param retval
 	 * @param fileName
 	 * @param errorDir
+	 * @param errorText
+	 * 
 	 * @throws Exception
 	 */
-	private void logError(String retval, String fileName, String errorDir) throws Exception{
+	private void logError(String retval, String fileName, String errorDir, String errorText) throws Exception{
 		logger.error(retval);
 		String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
 		//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
-		this.transmissionLogger.logTransmission(fileName, errorDir, retval);
+		this.transmissionLogger.logTransmission(fileName, errorDir, retval, errorText);
 		logger.error("######### ERROR: Moving error files to error-dir:" + Paths.get(fileName) + " " + Paths.get(errorDir + errorFileRenamed));
 		this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 		
@@ -302,6 +304,7 @@ public class ApiKurerUploadClient  {
 	 * This method is used as long as toll.no does not uses multipart file end-point
 	 * @param fileName
 	 * @param authTokenDto
+	 * 
 	 * @return
 	 * @throws Exception
 	 */
@@ -352,7 +355,6 @@ public class ApiKurerUploadClient  {
 			throw e;
 		}
 		////////END REST/////////
-		
 		return exchange.getStatusCode().toString(); 
 	}
 	/**

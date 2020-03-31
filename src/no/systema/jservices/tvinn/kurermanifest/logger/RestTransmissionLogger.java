@@ -1,5 +1,8 @@
 package no.systema.jservices.tvinn.kurermanifest.logger;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Calendar;
 
@@ -9,7 +12,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import no.systema.jservices.common.util.FileManager;
-import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 import no.systema.main.service.UrlCgiProxyService;
 
@@ -32,16 +34,18 @@ public class RestTransmissionLogger {
 	 * 
 	 * @param fileName
 	 * @param errorDir
+	 * @param errorCode
+	 * @param errMsg
 	 * 
 	 * @return
 	 */
-	public boolean logTransmission(String fileName, String errorDir, String errorCode){
+	public boolean logTransmission(String fileName, String errorDir, String errorCode, String errMsg){
 		boolean retval = true;
 		try{
 			String uuid = new Utils().getUUID(fileName);
 			
 			if(uuid!=null && this.USER_CGI!=null){
-				//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62(&error=4xx)
+				//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62(&error=4xx)(&errortxt={json}
 				String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad115r.pgm";
 				
 				//add URL-parameters
@@ -50,7 +54,12 @@ public class RestTransmissionLogger {
 				urlRequestParams.append("&uuid=" + uuid);
 				if(errorCode!=null){
 					urlRequestParams.append("&error=" + errorCode);
+					urlRequestParams.append("&errortxt=");
+					if(errMsg!=null){
+						urlRequestParams.append(this.encodeValue(errMsg));
+					}
 				}
+				
 				//session.setAttribute(TransportDispConstants.ACTIVE_URL_RPG_TRANSPORT_DISP, BASE_URL + "==>params: " + urlRequestParams.toString()); 
 		    	logger.info(Calendar.getInstance().getTime() + " CGI-start timestamp");
 		    	logger.info("URL: " + LOG_URL);
@@ -77,4 +86,17 @@ public class RestTransmissionLogger {
 		}
 		return retval;
 	}
+	
+	/**
+	 * URL-encoding
+	 * @param value
+	 * @return
+	 */
+	private  String encodeValue(String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException ex) {
+            throw new RuntimeException(ex.getCause());
+        }
+    }
 }
