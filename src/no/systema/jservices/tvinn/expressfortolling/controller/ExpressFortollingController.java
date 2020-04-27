@@ -36,14 +36,14 @@ public class ExpressFortollingController {
 	 * @Example: http://localhost:8080/syjservicestn-expft/transportationCompany.do?user=SYSTEMA&id=5
 	 */	
 	@RequestMapping(value="transportationCompany.do", method={RequestMethod.GET})
-	public List<TransportationCompanyDto> getTransportationCompany(HttpSession session, 
+	public TransportationCompanyDto getTransportationCompany(HttpSession session, 
 																@RequestParam(value = "user", required = true) String user,
 																@RequestParam(value = "id", required = false) String id) {
 		logger.info("transportationCompany.do, id="+id);
 		
 		checkUser(user);
 		
-		List<TransportationCompanyDto> payload = apiServices.getTransportationCompany();
+		TransportationCompanyDto payload = apiServices.getTransportationCompany();
 		
 		session.invalidate();
 		return payload;

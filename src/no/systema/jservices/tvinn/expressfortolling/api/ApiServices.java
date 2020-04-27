@@ -15,6 +15,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import no.systema.jservices.common.dto.ModeOfTransportDto;
 import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 
@@ -52,7 +53,7 @@ public class ApiServices {
 	 * 
 	 * @return List<TransportationCompanyDto>
 	 */
-	public List<TransportationCompanyDto> getTransportationCompany() {
+	public TransportationCompanyDto getTransportationCompany() {
   
 		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
 		//For test, couldn't get Mockito to work correct.
@@ -61,7 +62,7 @@ public class ApiServices {
 		
 		Object postBody = null; //Not in use
         
-        String path = UriComponentsBuilder.fromPath(basePathVersion + "/transportation-company").build().toUriString();
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/transportation-company/936809219").build().toUriString();
         
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
@@ -79,7 +80,7 @@ public class ApiServices {
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         
-        ParameterizedTypeReference<List<TransportationCompanyDto>> returnType = new ParameterizedTypeReference<List<TransportationCompanyDto>>() {};
+        ParameterizedTypeReference<TransportationCompanyDto> returnType = new ParameterizedTypeReference<TransportationCompanyDto>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
 
 //        return testGetDtos();
@@ -97,6 +98,45 @@ public class ApiServices {
 		list.add(dto);
 		
 		return list;
+		
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public ModeOfTransportDto getModeOfTransport() {
+		  
+		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		//For test, couldn't get Mockito to work correct.
+//		TokenResponseDto responseDto = new TokenResponseDto();
+//		responseDto.setAccess_token("XYZ");
+		
+		Object postBody = null; //Not in use
+        
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/mode-of-transport/BIL").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getAccess_token());
+
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = {  };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        //TODO refactor outside
+        apiClient.setBasePath(basePath);
+        
+        ParameterizedTypeReference<ModeOfTransportDto> returnType = new ParameterizedTypeReference<ModeOfTransportDto>() {};
+        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+
+//        return testGetDtos();
+        
 		
 	}
 	

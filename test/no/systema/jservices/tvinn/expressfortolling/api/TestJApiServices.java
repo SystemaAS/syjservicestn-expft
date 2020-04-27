@@ -10,6 +10,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import no.systema.jservices.common.dto.ModeOfTransportDto;
 import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
 import no.systema.jservices.tvinn.kurermanifest.api.TestJApiKurerUploadClient;
@@ -28,9 +29,18 @@ public class TestJApiServices extends TestJBase {
 	@Test
 	public void testTransportationCompany() throws Exception {
 
-		List<TransportationCompanyDto> tc = apiServices.getTransportationCompany();
-		System.out.println(tc);
-		logger.info("Company = "+tc);
+		TransportationCompanyDto dto = apiServices.getTransportationCompany();
+		System.out.println(dto);
+		logger.info("DTO = "+dto);
+		
+	}
+	
+	@Test
+	public void testModeOfTransport() throws Exception {
+
+		ModeOfTransportDto dto = apiServices.getModeOfTransport();
+		System.out.println(dto);
+		logger.info("DTO = "+dto);
 		
 	}
 
