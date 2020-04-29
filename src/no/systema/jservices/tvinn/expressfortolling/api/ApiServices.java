@@ -7,6 +7,9 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.PagedResources;
+import org.springframework.hateoas.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -16,6 +19,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import no.systema.jservices.common.dto.ModeOfTransportDto;
+import no.systema.jservices.common.dto.TypesOfExportDto;
 import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 
@@ -126,7 +130,8 @@ public class ApiServices {
             "application/json", "text/json"
         };
         final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
-        final String[] contentTypes = {  };
+        //
+        final String[] contentTypes = { MediaTypes.HAL_JSON.toString() };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
 
         //TODO refactor outside
@@ -138,6 +143,67 @@ public class ApiServices {
 //        return testGetDtos();
         
 		
+	}
+	/**
+	 * The method returns Json string (raw) in order to unmarshall at the callers point with ObjectMapper.
+	 * RestTemplate has good support to fix it here BUT we must upgrade to Spring 5
+	 * @return
+	 */
+	public String getAllTypeOfExport() {
+		  
+		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		
+		Object postBody = null; //Not in use
+        
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/type-of-export").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getAccess_token());
+
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = {  };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        //TODO refactor outside
+        apiClient.setBasePath(basePath);
+        
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+	
+	
+	public TypesOfExportDto getTypeOfExport(String type) {
+		  
+		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		
+		Object postBody = null; //Not in use
+        
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/type-of-export" + "/" + type).build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getAccess_token());
+
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = {  };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        //TODO refactor outside
+        apiClient.setBasePath(basePath);
+        
+        ParameterizedTypeReference<TypesOfExportDto> returnType = new ParameterizedTypeReference<TypesOfExportDto>() {};
+        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
 	}
 	
 	
