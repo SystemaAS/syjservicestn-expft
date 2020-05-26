@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -8,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.hateoas.MediaTypes;
 import org.springframework.hateoas.PagedResources;
 import org.springframework.hateoas.Resource;
@@ -23,9 +25,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import no.systema.jservices.common.dto.ModeOfTransportDto;
 import no.systema.jservices.common.dto.TypesOfExportDto;
+import no.systema.jservices.common.dto.TypesOfMeansOfTransportDto;
+import no.systema.jservices.common.util.FileManager;
 import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
+import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 import no.systema.jservices.tvinn.kurermanifest.api.TestJApiKurerUploadClient;
+import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -48,15 +54,6 @@ public class TestJApiServices extends TestJBase {
 		
 	}
 	
-	@Test
-	public void testModeOfTransport() throws Exception {
-
-		ModeOfTransportDto dto = apiServices.getModeOfTransport();
-		System.out.println(dto);
-		logger.info("DTO = "+dto);
-		
-	}
-	
 	
 	@Test
 	public void testTypeOfExportAll() throws Exception {
@@ -72,11 +69,37 @@ public class TestJApiServices extends TestJBase {
 		logger.info("DTO = " + exports.toString());
 			
 	}
+	
+	
 	@Test
 	public void testTypeOfExport() throws Exception {
 
 		TypesOfExportDto dto = apiServices.getTypeOfExport("UGE_EXPORT");
 		logger.info("DTO = " + dto.toString());
+		
+	}
+	
+	@Test
+	public void testTypeOfMeansOfTransportAll() throws Exception {
+
+		String json = apiServices.getAllTypeOfMeansOfTransport();
+		logger.info("JSON = " + json);
+		//map to Dto
+		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/typesOfMeansOfTransport");
+		StringBuffer jsonToConvert = new StringBuffer();
+		//get list of DTOs
+		ArrayList<TypesOfMeansOfTransportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfMeansOfTransportDto>>() {
+        });
+		logger.info("DTO = " + exports.toString());
+			
+	}
+	
+	@Test
+	public void testMeansOfTransport() throws Exception {
+
+		ModeOfTransportDto dto = apiServices.getModeOfTransport();
+		System.out.println(dto);
+		logger.info("DTO = "+dto);
 		
 	}
 

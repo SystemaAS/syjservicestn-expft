@@ -1,5 +1,8 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -11,10 +14,12 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TimeZone;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -28,12 +33,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
+import no.systema.jservices.tvinn.kurermanifest.api.FileUpdateFlag;
+import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 /**
   * Manage all client-side HTTP requests. 
@@ -55,6 +63,9 @@ public class ApiClient {
 
 	@Value("${expft.basepath}")
     private String basePath;
+	
+	@Value("${expft.basepath.version}")
+    private String basePathVersion;
 	
 	
     public enum CollectionFormat {
@@ -425,16 +436,18 @@ public class ApiClient {
         
         RequestEntity<Object> requestEntity = requestBuilder.body(selectBody(body, formParams, contentType));
         logger.info(requestEntity.toString());
+        logger.info("AAAAAAA");
         ResponseEntity<T> responseEntity = restTemplate.exchange(requestEntity, returnType);
+        logger.info("BBBBBBB");
         //logger.info(responseEntity.toString());
         statusCode = responseEntity.getStatusCode();
         responseHeaders = responseEntity.getHeaders();
 
         if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
-            return null;
+        	return null;
         } else if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            if (returnType == null) {
-                return null;
+        	if (returnType == null) {
+            	return null;
             }
             logger.info("getBody():" + responseEntity.getBody());
             return responseEntity.getBody();
@@ -476,6 +489,8 @@ public class ApiClient {
 
 		return restTemplate;  
 		
-	}  
+	}
+    
+    
     
 }

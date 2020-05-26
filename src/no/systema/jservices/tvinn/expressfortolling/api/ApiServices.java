@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,12 +17,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import no.systema.jservices.common.dto.ModeOfTransportDto;
 import no.systema.jservices.common.dto.TypesOfExportDto;
 import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
+import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 /**
  * This class hosts all needed REST calls for Express Fortolling.
@@ -35,6 +38,9 @@ public class ApiServices {
 
 	@Autowired
     private ApiClient apiClient;
+	
+	@Autowired
+    private ApiUploadClient apiUploadClient;
 	
 	@Autowired
 	DifiJwtCreator difiJwtCreator;
@@ -118,7 +124,7 @@ public class ApiServices {
 		
 		Object postBody = null; //Not in use
         
-        String path = UriComponentsBuilder.fromPath(basePathVersion + "/mode-of-transport/BIL").build().toUriString();
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/mode-of-transport/").build().toUriString();
         
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
@@ -180,11 +186,51 @@ public class ApiServices {
 	
 	public TypesOfExportDto getTypeOfExport(String type) {
 		  
-		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
 		
 		Object postBody = null; //Not in use
         
         String path = UriComponentsBuilder.fromPath(basePathVersion + "/type-of-export" + "/" + type).build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        final HttpHeaders headerParams = new HttpHeaders();
+        headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+        headerParams.add("Accept", "application/json;charset=utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = {  };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        //TODO refactor outside
+        apiClient.setBasePath(basePath);
+        
+        TypesOfExportDto resultDto;
+        try{
+        	ParameterizedTypeReference<TypesOfExportDto> returnType = new ParameterizedTypeReference<TypesOfExportDto>() {};
+        	resultDto = apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        }catch(HttpClientErrorException e){
+        	String responseBody = e.getResponseBodyAsString();
+			logger.error("ERROR http code:" + e.getRawStatusCode());
+			logger.error("Response body:" + responseBody);
+			logger.error("e:" + e);
+			
+			throw e;
+		}
+        return resultDto;
+        		
+	}
+	
+	
+	
+	public String getAllTypeOfMeansOfTransport() {
+		  
+		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		
+		Object postBody = null; //Not in use
+        
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/type-of-means-of-transport").build().toUriString();
         
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
@@ -192,16 +238,14 @@ public class ApiServices {
         
         headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getAccess_token());
 
-        final String[] accepts = { 
-            "application/json", "text/json"
-        };
+        final String[] accepts = { "application/json", "text/json"};
         final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
         final String[] contentTypes = {  };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         
-        ParameterizedTypeReference<TypesOfExportDto> returnType = new ParameterizedTypeReference<TypesOfExportDto>() {};
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
         		
 	}
