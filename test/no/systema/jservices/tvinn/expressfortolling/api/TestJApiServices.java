@@ -34,6 +34,7 @@ import no.systema.jservices.tvinn.expressfortolling.TestJBase;
 import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 import no.systema.jservices.tvinn.kurermanifest.api.TestJApiKurerUploadClient;
 import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
+import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -46,37 +47,44 @@ public class TestJApiServices extends TestJBase {
 	
 	private Authorization authorization;
 	private static final Logger logger = Logger.getLogger(TestJApiServices.class);
+	//0eb9f81d-3385-4baa-95aa-07c73d4d8fd3 ORIG-simple-test
+	private final String manifestId = "2350cab2-98f0-4b54-a4f7-a2ae453e61bd";
 	
 	@Test //OK
-	public void testTransportationCompany() throws Exception {
-		
-		TransportationCompanyDto dto = apiServices.getTransportationCompany();
+	public void getTransportationCompany() throws Exception {
+		String SYSTEMA_ORGNR = "9368092190";
+		TransportationCompanyDto dto = apiServices.getTransportationCompany(SYSTEMA_ORGNR);
 		logger.info("DTO = "+dto);
 		
 	}
 	
 	@Test //OK
-	public void testManifest() throws Exception {
-		String manifestId = "0eb9f81d-3385-4baa-95aa-07c73d4d8fd3";
-		String json = apiServices.getManifest(manifestId);
+	public void getManifest() throws Exception {
+		String json = apiServices.getManifest(this.manifestId);
 		logger.info("JSON = " + json);
-		//map to Dto
-		/*TODO
-		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/???");
-		StringBuffer jsonToConvert = new StringBuffer();
-		//get list of DTOs
-		ArrayList<TypesOfMeansOfTransportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfMeansOfTransportDto>>() {
-        });
-		
-		logger.info("DTO = " + exports.toString());
-		*/
-			
 	}
+	@Test //OK
+	public void getManifestCargoLines() throws Exception {
+		String json = apiServices.getManifestCargoLines(this.manifestId);
+		logger.info("JSON = " + json);
+	}
+	@Test //OK
+	public void deleteManifest() throws Exception {
+		String json = apiServices.deleteManifest(this.manifestId);
+		logger.info("JSON = " + json);	
+	}
+	
+	@Test //OK
+	public void createManifestCargoLine() throws Exception {
+		String payload = " { \"typeOfImportProcedure\" : \"IMMEDIATE_RELEASE_IMPORT\" } ";
+		String json = apiServices.createManifestCargoLine(this.manifestId, payload);
+		logger.info("JSON = " + json);	
+	}
+	
 	
 	
 	@Test //OK
 	public void testTypeOfMeansOfTransportAll() throws Exception {
-
 		String json = apiServices.getAllTypeOfMeansOfTransport();
 		logger.info("JSON = " + json);
 		//map to Dto
@@ -91,7 +99,6 @@ public class TestJApiServices extends TestJBase {
 	
 	@Test //OK
 	public void testTypeOfMeansOfTransport() throws Exception {
-
 		String json = apiServices.getTypeOfMeansOfTransport("VEHICLE_WITH_TRAILER");
 		logger.info("JSON = " + json);
 		//map to Dto
@@ -104,30 +111,15 @@ public class TestJApiServices extends TestJBase {
 			
 	}
 	
-	
-	
-	@Test //NOK
-	public void testActiveMeansOfTransport() throws Exception {
-		String manifestId = "0eb9f81d-3385-4baa-95aa-07c73d4d8fd3";
-		String json = apiServices.getActiveMeansOfTransport(manifestId);
+	@Test //OK
+	public void getActiveMeansOfTransport() throws Exception {
+		String json = apiServices.getActiveMeansOfTransport(this.manifestId);
 		logger.info("JSON = " + json);
-		//map to Dto
-		/*TODO
-		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/???");
-		StringBuffer jsonToConvert = new StringBuffer();
-		//get list of DTOs
-		ArrayList<TypesOfMeansOfTransportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfMeansOfTransportDto>>() {
-        });
-		
-		logger.info("DTO = " + exports.toString());
-		*/
-			
 	}
 	
 	
 	@Test //OK
 	public void testModeOfTransportAll() throws Exception {
-
 		String json = apiServices.getModeOfTransportAll();
 		logger.info("JSON = " + json);
 		//map to Dto
@@ -137,21 +129,16 @@ public class TestJApiServices extends TestJBase {
 		ArrayList<ModeOfTransportDto> list = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ModeOfTransportDto>>() {
         });
 		logger.info("DTO = " + list.toString());
-
-		
-		
 	}
+	
 	@Test //OK
 	public void testModeOfTransport() throws Exception {
-
 		ModeOfTransportDto dto = apiServices.getModeOfTransport("BIL");
 		logger.info("DTO = "+dto);
-		
 	}
 	
 	@Test //OK
 	public void testAllCountries() throws Exception {
-
 		String json = apiServices.getAllCountries();
 		logger.info("JSON = " + json);
 		//map to Dto
@@ -162,21 +149,17 @@ public class TestJApiServices extends TestJBase {
 		ArrayList<CountryDto> list = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<CountryDto>>() {
         });
 		logger.info("DTO = " + list.toString());
-
 	}
 	
 	@Test //OK
 	public void testCountry() throws Exception {
-
 		CountryDto dto = apiServices.getCountry("NO");
 		System.out.println(dto);
 		logger.info("DTO = "+dto);
-		
 	}
 	
 	@Test //OK
 	public void testUser() throws Exception {
-
 		String json = apiServices.getUser();
 		logger.info("JSON = " + json);
 		//map to Dto
@@ -186,14 +169,11 @@ public class TestJApiServices extends TestJBase {
 		UserDto dto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<UserDto>() {
         });
 		logger.info("DTO = " + dto.toString());
-
-		
 	}
 
 	
 	@Test //OK
 	public void testTypeOfExportAll() throws Exception {
-
 		String json = apiServices.getAllTypeOfExport();
 		logger.info("JSON = " + json);
 		//map to Dto
@@ -202,17 +182,13 @@ public class TestJApiServices extends TestJBase {
 		//get list of DTOs
 		ArrayList<TypesOfExportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfExportDto>>() {
         });
-		logger.info("DTO = " + exports.toString());
-			
+		logger.info("DTO = " + exports.toString());	
 	}
-	
 	
 	@Test //OK
 	public void testTypeOfExport() throws Exception {
-
 		TypesOfExportDto dto = apiServices.getTypeOfExport("UGE_EXPORT");
 		logger.info("DTO = " + dto.toString());
-		
 	}
 	
 	

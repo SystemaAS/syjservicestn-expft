@@ -126,14 +126,14 @@ public class ApiUploadClient  {
 								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
 								this.transmissionLogger.logTransmission(fileName, errorDir, null, null);
 								//now move the file to the OK-sent directory. The suffix in milliseconds won't match the file suffix in error db-log.
-								//TO UNCOMMENT this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG, FileManager.TIME_STAMP_SUFFIX_FLAG);
+								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG, FileManager.TIME_STAMP_SUFFIX_FLAG);
 								
 							}else{
 								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
 								String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
 								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
-								//TO UNCOMMENT this.transmissionLogger.logTransmission(fileName, errorDir, retval, retval);
-								//TO UNCOMMENT this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
+								this.transmissionLogger.logTransmission(fileName, errorDir, retval, retval);
+								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
 								
 							}
 						}catch(HttpClientErrorException e){
@@ -325,9 +325,71 @@ public class ApiUploadClient  {
 		URI url = this.uploadUrlImmutable;
 		//update file and not new...
 		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
-			//PUT https://<env>/api/movement/manifest/{id}
+			//PATCH https://<env>/api/movement/manifest/{id}
 			url = updateUrlForUpdate(fileName);
-			httpMethod = HttpMethod.PUT; //all updates must be done with PUT
+			logger.warn(url.toString());
+			httpMethod = HttpMethod.PATCH; //all updates must be done with PATCH
+		}
+		
+		//////START REST/////////
+		ResponseEntity<String> exchange = null;
+		try{
+			//final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+			logger.info("before REST call");
+			exchange = this.restTemplate.exchange(url, httpMethod, entity, String.class);
+			logger.info("after REST call");
+			if(exchange!=null){
+				if(exchange.getStatusCode().is2xxSuccessful()) {
+					logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+				}else{
+					logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+					
+				}
+			}
+		}catch(HttpClientErrorException e){
+			//DEBUG -->String responseBody = e.getResponseBodyAsString();
+			//DEBUG -->logger.error("ERROR http code:" + e.getRawStatusCode());
+			//DEBUG -->logger.error("Response body:" + responseBody);
+			throw e;
+		}
+		////////END REST/////////
+		return exchange.getStatusCode().toString(); 
+	}
+	
+	/**
+	 * 
+	 * @param manifestId
+	 * @param inputStream
+	 * @param fileName
+	 * @param authTokenDto
+	 * @return
+	 * @throws Exception
+	 */
+	private String upload_via_jsonString(String manifestId, InputStream inputStream, String fileName, TokenResponseDto authTokenDto) throws Exception {
+		
+		logger.info("A----->" + fileName);
+		//json payload
+		String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+		jsonPayload = new Utils().clearCarriageReturn(jsonPayload);
+			
+		//json headers
+		HttpHeaders jsonHeaders = new HttpHeaders();
+		//it has to be JSON UTF8 otherwise it won't work
+		jsonHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+		jsonHeaders.add(HttpHeaders.AUTHORIZATION, " Bearer " + authTokenDto.getAccess_token());
+		jsonHeaders.add("Accept", "application/json;charset=utf-8");
+		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, jsonHeaders);
+		
+		//default method when file is sent for the first time (create)
+		HttpMethod httpMethod = HttpMethod.POST;
+		String path = this.uploadUrlImmutable.toString() + "/" + manifestId + "/cargo-line/";
+		URI url = new URI(path);
+		//update file and not new...
+		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
+			//PATCH https://<env>/api/movement/manifest/{id}
+			url = updateUrlForUpdate(fileName);
+			logger.warn(url.toString());
+			httpMethod = HttpMethod.PATCH; //all updates must be done with PATCH
 		}
 		
 		//////START REST/////////
@@ -404,7 +466,7 @@ public class ApiUploadClient  {
 	 */
 	private URI updateUrlForUpdate(String fileName) throws Exception{
 		URI retval = this.uploadUrlImmutable;
-		//PUT https://<env>/api/movement/manifest/{id}
+		//PATCH https://<env>/api/movement/manifest/{id}
 		String url = this.uploadUrlImmutable.toString() + "/"  + new Utils().getUUID(fileName);
 		retval = new URI(url);
 		

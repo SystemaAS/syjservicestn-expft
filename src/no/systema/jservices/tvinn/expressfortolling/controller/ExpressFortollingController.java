@@ -44,7 +44,7 @@ public class ExpressFortollingController {
 		
 		checkUser(user);
 		
-		TransportationCompanyDto payload = apiServices.getTransportationCompany();
+		TransportationCompanyDto payload = apiServices.getTransportationCompany(id);
 		
 		session.invalidate();
 		return payload;

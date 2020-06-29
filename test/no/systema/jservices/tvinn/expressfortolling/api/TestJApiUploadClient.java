@@ -43,13 +43,11 @@ private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class
 
 	
 	@Test
-	public void  testFileUpload() {
-	
+	public void testFileUpload() {
 		apiUploadClient.setUploadUrlImmutable(uploadUrl);
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
 		logger.info(result);	
 	}
-	
 	
 	
 }

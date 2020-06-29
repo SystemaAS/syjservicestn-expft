@@ -46,7 +46,7 @@ public class RestTransmissionLogger {
 			
 			if(uuid!=null && this.USER_CGI!=null){
 				//http://10.13.3.22/sycgip/sad115r.pgm?user=YBC&uuid=0d2010a8-a777-4eeb-b653-e174f63b7f62(&error=4xx)(&errortxt={json}
-				String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/TODOsad115r.pgm";
+				String LOG_URL = this.HTTP_ROOT_CGI + "/sycgip/sad136r.pgm";
 				
 				//add URL-parameters
 				StringBuffer urlRequestParams = new StringBuffer();
