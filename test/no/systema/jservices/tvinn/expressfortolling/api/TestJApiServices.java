@@ -73,6 +73,10 @@ public class TestJApiServices extends TestJBase {
 		String json = apiServices.deleteManifest(this.manifestId);
 		logger.info("JSON = " + json);	
 	}
+	//TEST CREATE and UPDATE
+	//OBS!!! Create and update manifest are tested from ApiUploadClient (from file)
+	
+	
 	
 	@Test //OK
 	public void createManifestCargoLine() throws Exception {

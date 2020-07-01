@@ -143,12 +143,12 @@ public class ApiUploadClient  {
 							logger.error("Response body:" + responseBody);
 							
 							retval = this.getError(e);
-							//TO UNCOMMENT this.logError(retval, fileName, errorDir, responseBody);
+							this.logError(retval, fileName, errorDir, responseBody);
 						}
 						catch(Exception e){
 							//other more general exception 
 							retval = this.getError(e);
-							//TO UNCOMMENT this.logError(retval, fileName, errorDir, "unexpected " + e.toString());	
+							this.logError(retval, fileName, errorDir, "unexpected " + e.toString());	
 						}
 						
 					}
