@@ -631,6 +631,32 @@ public class ApiServices {
 		
 	}
 	
+	public String getAllPlaceOfEntry() {
+		  
+		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
+		
+		Object postBody = null; //Not in use
+        
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/place-of-entry").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + responseDto.getAccess_token());
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = {  };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        //TODO refactor outside
+        apiClient.setBasePath(basePath);
+        
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+	
 	/**
 	 * 
 	 * @return

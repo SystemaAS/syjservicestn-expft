@@ -195,6 +195,12 @@ public class TestJApiServices extends TestJBase {
 		logger.info("DTO = " + dto.toString());
 	}
 	
+	@Test //OK
+	public void getPlaceOfEntryAll() throws Exception {
+		String json = apiServices.getAllPlaceOfEntry();
+		logger.info("JSON = " + json);
+	}
+	
 	
 	
 	
