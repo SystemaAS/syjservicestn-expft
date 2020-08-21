@@ -324,11 +324,16 @@ public class ApiUploadClient  {
 		HttpMethod httpMethod = HttpMethod.POST;
 		URI url = this.uploadUrlImmutable;
 		//update file and not new...
-		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) || fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
+		if(fileName.toLowerCase().contains("/" + FileUpdateFlag.U_.getCode()) ){
 			//PATCH https://<env>/api/movement/manifest/{id}
 			url = updateUrlForUpdate(fileName);
 			logger.warn(url.toString());
 			httpMethod = HttpMethod.PATCH; //all updates must be done with PATCH
+		}else if(fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
+			//PATCH https://<env>/api/movement/manifest/{id}
+			url = updateUrlForUpdate(fileName);
+			logger.warn(url.toString());
+			httpMethod = HttpMethod.DELETE; //all updates must be done with PATCH
 		}
 		
 		//////START REST/////////
