@@ -330,10 +330,12 @@ public class ApiUploadClient  {
 			logger.warn(url.toString());
 			httpMethod = HttpMethod.PATCH; //all updates must be done with PATCH
 		}else if(fileName.toLowerCase().contains("/" + FileUpdateFlag.D_.getCode()) ){
-			//PATCH https://<env>/api/movement/manifest/{id}
+			//DELETE https://<env>/api/movement/manifest/{id}
 			url = updateUrlForUpdate(fileName);
 			logger.warn(url.toString());
-			httpMethod = HttpMethod.DELETE; //all updates must be done with PATCH
+			httpMethod = HttpMethod.DELETE; //all deletes must be done with DELETE
+			//clear all content in json-payload but not the headers
+			entity = new HttpEntity<>("", jsonHeaders);
 		}
 		
 		//////START REST/////////

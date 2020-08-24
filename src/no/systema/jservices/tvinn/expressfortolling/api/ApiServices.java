@@ -141,16 +141,15 @@ public class ApiServices {
         logger.warn(path);
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
-        
+       
         final HttpHeaders headerParams = new HttpHeaders();
-        headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        
         headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
         headerParams.add("Accept-Charset", "utf-8");
         final String[] accepts = { "application/json" };
         final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
         final String[] contentTypes = {  };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         

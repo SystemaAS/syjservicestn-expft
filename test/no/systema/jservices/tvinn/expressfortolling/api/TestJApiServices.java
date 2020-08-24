@@ -48,11 +48,14 @@ public class TestJApiServices extends TestJBase {
 	private Authorization authorization;
 	private static final Logger logger = Logger.getLogger(TestJApiServices.class);
 	//0eb9f81d-3385-4baa-95aa-07c73d4d8fd3 ORIG-simple-test
-	private final String manifestId = "2350cab2-98f0-4b54-a4f7-a2ae453e61bd";
+	//private final String manifestId = "2350cab2-98f0-4b54-a4f7-a2ae453e61bd";
+	private final String manifestId = "f2bfbb94-afae-4af3-a4ff-437f787d322f"; //YANGs test with Updates
+	
+	
 	
 	@Test //OK
 	public void getTransportationCompany() throws Exception {
-		String SYSTEMA_ORGNR = "9368092190";
+		String SYSTEMA_ORGNR = "936809219";
 		TransportationCompanyDto dto = apiServices.getTransportationCompany(SYSTEMA_ORGNR);
 		logger.info("DTO = "+dto);
 		
