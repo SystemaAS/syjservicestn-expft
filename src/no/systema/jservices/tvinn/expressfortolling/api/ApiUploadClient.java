@@ -46,7 +46,7 @@ import no.systema.jservices.common.util.CommonResponseErrorHandler;
 import no.systema.jservices.common.util.FileManager;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
-import no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionLogger;
+import no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionExpressManifestLogger;
 import no.systema.jservices.tvinn.kurermanifest.api.FileUpdateFlag;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
@@ -64,7 +64,7 @@ public class ApiUploadClient  {
 	Authorization authorization;
 	
 	@Autowired
-	RestTransmissionLogger transmissionLogger;
+	RestTransmissionExpressManifestLogger transmissionLogger;
 
 	
 	public URI uploadUrlImmutable;

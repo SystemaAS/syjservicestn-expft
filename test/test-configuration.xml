@@ -10,7 +10,7 @@
 	<bean id="apiServices" class="no.systema.jservices.tvinn.expressfortolling.api.ApiServices"/>
 	<bean id="authorization" class="no.systema.jservices.tvinn.expressfortolling.api.Authorization"/>
 	
-	<bean id="transmissionLogger" class="no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionLogger"/>
+	<bean id="transmissionLogger" class="no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionExpressManifestLogger"/>
 	<bean id="urlCgiProxyService" class="no.systema.main.service.UrlCgiProxyService"/>
 	
 </beans>

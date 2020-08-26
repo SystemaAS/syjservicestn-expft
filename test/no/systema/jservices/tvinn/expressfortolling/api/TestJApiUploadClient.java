@@ -12,7 +12,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionLogger;
+import no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionExpressManifestLogger;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -39,8 +39,9 @@ private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class
 	ApiUploadClient apiUploadClient;
 
 	@Autowired
-	RestTransmissionLogger transmissionLogger;
+	RestTransmissionExpressManifestLogger transmissionLogger;
 
+	
 	
 	@Test
 	public void testFileUpload() {

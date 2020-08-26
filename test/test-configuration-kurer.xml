@@ -10,7 +10,7 @@
 	<bean id="apiClient" class="no.systema.jservices.tvinn.expressfortolling.api.ApiClient"/>
 	<bean id="apiUploadClient" class="no.systema.jservices.tvinn.expressfortolling.api.ApiUploadClient"/>
 	<bean id="apiServices" class="no.systema.jservices.tvinn.expressfortolling.api.ApiServices"/>
-	<bean id="expftTransmissionLogger" class="no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionLogger"/>
+	<bean id="expftTransmissionLogger" class="no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionExpressManifestLogger"/>
 	<bean id="transmissionLogger" class="no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger"/>
 	
 	

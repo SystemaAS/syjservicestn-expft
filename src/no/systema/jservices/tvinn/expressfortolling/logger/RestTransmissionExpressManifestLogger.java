@@ -16,8 +16,8 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 import no.systema.main.service.UrlCgiProxyService;
 
 @Service
-public class RestTransmissionLogger {
-	private static final Logger logger = Logger.getLogger(RestTransmissionLogger.class);
+public class RestTransmissionExpressManifestLogger {
+	private static final Logger logger = Logger.getLogger(RestTransmissionExpressManifestLogger.class);
 	private FileManager fileMgr = new FileManager();
 	
 	@Value("${expft.file.log.service.root}")
