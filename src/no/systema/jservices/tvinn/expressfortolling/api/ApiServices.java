@@ -207,47 +207,115 @@ public class ApiServices {
         return resultDto;
         		
 	}
-	
-	public String deleteManifest(String manifestId) {
-		  
-		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
+	/**
+	 * 
+	 * @param manifestId
+	 * @return
+	 */
+	public String deleteManifest(String manifestId) throws Exception {
+		restTemplate = this.restTemplate();
+		//extra step to change status
+		this.updateStatusManifest(manifestId, "REOPENED");
 		
-		Object postBody = null; //Not in use
+		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
+		//String path = UriComponentsBuilder.fromPath(basePathVersion + "/manifest" + "/" + manifestId).build().toUriString();
         
-        String path = UriComponentsBuilder.fromPath(basePathVersion + "/manifest" + "/" + manifestId).build().toUriString();
+		String jsonPayload = "";
         
-        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
-        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        //json headers
+		HttpHeaders jsonHeaders = new HttpHeaders();
+  		//it has to be JSON UTF8 otherwise it won't work
+  		jsonHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+  		jsonHeaders.add(HttpHeaders.AUTHORIZATION, " Bearer " + authTokenDto.getAccess_token());
+  		jsonHeaders.add("Accept", "application/json;charset=utf-8");
+  		
+  		HttpMethod httpMethod = HttpMethod.DELETE;
+  		URI url = new URI(uploadUrl + "/" + manifestId);
         
-        final HttpHeaders headerParams = new HttpHeaders();
-        headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        
-        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
-        headerParams.add("Accept-Charset", "utf-8");
-        final String[] accepts = { "application/json" };
-        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
-        final String[] contentTypes = {  };
-        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
-        //TODO refactor outside
-        apiClient.setBasePath(basePath);
-        
-        String resultDto;
-        try{
-        	ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
-        	resultDto = apiClient.invokeAPI(path, HttpMethod.DELETE, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
-        }catch(HttpClientErrorException e){
-        	String responseBody = e.getResponseBodyAsString();
-			logger.error("ERROR http code:" + e.getRawStatusCode());
-			logger.error("Response body:" + responseBody);
-			logger.error("e:" + e);
-			
-			throw e;
-		}
-        return resultDto;
+  		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, jsonHeaders);
+  		
+  		//////START REST/////////
+  		ResponseEntity<String> exchange = null;
+  		try{
+  			//final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+  			logger.info("before REST call");
+  			exchange = this.restTemplate.exchange(url, httpMethod, entity, String.class);
+  			logger.info("after REST call");
+  			if(exchange!=null){
+  				if(exchange.getStatusCode().is2xxSuccessful()) {
+  					logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+  				}else{
+  					logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+  					
+  				}
+  			}
+  		}catch(HttpClientErrorException e){
+  			//DEBUG -->String responseBody = e.getResponseBodyAsString();
+  			//DEBUG -->logger.error("ERROR http code:" + e.getRawStatusCode());
+  			//DEBUG -->logger.error("Response body:" + responseBody);
+  			throw e;
+  		}
+  		////////END REST/////////
+  		return exchange.getStatusCode().toString();
         		
 	}
+	/**
+	 * 
+	 * @param manifestId
+	 * @param status
+	 * @return
+	 */
+	public String updateStatusManifest(String manifestId, String status) throws Exception {
+		restTemplate = this.restTemplate();
+		
+		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
+		//String path = UriComponentsBuilder.fromPath(basePathVersion + "/manifest" + "/" + manifestId).build().toUriString();
+        
+		String jsonPayload = "{ \"status\" : \"" + status + "\" }";
+        
+        //json headers
+		HttpHeaders jsonHeaders = new HttpHeaders();
+  		//it has to be JSON UTF8 otherwise it won't work
+  		jsonHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+  		jsonHeaders.add(HttpHeaders.AUTHORIZATION, " Bearer " + authTokenDto.getAccess_token());
+  		jsonHeaders.add("Accept", "application/json;charset=utf-8");
+  		
+  		HttpMethod httpMethod = HttpMethod.PATCH;
+  		URI url = new URI(uploadUrl + "/" + manifestId);
+        
+  		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, jsonHeaders);
+  		
+  		//////START REST/////////
+  		ResponseEntity<String> exchange = null;
+  		try{
+  			//final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+  			logger.info("before REST call");
+  			exchange = this.restTemplate.exchange(url, httpMethod, entity, String.class);
+  			logger.info("after REST call");
+  			if(exchange!=null){
+  				if(exchange.getStatusCode().is2xxSuccessful()) {
+  					logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+  				}else{
+  					logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
+  					
+  				}
+  			}
+  		}catch(HttpClientErrorException e){
+  			//DEBUG -->String responseBody = e.getResponseBodyAsString();
+  			//DEBUG -->logger.error("ERROR http code:" + e.getRawStatusCode());
+  			//DEBUG -->logger.error("Response body:" + responseBody);
+  			throw e;
+  		}
+  		////////END REST/////////
+  		return exchange.getStatusCode().toString();
+	}
 	
-	
+	/**
+	 * 
+	 * @param manifestId
+	 * @param jsonPayload
+	 * @return
+	 */
 	public String createManifestCargoLine(String manifestId, String jsonPayload) {
 		restTemplate = this.restTemplate();
 		

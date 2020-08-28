@@ -23,18 +23,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import no.systema.jservices.common.dto.CountryDto;
-import no.systema.jservices.common.dto.ModeOfTransportDto;
-import no.systema.jservices.common.dto.TypesOfExportDto;
-import no.systema.jservices.common.dto.TypesOfMeansOfTransportDto;
-import no.systema.jservices.common.dto.UserDto;
-import no.systema.jservices.common.util.FileManager;
-import no.systema.jservices.common.dto.TransportationCompanyDto;
+import no.systema.jservices.common.dto.*;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
-import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
-import no.systema.jservices.tvinn.kurermanifest.api.TestJApiKurerUploadClient;
-import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
-import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -65,7 +55,19 @@ public class TestJApiServices extends TestJBase {
 	public void getManifest() throws Exception {
 		String json = apiServices.getManifest(this.manifestId);
 		logger.info("JSON = " + json);
+		//map to Dto
+		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "");
+		StringBuffer jsonToConvert = new StringBuffer();
+		//get list of DTOs
+		ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() {
+		        });
+		logger.info("DTO raw:" + manifestDto.toString());
+		logger.info("Manifest STATUS:" + manifestDto.getStatus());
+		//return DTO in JSON
+		ObjectMapper mapper = new ObjectMapper();
+		logger.info("Dto as JSON:" + mapper.writeValueAsString(manifestDto));
 	}
+	
 	@Test //OK
 	public void getManifestCargoLines() throws Exception {
 		String json = apiServices.getManifestCargoLines(this.manifestId);
@@ -76,6 +78,13 @@ public class TestJApiServices extends TestJBase {
 		String json = apiServices.deleteManifest(this.manifestId);
 		logger.info("JSON = " + json);	
 	}
+	
+	@Test //OK
+	public void updateStatusManifest() throws Exception {
+		String json = apiServices.updateStatusManifest(this.manifestId, "REOPENED");
+		logger.info("JSON = " + json);	
+	}
+	
 	//TEST CREATE and UPDATE
 	//OBS!!! Create and update manifest are tested from ApiUploadClient (from file)
 	

@@ -61,6 +61,9 @@ public class ApiUploadClient  {
     private int maxLimitOfFilesPerLoop;
 	
 	@Autowired
+	ApiServices apiServices;
+	
+	@Autowired
 	Authorization authorization;
 	
 	@Autowired
@@ -336,6 +339,9 @@ public class ApiUploadClient  {
 			httpMethod = HttpMethod.DELETE; //all deletes must be done with DELETE
 			//clear all content in json-payload but not the headers
 			entity = new HttpEntity<>("", jsonHeaders);
+			//update the status to REOPENED in order to be able to DELETE the manifest
+			String manifestId = new Utils().getUUID(fileName);
+			apiServices.updateStatusManifest(manifestId, "REOPENED");
 		}
 		
 		//////START REST/////////
