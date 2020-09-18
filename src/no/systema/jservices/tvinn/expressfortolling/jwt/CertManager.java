@@ -26,8 +26,11 @@ public class CertManager {
 	private static Logger logger = Logger.getLogger(CertManager.class.getName());
 	private static String CATALINA_HOME = System.getProperty("catalina.home");
 
+    @Value("${expft.keystore.file.path}")
+    private String path;
+    
     @Value("${expft.keystore.file}")
-    private String file;		
+    private String file;
 
     @Value("${expft.keystore.password}")
     private String keystorePassword;    
@@ -105,10 +108,10 @@ public class CertManager {
 	}	
 	
 	private InputStream getCertificateFile() throws FileNotFoundException {
-		String fullFilePath = file;
+		String fullFilePath = path + file;
 		
 		if(CATALINA_HOME!=null){
-			fullFilePath = CATALINA_HOME + file;
+			fullFilePath = CATALINA_HOME + path + file;
 		}
 		File certificateFile = FileUtils.getFile(fullFilePath);
 		
