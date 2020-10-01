@@ -211,94 +211,6 @@ public class ApiUploadClient  {
 		
 	}
 
-	/**
-	 * This method is a good streaming model that does not buffer entire files. 
-	 * Large buffers would introduce latency and, more importantly, they could result in out-of-memory errors.
-	 * @param inputStream
-	 * @param fileName
-	 * @return
-	 * @throws Exception
-	 */
-	
-	private String upload_via_streaming(InputStream inputStream, String fileName, TokenResponseDto authTokenDto) throws Exception {
-
-	    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-	    requestFactory.setBufferRequestBody(false);
-	    restTemplate.setRequestFactory(requestFactory);
-
-	    InputStreamResource inputStreamResource = new InputStreamResource(inputStream) {
-	        @Override public String getFilename() { return fileName; }
-	        @Override public long contentLength() { return -1; }
-	    };
-
-	    MultiValueMap<String, Object> body = new LinkedMultiValueMap<String, Object>();
-	    body.add("user-file", inputStreamResource);
-
-	    HttpHeaders headerParams = new HttpHeaders();
-	    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
-	    headerParams.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-	    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-	    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body,headerParams);
-
-	    //String response = restTemplate.postForObject(this.uploadUrl, requestEntity, String.class);
-	    final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlImmutable, HttpMethod.POST, requestEntity, typeReference);
-		
-		if(exchange.getStatusCode().is2xxSuccessful()) {
-			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
-		}else{
-			logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
-		}
-		return exchange.getStatusCode().toString() ; 
-	    
-	   
-	}
-	
-	/**
-	 * This method make use of the ByteArrayResource. This model does buffer entire files which can cause latency and
-	 * out of memory errors. 
-	 * Therefore the method is good as an alternative test but do not scales well in production.
-	 * 
-	 * Use therefore the method: upload_via_streaming in this same class
-	 * 
-	 * @param inputStream
-	 * @param fileName
-	 * @return
-	 */
-	private String upload_via_byteArrayResource(String fileName, TokenResponseDto authTokenDto) throws Exception {
-		
-		logger.info("A----->" + fileName);
-		//STEP (1) We extract the payload in bytes and put it in the HttpEntity as ByteArrayResource
-		HttpHeaders parts = new HttpHeaders();  
-		parts.setContentType(MediaType.TEXT_PLAIN);
-		final ByteArrayResource byteArrayResource = new ByteArrayResource(new Utils().getFilePayload(fileName)) {
-			@Override
-			public String getFilename() {   
-				return fileName;
-			}
-		};
-		final HttpEntity<ByteArrayResource> partsEntity = new HttpEntity<>(byteArrayResource, parts);
-		
-		
-		//STEP (2) We put the byteArrayResource as the body of the request. Content-type:multipart_form_data
-		HttpHeaders headerParams = new HttpHeaders();
-	    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
-	    headerParams.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-	    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-		body.add("user-file", partsEntity);
-	
-		final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlImmutable, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
-		if(exchange.getStatusCode().is2xxSuccessful()) {
-			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
-		}else{
-			logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
-		}
-		return exchange.getStatusCode().toString(); 
-	}
 	
 	/**
 	 * This method is used as long as toll.no does not uses multipart file end-point
@@ -429,6 +341,102 @@ public class ApiUploadClient  {
 		////////END REST/////////
 		return exchange.getStatusCode().toString(); 
 	}
+	
+	
+	
+	
+	/**
+	 * This method is a good streaming model that does not buffer entire files. 
+	 * Large buffers would introduce latency and, more importantly, they could result in out-of-memory errors.
+	 * @param inputStream
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 */
+	
+	private String upload_via_streaming(InputStream inputStream, String fileName, TokenResponseDto authTokenDto, String declarationId, String documentType) throws Exception {
+
+	    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+	    requestFactory.setBufferRequestBody(false);
+	    restTemplate.setRequestFactory(requestFactory);
+
+	    InputStreamResource inputStreamResource = new InputStreamResource(inputStream) {
+	        @Override public String getFilename() { return fileName; }
+	        @Override public long contentLength() { return -1; }
+	    };
+
+	    MultiValueMap<String, Object> body = new LinkedMultiValueMap<String, Object>();
+	    body.add("metadata", "{\"declarationId\": \"" + declarationId + "\"documentType\": \"" + documentType + "\"}");
+	    body.add("file", inputStreamResource);
+
+	    HttpHeaders headerParams = new HttpHeaders();
+	    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+	    headerParams.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+	    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+	    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body,headerParams);
+
+	    //String response = restTemplate.postForObject(this.uploadUrl, requestEntity, String.class);
+	    final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlImmutable, HttpMethod.POST, requestEntity, typeReference);
+		
+		if(exchange.getStatusCode().is2xxSuccessful()) {
+			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+		}else{
+			logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
+		}
+		return exchange.getStatusCode().toString() ; 
+	    
+	   
+	}
+	
+	/**
+	 * This method make use of the ByteArrayResource. This model does buffer entire files which can cause latency and
+	 * out of memory errors. 
+	 * Therefore the method is good as an alternative test but do not scales well in production.
+	 * 
+	 * Use therefore the method: upload_via_streaming in this same class
+	 * 
+	 * @param inputStream
+	 * @param fileName
+	 * @return
+	 */
+	private String upload_via_byteArrayResource(String fileName, TokenResponseDto authTokenDto) throws Exception {
+		
+		logger.info("A----->" + fileName);
+		//STEP (1) We extract the payload in bytes and put it in the HttpEntity as ByteArrayResource
+		HttpHeaders parts = new HttpHeaders();  
+		parts.setContentType(MediaType.TEXT_PLAIN);
+		final ByteArrayResource byteArrayResource = new ByteArrayResource(new Utils().getFilePayload(fileName)) {
+			@Override
+			public String getFilename() {   
+				return fileName;
+			}
+		};
+		final HttpEntity<ByteArrayResource> partsEntity = new HttpEntity<>(byteArrayResource, parts);
+		
+		
+		//STEP (2) We put the byteArrayResource as the body of the request. Content-type:multipart_form_data
+		HttpHeaders headerParams = new HttpHeaders();
+	    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+	    headerParams.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+	    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
+
+		MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		body.add("user-file", partsEntity);
+	
+		final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+		final ResponseEntity<String> exchange = this.restTemplate.exchange(this.uploadUrlImmutable, HttpMethod.POST, new HttpEntity<>(body, headerParams), typeReference);
+		if(exchange.getStatusCode().is2xxSuccessful()) {
+			logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+		}else{
+			logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
+		}
+		return exchange.getStatusCode().toString(); 
+	}
+	
+	
+	
 	/**
 	 * test
 	 * @param exchange
@@ -507,6 +515,54 @@ public class ApiUploadClient  {
 		return restTemplate;  
 		
 	} 
+	
+	
+	
+	/*Some code to look at on Multipart file send (Dokument API för MAnifest maskinport)
+	 * 
+	 @Service
+		public class FileUploadService {
+		
+		    private RestTemplate restTemplate;
+		
+		    @Autowired
+		    public FileUploadService(RestTemplateBuilder builder) {
+		        this.restTemplate = builder.build();
+		    }
+		
+		    public void postFile(String filename, byte[] someByteArray) {
+		        HttpHeaders headers = new HttpHeaders();
+		        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+		
+		        // This nested HttpEntiy is important to create the correct
+		        // Content-Disposition entry with metadata "name" and "filename"
+		        MultiValueMap<String, String> fileMap = new LinkedMultiValueMap<>();
+		        ContentDisposition contentDisposition = ContentDisposition
+		                .builder("form-data")
+		                .name("file")
+		                .filename(filename)
+		                .build();
+		        fileMap.add(HttpHeaders.CONTENT_DISPOSITION, contentDisposition.toString());
+		        HttpEntity<byte[]> fileEntity = new HttpEntity<>(someByteArray, fileMap);
+		
+		        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+		        body.add("file", fileEntity);
+		
+		        HttpEntity<MultiValueMap<String, Object>> requestEntity =
+		                new HttpEntity<>(body, headers);
+		        try {
+		            ResponseEntity<String> response = restTemplate.exchange(
+		                    "/urlToPostTo",
+		                    HttpMethod.POST,
+		                    requestEntity,
+		                    String.class);
+		        } catch (HttpClientErrorException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		}
+		*/
+	 
 	
 }
 

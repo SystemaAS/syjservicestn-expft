@@ -32,13 +32,13 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import no.systema.jservices.common.dto.CountryDto;
-import no.systema.jservices.common.dto.ModeOfTransportDto;
-import no.systema.jservices.common.dto.TypesOfExportDto;
-import no.systema.jservices.common.dto.UserDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestCountryDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
-import no.systema.jservices.common.dto.TransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
@@ -85,7 +85,7 @@ public class ApiServices {
 	 * 
 	 * @return List<TransportationCompanyDto>
 	 */
-	public TransportationCompanyDto getTransportationCompany(String orgNr) {
+	public ManifestTransportationCompanyDto getTransportationCompany(String orgNr) {
 		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
 		//For test, couldn't get Mockito to work correct.
 //		TokenResponseDto responseDto = new TokenResponseDto();
@@ -109,7 +109,7 @@ public class ApiServices {
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         
-        ParameterizedTypeReference<TransportationCompanyDto> returnType = new ParameterizedTypeReference<TransportationCompanyDto>() {};
+        ParameterizedTypeReference<ManifestTransportationCompanyDto> returnType = new ParameterizedTypeReference<ManifestTransportationCompanyDto>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
 
 //        return testGetDtos();
@@ -117,10 +117,10 @@ public class ApiServices {
 		
 	}
 	
-	private List<TransportationCompanyDto> testGetDtos() {
-		List<TransportationCompanyDto> list = new ArrayList<TransportationCompanyDto>();
+	private List<ManifestTransportationCompanyDto> testGetDtos() {
+		List<ManifestTransportationCompanyDto> list = new ArrayList<ManifestTransportationCompanyDto>();
 		
-		TransportationCompanyDto dto = new TransportationCompanyDto();
+		ManifestTransportationCompanyDto dto = new ManifestTransportationCompanyDto();
 		dto.setId("5");
 		dto.setName("Transportør Blåveis");
 		
@@ -175,22 +175,22 @@ public class ApiServices {
 		
 		Object postBody = null; //Not in use
         
-        String path = UriComponentsBuilder.fromPath(basePathVersion + "/manifest" + "/" + manifestId).build().toUriString() + "/cargo-line";
+        String path = UriComponentsBuilder.fromPath(basePathVersion + "/manifest/" + manifestId + "/cargo-line").build().toUriString();
         logger.warn(path);
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
-        
+       
         final HttpHeaders headerParams = new HttpHeaders();
-        headerParams.setContentType(MediaType.APPLICATION_JSON_UTF8);
-        
         headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
         headerParams.add("Accept-Charset", "utf-8");
         final String[] accepts = { "application/json" };
         final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
         final String[] contentTypes = {  };
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
         //TODO refactor outside
         apiClient.setBasePath(basePath);
+        
         
         String resultDto;
         try{
@@ -446,7 +446,7 @@ public class ApiServices {
 	}
 	
 	
-	public TypesOfExportDto getTypeOfExport(String type) {
+	public ManifestTypesOfExportDto getTypeOfExport(String type) {
 		  
 		TokenResponseDto authTokenDto = authorization.accessTokenRequestPost();
 		
@@ -469,9 +469,9 @@ public class ApiServices {
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         
-        TypesOfExportDto resultDto;
+        ManifestTypesOfExportDto resultDto;
         try{
-        	ParameterizedTypeReference<TypesOfExportDto> returnType = new ParameterizedTypeReference<TypesOfExportDto>() {};
+        	ParameterizedTypeReference<ManifestTypesOfExportDto> returnType = new ParameterizedTypeReference<ManifestTypesOfExportDto>() {};
         	resultDto = apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
         }catch(HttpClientErrorException e){
         	String responseBody = e.getResponseBodyAsString();
@@ -602,7 +602,7 @@ public class ApiServices {
 	}
 	
 	
-	public ModeOfTransportDto getModeOfTransport(String code) {
+	public ManifestModeOfTransportDto getModeOfTransport(String code) {
 		  
 		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
 		
@@ -624,7 +624,7 @@ public class ApiServices {
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         
-        ParameterizedTypeReference<ModeOfTransportDto> returnType = new ParameterizedTypeReference<ModeOfTransportDto>() {};
+        ParameterizedTypeReference<ManifestModeOfTransportDto> returnType = new ParameterizedTypeReference<ManifestModeOfTransportDto>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
 
 //        return testGetDtos();
@@ -667,7 +667,7 @@ public class ApiServices {
 		
 	}
 	
-	public CountryDto getCountry(String code) {
+	public ManifestCountryDto getCountry(String code) {
 		  
 		TokenResponseDto responseDto = authorization.accessTokenRequestPost();
 		
@@ -690,7 +690,7 @@ public class ApiServices {
         //TODO refactor outside
         apiClient.setBasePath(basePath);
         
-        ParameterizedTypeReference<CountryDto> returnType = new ParameterizedTypeReference<CountryDto>() {};
+        ParameterizedTypeReference<ManifestCountryDto> returnType = new ParameterizedTypeReference<ManifestCountryDto>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
 
 //        return testGetDtos();

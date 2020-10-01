@@ -24,6 +24,14 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import no.systema.jservices.common.dto.*;
+import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestCountryDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfMeansOfTransportDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
 import no.systema.main.util.ObjectMapperHalJson;
 
@@ -39,14 +47,14 @@ public class TestJApiServices extends TestJBase {
 	private static final Logger logger = Logger.getLogger(TestJApiServices.class);
 	//0eb9f81d-3385-4baa-95aa-07c73d4d8fd3 ORIG-simple-test
 	//private final String manifestId = "2350cab2-98f0-4b54-a4f7-a2ae453e61bd";
-	private final String manifestId = "f2bfbb94-afae-4af3-a4ff-437f787d322f"; //YANGs test with Updates
+	private final String manifestId = "e35a52a6-18ae-4746-a4b4-9e3f0edbacc6"; //YANGs test with Updates
 	
 	
 	
 	@Test //OK
 	public void getTransportationCompany() throws Exception {
 		String SYSTEMA_ORGNR = "936809219";
-		TransportationCompanyDto dto = apiServices.getTransportationCompany(SYSTEMA_ORGNR);
+		ManifestTransportationCompanyDto dto = apiServices.getTransportationCompany(SYSTEMA_ORGNR);
 		logger.info("DTO = "+dto);
 		
 	}
@@ -57,10 +65,17 @@ public class TestJApiServices extends TestJBase {
 		logger.info("JSON = " + json);
 		//map to Dto
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "");
+		ObjectMapperHalJson objMapper_TC = new ObjectMapperHalJson(json, "/_embedded/transportationCompany");
+		
 		StringBuffer jsonToConvert = new StringBuffer();
-		//get list of DTOs
-		ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() {
-		        });
+		ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() { });
+		//initialize buffer
+		jsonToConvert.delete(0, jsonToConvert.length());
+		ManifestTransportationCompanyDto transportationCompanyDto = objMapper_TC.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestTransportationCompanyDto>() {
+        });
+		logger.info("DTO raw transpComp:" + transportationCompanyDto.toString());
+		manifestDto.setTransportationCompany(transportationCompanyDto);
+		
 		logger.info("DTO raw:" + manifestDto.toString());
 		logger.info("Manifest STATUS:" + manifestDto.getStatus());
 		//return DTO in JSON
@@ -72,6 +87,14 @@ public class TestJApiServices extends TestJBase {
 	public void getManifestCargoLines() throws Exception {
 		String json = apiServices.getManifestCargoLines(this.manifestId);
 		logger.info("JSON = " + json);
+		//map to Dto
+		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/cargoLines");
+		StringBuffer jsonToConvert = new StringBuffer();
+		//get list of DTOs
+		ArrayList<ManifestCargoLinesDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestCargoLinesDto>>() {
+        });
+		logger.info("DTO = " + exports.toString());
+					
 	}
 	@Test //OK
 	public void deleteManifest() throws Exception {
@@ -107,7 +130,7 @@ public class TestJApiServices extends TestJBase {
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/typesOfMeansOfTransport");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
-		ArrayList<TypesOfMeansOfTransportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfMeansOfTransportDto>>() {
+		ArrayList<ManifestTypesOfMeansOfTransportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestTypesOfMeansOfTransportDto>>() {
         });
 		logger.info("DTO = " + exports.toString());
 			
@@ -121,7 +144,7 @@ public class TestJApiServices extends TestJBase {
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json,"");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
-		TypesOfMeansOfTransportDto dto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<TypesOfMeansOfTransportDto>() {
+		ManifestTypesOfMeansOfTransportDto dto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestTypesOfMeansOfTransportDto>() {
         });
 		logger.info("DTO = " + dto.toString());
 			
@@ -142,14 +165,14 @@ public class TestJApiServices extends TestJBase {
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/modesOfTransport");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
-		ArrayList<ModeOfTransportDto> list = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ModeOfTransportDto>>() {
+		ArrayList<ManifestModeOfTransportDto> list = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestModeOfTransportDto>>() {
         });
 		logger.info("DTO = " + list.toString());
 	}
 	
 	@Test //OK
 	public void testModeOfTransport() throws Exception {
-		ModeOfTransportDto dto = apiServices.getModeOfTransport("BIL");
+		ManifestModeOfTransportDto dto = apiServices.getModeOfTransport("BIL");
 		logger.info("DTO = "+dto);
 	}
 	
@@ -162,14 +185,14 @@ public class TestJApiServices extends TestJBase {
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/countries");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
-		ArrayList<CountryDto> list = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<CountryDto>>() {
+		ArrayList<ManifestCountryDto> list = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestCountryDto>>() {
         });
 		logger.info("DTO = " + list.toString());
 	}
 	
 	@Test //OK
 	public void testCountry() throws Exception {
-		CountryDto dto = apiServices.getCountry("NO");
+		ManifestCountryDto dto = apiServices.getCountry("NO");
 		System.out.println(dto);
 		logger.info("DTO = "+dto);
 	}
@@ -182,7 +205,7 @@ public class TestJApiServices extends TestJBase {
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
-		UserDto dto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<UserDto>() {
+		ManifestUserDto dto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestUserDto>() {
         });
 		logger.info("DTO = " + dto.toString());
 	}
@@ -196,14 +219,14 @@ public class TestJApiServices extends TestJBase {
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/typesOfExport");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
-		ArrayList<TypesOfExportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfExportDto>>() {
+		ArrayList<ManifestTypesOfExportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestTypesOfExportDto>>() {
         });
 		logger.info("DTO = " + exports.toString());	
 	}
 	
 	@Test //OK
 	public void testTypeOfExport() throws Exception {
-		TypesOfExportDto dto = apiServices.getTypeOfExport("UGE_EXPORT");
+		ManifestTypesOfExportDto dto = apiServices.getTypeOfExport("UGE_EXPORT");
 		logger.info("DTO = " + dto.toString());
 	}
 	

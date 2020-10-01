@@ -12,7 +12,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import no.systema.jservices.common.dto.TypesOfExportDto;
+
+import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
 import no.systema.main.util.ObjectMapperHalJson;
 
 
@@ -25,7 +26,7 @@ public class Tester   {
 		
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(data, "/_embedded/typesOfExport");
 		StringBuffer jsonToConvert = new StringBuffer();
-		ArrayList<TypesOfExportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<TypesOfExportDto>>() {
+		ArrayList<ManifestTypesOfExportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestTypesOfExportDto>>() {
         });
 		logger.info(exports.toString());
 	}
