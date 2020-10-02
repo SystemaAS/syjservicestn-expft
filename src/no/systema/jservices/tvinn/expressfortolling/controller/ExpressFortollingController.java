@@ -7,6 +7,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -130,7 +131,7 @@ public class ExpressFortollingController {
 	 * @return
 	 * @throws Exception
 	 */
-	@RequestMapping(value="getManifestRaw.do", method={RequestMethod.GET}) 
+	@RequestMapping(value="getManifestRaw.do", method={RequestMethod.GET}, produces = {MediaType.APPLICATION_JSON_UTF8_VALUE }) 
 	public String getManifestRaw(HttpSession session, @RequestParam(value = "user", required = true) String user, 
 														@RequestParam(value = "id", required = true) String id) throws Exception {
 		logger.info("getManifest.do, id="+id);
@@ -138,6 +139,8 @@ public class ExpressFortollingController {
 		checkUser(user);
 		
 		String payload = apiServices.getManifest(id);
+		
+		
 		session.invalidate();
 		return payload;
 
