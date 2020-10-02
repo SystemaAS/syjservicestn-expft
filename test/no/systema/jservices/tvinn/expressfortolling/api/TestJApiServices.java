@@ -24,10 +24,12 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import no.systema.jservices.common.dto.*;
+import no.systema.jservices.common.dto.expressfortolling.ManifestActiveMeansOfTransportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestCountryDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestPlaceOfEntryDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfMeansOfTransportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
@@ -47,7 +49,7 @@ public class TestJApiServices extends TestJBase {
 	private static final Logger logger = Logger.getLogger(TestJApiServices.class);
 	//0eb9f81d-3385-4baa-95aa-07c73d4d8fd3 ORIG-simple-test
 	//private final String manifestId = "2350cab2-98f0-4b54-a4f7-a2ae453e61bd";
-	private final String manifestId = "e35a52a6-18ae-4746-a4b4-9e3f0edbacc6"; //YANGs test with Updates
+	private final String manifestId = "e35a52a6-18ae-4746-a4b4-9e3f0edbacc6";
 	
 	
 	
@@ -61,23 +63,41 @@ public class TestJApiServices extends TestJBase {
 	
 	@Test //OK
 	public void getManifest() throws Exception {
-		String json = apiServices.getManifest(this.manifestId);
-		logger.info("JSON = " + json);
-		//map to Dto
-		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "");
-		ObjectMapperHalJson objMapper_TC = new ObjectMapperHalJson(json, "/_embedded/transportationCompany");
+		String payload = apiServices.getManifest(this.manifestId);
+		logger.info("JSON = " + payload);
+		//convert to Dto (we do not do this in the service since we must see the JSON string in case of errors. It is easier to follow...
+		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(payload, "");
+		ObjectMapperHalJson objMapper_TC = new ObjectMapperHalJson(payload, "/_embedded/transportationCompany");
+		ObjectMapperHalJson objMapper_AMT = new ObjectMapperHalJson(payload, "/_embedded/activeMeansOfTransport");
+		ObjectMapperHalJson objMapper_MT = new ObjectMapperHalJson(payload, "/_embedded/modeOfTransport");
+		ObjectMapperHalJson objMapper_PE = new ObjectMapperHalJson(payload, "/_embedded/placeOfEntry");
+		//CargoLines
+		ObjectMapperHalJson objMapper_CargoLines = new ObjectMapperHalJson(payload, "/_embedded/cargoLines/_embedded/cargoLines");
+		
 		
 		StringBuffer jsonToConvert = new StringBuffer();
-		ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() { });
-		//initialize buffer
+		ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() {});
+		//Transp.Company
 		jsonToConvert.delete(0, jsonToConvert.length());
-		ManifestTransportationCompanyDto transportationCompanyDto = objMapper_TC.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestTransportationCompanyDto>() {
-        });
-		logger.info("DTO raw transpComp:" + transportationCompanyDto.toString());
+		ManifestTransportationCompanyDto transportationCompanyDto = objMapper_TC.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestTransportationCompanyDto>() {});
 		manifestDto.setTransportationCompany(transportationCompanyDto);
+		//Active means of transp.
+		jsonToConvert.delete(0, jsonToConvert.length());
+		ManifestActiveMeansOfTransportDto activeMeansOfTransportDto = objMapper_AMT.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestActiveMeansOfTransportDto>() {});
+		manifestDto.setActiveMeansOfTransport(activeMeansOfTransportDto);
+		//Mode of transp.
+		jsonToConvert.delete(0, jsonToConvert.length());
+		ManifestModeOfTransportDto modeOfTransportDto = objMapper_MT.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestModeOfTransportDto>() {});
+		manifestDto.setModeOfTransport(modeOfTransportDto);
+		//Place of entry
+		jsonToConvert.delete(0, jsonToConvert.length());
+		ManifestPlaceOfEntryDto placeOfEntryDto = objMapper_PE.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestPlaceOfEntryDto>() {});
+		manifestDto.setPlaceOfEntry(placeOfEntryDto);
+		//Cargo lines
+		jsonToConvert.delete(0, jsonToConvert.length());
+		ArrayList<ManifestCargoLinesDto> cargoList = objMapper_CargoLines.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestCargoLinesDto>>() {});
+		manifestDto.setCargoLines(cargoList);
 		
-		logger.info("DTO raw:" + manifestDto.toString());
-		logger.info("Manifest STATUS:" + manifestDto.getStatus());
 		//return DTO in JSON
 		ObjectMapper mapper = new ObjectMapper();
 		logger.info("Dto as JSON:" + mapper.writeValueAsString(manifestDto));
