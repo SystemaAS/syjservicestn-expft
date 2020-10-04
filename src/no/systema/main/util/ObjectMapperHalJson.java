@@ -1,8 +1,13 @@
 package no.systema.main.util;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import no.systema.jservices.tvinn.expressfortolling.controller.ExpressFortollingController;
 
 /**
  * The class is used for HAl-json unmarshalling since there are some problems with RestTemplate and Spring HateOAS in Spring 4.
@@ -11,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @date Apr 2020
  */
 public class ObjectMapperHalJson {
+	private static Logger logger = Logger.getLogger(ObjectMapperHalJson.class.getName());
 	private String halJsonPayload;
 	private String targetNode;
 	
@@ -35,5 +41,32 @@ public class ObjectMapperHalJson {
         jsonToConvert.append(targetStr);
         
         return om;
+	}
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isValidTargetNode(){
+		boolean retval = true;
+		try{
+			ObjectMapper om = new ObjectMapper();
+	        om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+	        om.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
+	        
+	
+	        JsonNode jsNode = om.readTree(this.halJsonPayload);
+	        JsonNode tmp = jsNode.at(this.targetNode);
+	        logger.warn(tmp.toString());
+	        if(StringUtils.isEmpty(tmp.toString())){
+	        	retval = false;
+	        }else{
+	        	logger.warn(tmp.toString());
+	        }
+	        
+		}catch(Exception e){
+			e.printStackTrace();
+			retval = false;
+		}
+		return retval;
 	}
 }
