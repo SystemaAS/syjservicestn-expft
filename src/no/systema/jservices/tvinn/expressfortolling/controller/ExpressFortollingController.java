@@ -29,6 +29,7 @@ import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesImpor
 import no.systema.jservices.common.dto.expressfortolling.ManifestDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestPlaceOfEntryDto;
+import no.systema.jservices.common.dto.expressfortolling.ManifestStatusDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
@@ -194,5 +195,53 @@ public class ExpressFortollingController {
 			session.invalidate();
 			
 		}
+	}
+	/**
+	 * 
+	 * @param session
+	 * @param user
+	 * @param id
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="getManifestStatus.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	public Object getManifestStatus(HttpSession session, @RequestParam(value = "user", required = true) String user, 
+														@RequestParam(value = "id", required = true) String id) throws Exception {
+		logger.warn("getManifestStatus.do, id="+id);
+		
+		checkUser(user);
+		try{
+			String payload = apiServices.getManifest(id);
+			//convert to Dto (we do not do this in the service since we must see the JSON string in case of errors. It is easier to follow...
+			ObjectMapperHalJson objMapper = new ObjectMapperHalJson(payload, "");
+			ObjectMapperHalJson objMapper_TC = new ObjectMapperHalJson(payload, "/_embedded/transportationCompany");
+			
+			//Manifest Parent
+			StringBuffer jsonToConvert = new StringBuffer();
+			ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() {});
+			
+			//Transp.Company
+			if(objMapper_TC.isValidTargetNode()){
+				jsonToConvert.delete(0, jsonToConvert.length());
+				ManifestTransportationCompanyDto transportationCompanyDto = objMapper_TC.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestTransportationCompanyDto>() {});
+				manifestDto.setTransportationCompany(transportationCompanyDto);
+			}
+			
+			ManifestStatusDto dto = new ManifestStatusDto();
+			dto.setManifestId(manifestDto.getManifestId());
+			dto.setStatus(manifestDto.getStatus());
+			return dto;
+			
+		}catch(Exception e){
+			ManifestStatusDto dto = new ManifestStatusDto();
+			dto.setManifestId(e.toString());
+			return dto;
+			
+		}finally{
+			
+			session.invalidate();
+			
+		}
+		
 	}
 }
