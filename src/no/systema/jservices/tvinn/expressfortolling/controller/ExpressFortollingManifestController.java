@@ -52,27 +52,14 @@ public class ExpressFortollingManifestController {
 	public ResponseEntity<String> testFileUploadByteArrayResource() {
 		
 		apiUploadClient.setUploadUrlImmutable(uploadUrl);
-		
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
-		if(result!=null && result.startsWith("2")){
-			if(result.startsWith("204")){
-				//meaning no files to fetch
-				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
-				return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
-			}else{
-				return new ResponseEntity<String>(HttpStatus.OK);
-			}
-		}else{
-			if(result.startsWith("4")){
-				return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
-			}else if (result.startsWith("5")){
-				return new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
-			}else{
-				return new ResponseEntity<String>(HttpStatus.NOT_FOUND);
-			}
-			
-		}
+		
+		return this.getResult(result);
+		
 	}
+	
+	
+	
 	
 	/**
 	 * Production entry-point
@@ -85,19 +72,37 @@ public class ExpressFortollingManifestController {
 	public ResponseEntity<String> prodFileUploadByteArrayResource() {
 		
 		apiUploadClient.setUploadUrlImmutable(uploadProdUrl);
-		
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
+		
+		return this.getResult(result);
+	}
+	/**
+	 * 
+	 * @param result
+	 * @return
+	 */
+	private ResponseEntity<String> getResult(String result) {
+		ResponseEntity<String> retval = null;
+		
 		if(result!=null && result.startsWith("2")){
 			if(result.startsWith("204")){
 				//meaning no files to fetch
 				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
-				return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
+				retval = new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 			}else{
-				return new ResponseEntity<String>(HttpStatus.OK);
+				retval = new ResponseEntity<String>(HttpStatus.OK);
 			}
 		}else{
-			return new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+			if(result.startsWith("4")){
+				retval = new ResponseEntity<String>(HttpStatus.BAD_REQUEST);
+			}else if (result.startsWith("5")){
+				retval = new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);
+			}else{
+				retval = new ResponseEntity<String>(HttpStatus.NOT_FOUND);
+			}
+			
 		}
+		return retval;
 	}
 	
 }
