@@ -197,7 +197,7 @@ public class ExpressFortollingController {
 		}
 	}
 	/**
-	 * 
+	 * http://localhost:8080/syjservicestn-expft/getManifestStatus.do?user=SYSTEMA&id=f2bfbb94-afae-4af3-a4ff-437f787d322f
 	 * @param session
 	 * @param user
 	 * @param id
@@ -230,6 +230,9 @@ public class ExpressFortollingController {
 			ManifestStatusDto dto = new ManifestStatusDto();
 			dto.setManifestId(manifestDto.getManifestId());
 			dto.setStatus(manifestDto.getStatus());
+			dto.setTimeOfDeparture(manifestDto.getTimeOfDeparture());
+			dto.setTimeOfRelease(manifestDto.getTimeOfRelease());
+			dto.setLastChanged(manifestDto.getLastChanged());
 			return dto;
 			
 		}catch(Exception e){
