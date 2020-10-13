@@ -35,6 +35,10 @@ private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class
 	@Value("${expft.upload.prod.url}")
 	private String uploadProdUrl;
 	
+	
+	@Value("${expft.upload.docs.url}")
+	private String uploadDocsUrl;
+	
 	@Autowired
 	ApiUploadClient apiUploadClient;
 
@@ -47,6 +51,13 @@ private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class
 	public void testFileUpload() {
 		apiUploadClient.setUploadUrlImmutable(uploadUrl);
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
+		logger.info(result);	
+	}
+	
+	@Test
+	public void testDocumentApiUpload() {
+		apiUploadClient.setUploadUrlImmutable(uploadDocsUrl);
+		String result = apiUploadClient.uploadDocuments(baseDir, sentDir , errorDir);
 		logger.info(result);	
 	}
 	

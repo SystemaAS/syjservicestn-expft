@@ -45,9 +45,15 @@ public class DifiJwtCreator {
 	@Value("${expft.audience}")
 	String difiTokenAudienceUrl;
 	
+	@Value("${expft.scope}")
+	String scopeExpft;
+	
+	@Value("${expft.scope.docs}")
+	String scopeExpftDocs;
+	
+	
 	@Value("${kurer.audience}")
 	String difiTokenAudienceKurerUrl;
-	
 	
 	@Value("${kurer.scope}")
 	String scopeKurer;
@@ -90,7 +96,7 @@ public class DifiJwtCreator {
 	            	.setAudience(difiTokenAudienceUrl)
 	            	.setIssuer(issuer)
 //	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
-	            	.claim("scope", "toll:ekspressfortolling")
+	            	.claim("scope", this.scopeExpft)
 	            	.setId(UUID.randomUUID().toString())
 	            	.setIssuedAt(new Date(now))
 	            	.setExpiration(new Date(now + expiration))
@@ -153,6 +159,41 @@ public class DifiJwtCreator {
 			e.printStackTrace();
 		} 
 		*/
+		return result;  
+	    
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String createRequestDocsJwt() {
+
+		String encodedCertificate;
+		PrivateKey privateKey;
+		String jwt;
+		try {
+			encodedCertificate = certificateManager.getEncodedCertificate();
+			privateKey = certificateManager.getPrivateKey();
+		} catch (Exception e) {
+			String message = "Could not manage X.509 in a correct way!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+
+		final long now = Clock.systemUTC().millis();
+		
+		String result =  Jwts.builder()
+	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
+	            	.setAudience(difiTokenAudienceUrl)
+	            	.setIssuer(issuer)
+	            	.claim("scope", this.scopeExpftDocs)
+	            	.setId(UUID.randomUUID().toString())
+	            	.setIssuedAt(new Date(now))
+	            	.setExpiration(new Date(now + expiration))
+	            	.signWith(SignatureAlgorithm.RS256, privateKey)
+	            	.compact();
+	    logger.info("createRequestJwt:" + result);
 		return result;
 	    
 	    

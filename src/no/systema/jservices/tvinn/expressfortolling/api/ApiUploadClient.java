@@ -170,6 +170,101 @@ public class ApiUploadClient  {
 		
 		return retval;
 	}
+	
+	/**
+	 * Document API for extra attachments (PDF, JPG, PNG, TXT, DOC, DOCX, XLS, XLSX)
+	 * @param baseDir
+	 * @param sentDir
+	 * @param errorDir
+	 * @return
+	 */
+	public String uploadDocuments(String baseDir, String sentDir, String errorDir){
+		TokenResponseDto authTokenDto = null;
+		String OK_STATUS_INIT_NUMBER = "2";
+		String retval = "204_NO_Content"; 
+		
+		if (Files.exists(Paths.get(baseDir))) {
+			this.fileMgr.secureTargetDir(sentDir);
+			this.fileMgr.secureTargetDir(errorDir);
+			int counter = 0;
+		
+			try{
+				List<File> files = this.fileMgr.getValidFilesInDirectory(baseDir);
+				//files.forEach(System.out::println);
+
+				//Send each file per restTemplate call
+				for(File file: files){
+					//String fileName = Paths.get(filePath).getFileName().toString();
+					counter++;
+					
+					//get token authDto only for the first iteration
+					authTokenDto = authorization.accessTokenForDocsRequestPost();
+
+					String fileName = file.getAbsolutePath();
+					//there is a bug in Toll.no for more than 2 files in the same REST loop ... ? To be researched ...
+					if (counter <= this.maxLimitOfFilesPerLoop && authTokenDto!=null){
+						try{
+							//Toll.no takes a json-payload as String
+							//retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+							String declarationId = "974309742-12102020-698";
+							//996358232-24082020-298760/document
+							String documentType = "faktura";
+							retval = this.postFile(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto, declarationId, documentType);
+							logger.info("######### OK:" + retval);
+							//Toll.no does not take a file as Multipart. Could be a reality in version 2
+							//retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+							
+							
+							/*TODO
+							if(retval.startsWith(OK_STATUS_INIT_NUMBER)){
+								logger.info(Paths.get(fileName) + " " + Paths.get(sentDir + Paths.get(fileName).getFileName().toString()));
+								//this.fileMgr.moveCopyFiles(fileName, this.backupDir, FileManager.COPY_FLAG);
+								
+								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
+								this.transmissionLogger.logTransmission(fileName, errorDir, null, null);
+								//now move the file to the OK-sent directory. The suffix in milliseconds won't match the file suffix in error db-log.
+								this.fileMgr.moveCopyFiles(fileName, sentDir, FileManager.MOVE_FLAG, FileManager.TIME_STAMP_SUFFIX_FLAG);
+								
+							}else{
+								logger.info(Paths.get(fileName) + " " + Paths.get(errorDir + Paths.get(fileName).getFileName().toString()));
+								String errorFileRenamed= retval + "_" + Paths.get(fileName).getFileName().toString();
+								//log further in database via a service before moving the file. Send the errorDir in case there is an error on log
+								this.transmissionLogger.logTransmission(fileName, errorDir, retval, retval);
+								this.fileMgr.moveCopyFiles(fileName, errorDir, FileManager.MOVE_FLAG, errorFileRenamed, FileManager.TIME_STAMP_SUFFIX_FLAG);
+								
+							}
+							*/
+						}catch(HttpClientErrorException e){
+							//usually thrown with validation errors on json-paylaod such as invalid values in a field or lack of mandatory values.
+							String responseBody = e.getResponseBodyAsString();
+							logger.error("ERROR http code:" + e.getRawStatusCode());
+							logger.error("Response body:" + responseBody);
+							
+							retval = this.getError(e);
+							//this.logError(retval, fileName, errorDir, responseBody);
+						}
+						catch(Exception e){
+							//other more general exception 
+							retval = this.getError(e);
+							//this.logError(retval, fileName, errorDir, "unexpected " + e.toString());	
+						}
+						
+					}
+					
+				}
+			
+			}catch(Exception e){
+				//e.printStackTrace();
+				retval = "ERROR_on_REST";
+				logger.fatal(retval);
+			}
+			
+		}else{
+			logger.error("No directory found: " + baseDir);
+		}
+		
+		return retval;
+	}
 	/**
 	 * 
 	 * @param e
@@ -518,7 +613,7 @@ public class ApiUploadClient  {
 	
 	
 	
-	/*Some code to look at on Multipart file send (Dokument API för MAnifest maskinport)
+	/**Some code to look at on Multipart file send (Dokument API för Manifest maskinport)
 	 * 
 	 @Service
 		public class FileUploadService {
@@ -561,7 +656,65 @@ public class ApiUploadClient  {
 		        }
 		    }
 		}
+		
 		*/
+		
+	 /**
+	  * Lovliga filtyper: pdf, jpg, png, txt, doc, docx, xls, xlsx
+	  * 
+	  * @param inputStream
+	  * @param fileName
+	  * @param authTokenDto
+	  * @param declarationId e.g (Declarant(9)/date(8)/sequence(6): 99620120129062020125771
+	  * @param documentType (faktura, tillatelser, fraktregning, opprinnelsesdokumentasjon, fraktbrev)
+	  * @return
+	  * @throws Exception
+	  */
+	 private String postFile(InputStream inputStream, String fileName, TokenResponseDto authTokenDto, String declarationId, String documentType) throws Exception {
+
+		    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+		    requestFactory.setBufferRequestBody(false);
+		    restTemplate.setRequestFactory(requestFactory);
+
+		    
+		    InputStreamResource inputStreamResource = new InputStreamResource(inputStream) {
+		        @Override public String getFilename() { return fileName; }
+		        @Override public long contentLength() { return -1; }
+		    };
+		    
+		    logger.info("File path----->" + fileName);
+			HttpHeaders parts = new HttpHeaders();  
+			final HttpEntity<InputStreamResource> partsEntity = new HttpEntity<>(inputStreamResource, parts);
+			String path = this.uploadUrlImmutable.toString() + "/" + declarationId + "/document";
+		    logger.info(path);
+			URI url = new URI(path);
+			
+		    MultiValueMap<String, Object> body = new LinkedMultiValueMap<String, Object>();
+		    //Example: -->{"declarationId": "974309742-12102020-698", "documentType": "faktura"}
+		    body.add("metadata", "{\"declarationId\": \"" + declarationId + "\"" + "," +  "\"documentType\": \"" + documentType + "\"}");
+		    body.add("file", partsEntity);
+		    
+		    
+		    HttpHeaders headerParams = new HttpHeaders();
+		    headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + authTokenDto.getAccess_token());
+		    headerParams.setContentType(MediaType.MULTIPART_FORM_DATA);
+		    HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body,headerParams);
+
+		    final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
+		    final ResponseEntity<String> exchange = this.restTemplate.exchange(url, HttpMethod.POST, requestEntity, typeReference);
+			
+			if(exchange.getStatusCode().is2xxSuccessful()) {
+				logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+			}else{
+				logger.info("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString());
+			}
+			return exchange.getStatusCode().toString() ; 
+		    
+		   
+		}
+	 
+	 
+	 
 	 
 	
 }

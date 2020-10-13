@@ -124,6 +124,49 @@ public class Authorization {
         apiClient.setBasePath(difiTokenKurerAudienceUrl);
         
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+    }
+    
+    
+    
+    /**
+     * Get the access token
+     * 
+     * Response Message has StatusCode Created if POST operation succeed
+     * <p><b>201</b> - Created
+     * @return TokenResponseDto the response, including the accesstoken
+     * @throws RestClientException if an error occurs while attempting to invoke the API
+     */
+    public TokenResponseDto accessTokenForDocsRequestPost() throws RestClientException {
+    	logger.info("accessTokenRequestPost(TokenRequestDto tokenRequest)");
+    	Object postBody = null;  //Not in use
+    	
+    	TokenRequestDto tokenRequest = new TokenRequestDto();
+    	tokenRequest.setAssertion(difiJwtCreator.createRequestDocsJwt());
+        
+        String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+              
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "grant_type", tokenRequest.getGrantType()));       
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "assertion", tokenRequest.getAssertion()));       
+        
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { 
+        	"application/x-www-form-urlencoded"
+        };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
+        
+        //TODO refactor outside
+        apiClient.setBasePath(difiTokenAudienceUrl);
+        
+        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
     }	
 	
 }
