@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -265,6 +266,63 @@ public class ApiUploadClient  {
 		
 		return retval;
 	}
+	
+	/**
+	 * This method is used when the end-user uploads a file manually (usually via a GUI)
+	 * 
+	 * @param declarationId
+	 * @param documentType
+	 * @param fileName
+	 * @return
+	 */
+	public String uploadDocumentsByUser(String declarationId, String documentType, String fileName){
+		TokenResponseDto authTokenDto = null;
+		String OK_STATUS_INIT_NUMBER = "2";
+		String retval = "204_NO_Content"; 
+		
+		if (StringUtils.isNotEmpty(declarationId) && StringUtils.isNotEmpty(documentType) && StringUtils.isNotEmpty(fileName)) {
+			//check if exists
+			if(Files.exists(Paths.get(fileName))){
+				try{
+					//get token authDto only for the first iteration
+					authTokenDto = authorization.accessTokenForDocsRequestPost();
+					//send file
+					if (authTokenDto!=null){
+						try{
+							retval = this.postFile(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto, declarationId, documentType);
+							logger.info("######### OK:" + retval);
+							
+						}catch(HttpClientErrorException e){
+							//usually thrown with validation errors on json-paylaod such as invalid values in a field or lack of mandatory values.
+							String responseBody = e.getResponseBodyAsString();
+							logger.error("ERROR http code:" + e.getRawStatusCode());
+							logger.error("Response body:" + responseBody);
+							
+							retval = this.getError(e);
+							//this.logError(retval, fileName, errorDir, responseBody);
+							
+						}catch(Exception e){
+							//other more general exception 
+							retval = this.getError(e);
+							//this.logError(retval, fileName, errorDir, "unexpected " + e.toString());	
+						}
+					}
+				}catch(Exception e){
+					//e.printStackTrace();
+					retval = "ERROR_on_REST";
+					logger.fatal(retval);
+				}
+			}else{
+				retval = "ERROR java.io.FileNotFoundException: " + fileName;
+				logger.fatal(retval);	
+			}
+		}
+		
+		return retval;
+		
+	}
+	
+	
 	/**
 	 * 
 	 * @param e

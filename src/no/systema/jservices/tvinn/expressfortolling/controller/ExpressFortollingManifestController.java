@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.expressfortolling.controller;
 
+import javax.servlet.http.HttpSession;
+
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,8 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiUploadClient;
 
 /**
@@ -36,9 +40,14 @@ public class ExpressFortollingManifestController {
 	@Value("${expft.upload.prod.url}")
     private String uploadProdUrl;
 	
+	@Value("${expft.upload.docs.url}")
+	private String uploadDocsUrl;
+	
 	@Autowired
 	ApiUploadClient apiUploadClient;
 
+	@Autowired
+	private BridfDaoService bridfDaoService;
 	
     
 	/**
@@ -76,6 +85,46 @@ public class ExpressFortollingManifestController {
 		
 		return this.getResult(result);
 	}
+	
+	
+	/**
+	 * Entry point for the Document API to toll.no when the end-user uploads a document manually
+	 * 
+	 * @param session
+	 * @param user
+	 * @param declarationId
+	 * @param documentType
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 * 
+	 * PRODUCTION: http://localhost:8080/syjservicestn-expft/uploadFileByUser/docApi
+	 */
+	@RequestMapping(value="uploadFileByUser/docApi", method={RequestMethod.GET, RequestMethod.POST})
+	public ResponseEntity<String> uploadFileByUser(HttpSession session,
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "declId", required = true) String declId, 
+			@RequestParam(value = "docType", required = true) String docType, 
+			@RequestParam(value = "docPath", required = true) String docPath) throws Exception {
+
+		checkUser(user);
+		//now process
+		apiUploadClient.setUploadUrlImmutable(uploadDocsUrl);
+		String result = apiUploadClient.uploadDocumentsByUser(declId, docType, docPath);
+		
+		return this.getResult(result);
+	}
+	
+	/**
+	 * 
+	 * @param user
+	 */
+	private void checkUser(String user) {
+		if (!bridfDaoService.userNameExist(user)) {
+			throw new RuntimeException("ERROR: parameter, user, is not valid!");
+		}		
+	}
+	
 	/**
 	 * 
 	 * @param result
