@@ -296,15 +296,14 @@ public class ApiUploadClient  {
 							//usually thrown with validation errors on json-paylaod such as invalid values in a field or lack of mandatory values.
 							String responseBody = e.getResponseBodyAsString();
 							logger.error("ERROR http code:" + e.getRawStatusCode());
-							logger.error("Response body:" + responseBody);
+							logger.error("Response body:" + e.getStatusText());
 							
-							retval = this.getError(e);
-							//this.logError(retval, fileName, errorDir, responseBody);
+							retval = this.getError(e) + "_" + e.getStatusText();
 							
 						}catch(Exception e){
 							//other more general exception 
-							retval = this.getError(e);
-							//this.logError(retval, fileName, errorDir, "unexpected " + e.toString());	
+							retval = this.getError(e) + "_" + e.toString();
+								
 						}
 					}
 				}catch(Exception e){

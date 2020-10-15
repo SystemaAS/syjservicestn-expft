@@ -52,19 +52,20 @@ private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class
 		apiUploadClient.setUploadUrlImmutable(uploadUrl);
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir , errorDir);
 		logger.info(result);	
-	}
+	}*/
 	
+	/*
 	@Test //OK --> Oct 9th, 2020
 	public void testDocumentApiUpload() {
 		apiUploadClient.setUploadUrlImmutable(uploadDocsUrl);
 		String result = apiUploadClient.uploadDocuments(baseDir, sentDir , errorDir);
 		logger.info(result);	
-	}
-	*/
+	}*/
+	
 	
 	@Test //OK --> Oct 14th, 2020
 	public void testDocumentApiUploadFileByUser() {
-		String declarationId = "974309742-12102020-698";
+		String declarationId = "TARZAN_974309742-12102020-698";
 		String documentType = "faktura";
 		String fileName = "/zzzexpress/docsapi/skat_ncts.pdf";
 		

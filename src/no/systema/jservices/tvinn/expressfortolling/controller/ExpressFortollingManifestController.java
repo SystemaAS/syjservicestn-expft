@@ -6,7 +6,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -98,10 +98,10 @@ public class ExpressFortollingManifestController {
 	 * @return
 	 * @throws Exception
 	 * 
-	 * PRODUCTION: http://localhost:8080/syjservicestn-expft/uploadFileByUser/docApi
+	 * PRODUCTION: http://localhost:8080/syjservicestn-expft/uploadFileByUser.do
 	 */
-	@RequestMapping(value="uploadFileByUser/docApi", method={RequestMethod.GET, RequestMethod.POST})
-	public ResponseEntity<String> uploadFileByUser(HttpSession session,
+	@RequestMapping(value="uploadFileByUser.do", method={RequestMethod.GET, RequestMethod.POST}, produces = {MediaType.ALL_VALUE})
+	public String uploadFileByUser(HttpSession session,
 			@RequestParam(value = "user", required = true) String user,
 			@RequestParam(value = "declId", required = true) String declId, 
 			@RequestParam(value = "docType", required = true) String docType, 
@@ -109,10 +109,12 @@ public class ExpressFortollingManifestController {
 
 		checkUser(user);
 		//now process
-		apiUploadClient.setUploadUrlImmutable(uploadDocsUrl);
-		String result = apiUploadClient.uploadDocumentsByUser(declId, docType, docPath);
 		
-		return this.getResult(result);
+		apiUploadClient.setUploadUrlImmutable(uploadDocsUrl);
+		logger.warn("starting ...");
+		String result = apiUploadClient.uploadDocumentsByUser(declId, docType, docPath);
+		logger.warn(result);
+		return result;
 	}
 	
 	/**
