@@ -230,7 +230,7 @@ public class ApiServices {
   		jsonHeaders.add("Accept", "application/json;charset=utf-8");
   		
   		HttpMethod httpMethod = HttpMethod.DELETE;
-  		URI url = new URI(uploadUrl + "/" + manifestId);
+  		URI url = new URI(uploadProdUrl + "/" + manifestId);
         
   		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, jsonHeaders);
   		
@@ -281,7 +281,7 @@ public class ApiServices {
   		jsonHeaders.add("Accept", "application/json;charset=utf-8");
   		
   		HttpMethod httpMethod = HttpMethod.PATCH;
-  		URI url = new URI(uploadUrl + "/" + manifestId);
+  		URI url = new URI(uploadProdUrl + "/" + manifestId);
         
   		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, jsonHeaders);
   		
@@ -331,7 +331,7 @@ public class ApiServices {
 		
 		//default method when file is sent for the first time (create)
 		HttpMethod httpMethod = HttpMethod.POST;
-		String path = this.uploadUrl.toString() + "/" + manifestId + "/cargo-line/";
+		String path = this.uploadProdUrl.toString() + "/" + manifestId + "/cargo-line/";
 		
 		//////START REST/////////
 		ResponseEntity<String> exchange = null;
