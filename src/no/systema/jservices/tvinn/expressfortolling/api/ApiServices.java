@@ -331,7 +331,7 @@ public class ApiServices {
 		
 		//default method when file is sent for the first time (create)
 		HttpMethod httpMethod = HttpMethod.POST;
-		String path = this.uploadProdUrl.toString() + "/" + manifestId + "/cargo-line/";
+		String path = this.uploadProdUrl + "/" + manifestId + "/cargo-line/";
 		
 		//////START REST/////////
 		ResponseEntity<String> exchange = null;

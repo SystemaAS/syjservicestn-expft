@@ -58,11 +58,12 @@ public class ExpressFortollingManifestController {
 	 * @return
 	 */
 	@RequestMapping(value="testUpload/expressmanifest", method={RequestMethod.GET})
-	public ResponseEntity<String> testFileUploadByteArrayResource() {
+	public ResponseEntity<String> testFileUploadByteArrayResource(HttpSession session) {
 		
 		apiUploadClient.setUploadUrlImmutable(uploadUrl);
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
 		
+		session.invalidate();
 		return this.getResult(result);
 		
 	}
@@ -78,11 +79,12 @@ public class ExpressFortollingManifestController {
 	 * 
 	 */
 	@RequestMapping(value="prodUpload/expressmanifest", method={RequestMethod.GET})
-	public ResponseEntity<String> prodFileUploadByteArrayResource() {
+	public ResponseEntity<String> prodFileUploadByteArrayResource(HttpSession session) {
 		
 		apiUploadClient.setUploadUrlImmutable(uploadProdUrl);
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
 		
+		session.invalidate();
 		return this.getResult(result);
 	}
 	
@@ -114,6 +116,7 @@ public class ExpressFortollingManifestController {
 		logger.warn("starting ...");
 		String result = apiUploadClient.uploadDocumentsByUser(declId, docType, docPath);
 		logger.warn(result);
+		session.invalidate();
 		return result;
 	}
 	
