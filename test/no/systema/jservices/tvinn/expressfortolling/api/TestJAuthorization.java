@@ -22,23 +22,23 @@ public class TestJAuthorization extends TestJBase {
 	@Autowired
 	Authorization authorization;
 	
-	/*
+	
 	@Test
 	public void testAccessTokenRequestPost() throws Exception {
 		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
 		
 		logger.info("responseDto = "+responseDto);
 		
-	}*/
+	}
 	
-	@Test
+	/*@Test
 	public void accessTokenForKurerRequestPost() throws Exception {
 		String urlUploadImmutable = "test";
 		TokenResponseDto responseDto  = authorization.accessTokenForKurerRequestPost(urlUploadImmutable);
 		
 		logger.info("responseDto = "+responseDto);
 		
-	}
+	}*/
 	
 
 }

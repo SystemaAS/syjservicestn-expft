@@ -2,6 +2,8 @@ package no.systema.jservices.tvinn.expressfortolling.jwt;
 
 import java.security.PrivateKey;
 import java.time.Clock;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
@@ -88,9 +90,12 @@ public class DifiJwtCreator {
 			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		}
-
-		final long now = Clock.systemUTC().millis();
 		
+		//final long now = Clock.systemUTC().millis();
+		long expiration_l = expiration;
+		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.MINUTES);
+	    
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
 	            	.setAudience(difiTokenAudienceUrl)
@@ -98,8 +103,8 @@ public class DifiJwtCreator {
 //	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
 	            	.claim("scope", this.scopeExpft)
 	            	.setId(UUID.randomUUID().toString())
-	            	.setIssuedAt(new Date(now))
-	            	.setExpiration(new Date(now + expiration))
+	            	.setIssuedAt(Date.from(issuedAt))
+	            	.setExpiration(Date.from(expiration))
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 	    logger.info("createRequestJwt:" + result);
@@ -129,8 +134,10 @@ public class DifiJwtCreator {
 			throw new RuntimeException(message, e);
 		}
 
-		final long now = Clock.systemUTC().millis();
-		
+	
+		long expirationKurer_l = expirationKurer;
+		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+	    Instant expiration = issuedAt.plus(expirationKurer_l, ChronoUnit.MINUTES);
 		
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
@@ -140,8 +147,8 @@ public class DifiJwtCreator {
 //	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
 	            	.claim("scope", this.scopeKurer)
 	            	.setId(UUID.randomUUID().toString())
-	            	.setIssuedAt(new Date(now))
-	            	.setExpiration(new Date(now + this.expirationKurer))
+	            	.setIssuedAt(Date.from(issuedAt))
+	            	.setExpiration(Date.from(expiration))
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 		
@@ -181,7 +188,10 @@ public class DifiJwtCreator {
 			throw new RuntimeException(message, e);
 		}
 
-		final long now = Clock.systemUTC().millis();
+		
+		long expiration_l = expiration;
+		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.MINUTES);
 		
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
@@ -189,8 +199,8 @@ public class DifiJwtCreator {
 	            	.setIssuer(issuer)
 	            	.claim("scope", this.scopeExpftDocs)
 	            	.setId(UUID.randomUUID().toString())
-	            	.setIssuedAt(new Date(now))
-	            	.setExpiration(new Date(now + expiration))
+	            	.setIssuedAt(Date.from(issuedAt))
+	            	.setExpiration(Date.from(expiration))
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 	    logger.info("createRequestJwt:" + result);
