@@ -3,6 +3,8 @@ package no.systema.jservices.tvinn.expressfortolling.jwt;
 import java.security.PrivateKey;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
@@ -94,13 +96,13 @@ public class DifiJwtCreator {
 		//final long now = Clock.systemUTC().millis();
 		long expiration_l = expiration;
 		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.MINUTES);
+	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.SECONDS);
 	    
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
 	            	.setAudience(difiTokenAudienceUrl)
 	            	.setIssuer(issuer)
-//	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
+	            	//.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
 	            	.claim("scope", this.scopeExpft)
 	            	.setId(UUID.randomUUID().toString())
 	            	.setIssuedAt(Date.from(issuedAt))
@@ -108,11 +110,27 @@ public class DifiJwtCreator {
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 	    logger.info("createRequestJwt:" + result);
+	    //for debugging purposes at customer site
+		this.showJWTTimeParamsOnRequest(issuedAt, expiration);
+		
 		return result;
 	    
 	    
 	}
-	
+	private void showJWTTimeParamsOnRequest(Instant issuedAt, Instant expiration ){
+		//In format:2021-02-25T11:11:40
+		////DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
+		//DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault());
+		//logger.warn(formatter.format(issuedAt));
+		//logger.warn(formatter.format(expiration));
+		//UTC debug
+		logger.info("UTC time - issuedAt:" + Date.from(issuedAt));
+		logger.info("UTC time - expiration:" + Date.from(expiration));
+		//In seconds
+		logger.warn("As in JWT(issuedAt - seconds):" + String.valueOf(issuedAt.toEpochMilli()/1000));
+		logger.warn("As in JWT(expiration - seconds):" + String.valueOf(expiration.toEpochMilli()/1000));
+		logger.warn("As in JWT(issuer - clientID):" + issuer);
+	}
 	
 	/**
 	 * Create a JWT based on X.509 certificate.
@@ -137,7 +155,7 @@ public class DifiJwtCreator {
 	
 		long expirationKurer_l = expirationKurer;
 		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-	    Instant expiration = issuedAt.plus(expirationKurer_l, ChronoUnit.MINUTES);
+	    Instant expiration = issuedAt.plus(expirationKurer_l, ChronoUnit.SECONDS);
 		
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
@@ -152,20 +170,11 @@ public class DifiJwtCreator {
 	            	.signWith(SignatureAlgorithm.RS256, privateKey)
 	            	.compact();
 		
-		/* DEBUG payload 
-		try{
-			String[] pieces = result.split("\\.");
-			String b64header = pieces[0];
-			String b64payload = pieces[1];
-			String header = new String(Base64.decodeBase64(b64header), "UTF-8");
-			String payload = new String(Base64.decodeBase64(b64payload), "UTF-8");
-			logger.info(header);
-			logger.info(payload);
-			
-		}catch(Exception e){
-			e.printStackTrace();
-		} 
-		*/
+		logger.info("createRequestJwt:" + result);
+	    
+		//for debugging purposes at customer site
+		this.showJWTTimeParamsOnRequest(issuedAt, expiration);
+		
 		return result;  
 	    
 	}

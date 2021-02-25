@@ -162,7 +162,7 @@ public class ApiUploadClient  {
 			}catch(Exception e){
 				//e.printStackTrace();
 				retval = "ERROR_on_REST";
-				logger.fatal(retval + " " + e.toString());
+				logger.fatal(retval + " " + e);
 			}
 			
 		}else{
