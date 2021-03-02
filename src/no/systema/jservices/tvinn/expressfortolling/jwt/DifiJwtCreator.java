@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling.jwt;
 
+import java.net.InetAddress;
 import java.security.PrivateKey;
 import java.time.Clock;
 import java.time.Instant;
@@ -13,6 +14,9 @@ import java.util.UUID;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.net.ntp.NTPUDPClient;
+import org.apache.commons.net.ntp.NtpV3Packet;
+import org.apache.commons.net.ntp.TimeInfo;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +27,7 @@ import io.jsonwebtoken.JwsHeader;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import no.systema.jservices.tvinn.kurermanifest.util.JwtUtils;
 
 /**
  * @see <a href=
@@ -83,7 +88,7 @@ public class DifiJwtCreator {
 
 		String encodedCertificate;
 		PrivateKey privateKey;
-		String jwt;
+
 		try {
 			encodedCertificate = certificateManager.getEncodedCertificate();
 			privateKey = certificateManager.getPrivateKey();
@@ -92,13 +97,23 @@ public class DifiJwtCreator {
 			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		}
-		
-		//final long now = Clock.systemUTC().millis();
+		//default
 		long expiration_l = expiration;
 		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.SECONDS);
 	    
-		String result =  Jwts.builder()
+	    JwtUtils jwtUtils = new JwtUtils();
+	    Instant atomicIssuedAt = jwtUtils.adjustTimeFromInternet();
+	    Instant atomicexpiration = jwtUtils.adjustTimeFromInternet(atomicIssuedAt, expiration_l);
+	    if(atomicIssuedAt!=null && atomicexpiration!=null){
+	    	issuedAt = atomicIssuedAt;
+	    	expiration = atomicexpiration;
+	    }
+	    
+	    //adjust if possible. Some servers from our customers have wrong UTC times. We then try to get the internet atomic time here
+	    //this.adjustTimeOnInternet(issuedAt, expiration, expiration_l);
+		
+	    String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
 	            	.setAudience(difiTokenAudienceUrl)
 	            	.setIssuer(issuer)
@@ -111,26 +126,14 @@ public class DifiJwtCreator {
 	            	.compact();
 	    logger.info("createRequestJwt:" + result);
 	    //for debugging purposes at customer site
-		this.showJWTTimeParamsOnRequest(issuedAt, expiration);
+		jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuer);
 		
 		return result;
 	    
 	    
 	}
-	private void showJWTTimeParamsOnRequest(Instant issuedAt, Instant expiration ){
-		//In format:2021-02-25T11:11:40
-		////DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));
-		//DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.systemDefault());
-		//logger.warn(formatter.format(issuedAt));
-		//logger.warn(formatter.format(expiration));
-		//UTC debug
-		logger.info("UTC time - issuedAt:" + Date.from(issuedAt));
-		logger.info("UTC time - expiration:" + Date.from(expiration));
-		//In seconds
-		logger.warn("As in JWT(issuedAt - seconds):" + String.valueOf(issuedAt.toEpochMilli()/1000));
-		logger.warn("As in JWT(expiration - seconds):" + String.valueOf(expiration.toEpochMilli()/1000));
-		logger.warn("As in JWT(issuer - clientID):" + issuer);
-	}
+	
+	
 	
 	/**
 	 * Create a JWT based on X.509 certificate.
@@ -142,7 +145,7 @@ public class DifiJwtCreator {
 
 		String encodedCertificate;
 		PrivateKey privateKey;
-		String jwt;
+
 		try {
 			encodedCertificate = certificateManager.getEncodedCertificate();
 			privateKey = certificateManager.getPrivateKey();
@@ -157,6 +160,14 @@ public class DifiJwtCreator {
 		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 	    Instant expiration = issuedAt.plus(expirationKurer_l, ChronoUnit.SECONDS);
 		
+	    JwtUtils jwtUtils = new JwtUtils();
+	    Instant atomicIssuedAt = jwtUtils.adjustTimeFromInternet();
+	    Instant atomicexpiration = jwtUtils.adjustTimeFromInternet(atomicIssuedAt, expirationKurer_l);
+	    if(atomicIssuedAt!=null && atomicexpiration!=null){
+	    	issuedAt = atomicIssuedAt;
+	    	expiration = atomicexpiration;
+	    }
+	    
 		String result =  Jwts.builder()
 	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
 	            	.setHeaderParam(JwsHeader.TYPE, JwsHeader.JWT_TYPE)
@@ -173,7 +184,7 @@ public class DifiJwtCreator {
 		logger.info("createRequestJwt:" + result);
 	    
 		//for debugging purposes at customer site
-		this.showJWTTimeParamsOnRequest(issuedAt, expiration);
+		jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuerKurer);
 		
 		return result;  
 	    
