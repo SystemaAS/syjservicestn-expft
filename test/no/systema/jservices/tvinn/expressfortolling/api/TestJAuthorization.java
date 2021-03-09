@@ -24,7 +24,7 @@ public class TestJAuthorization extends TestJBase {
 	
 	
 	@Test
-	public void testAccessTokenRequestPost() throws Exception {
+	public void testAccessToken() throws Exception {
 		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
 		
 		logger.info("responseDto = "+responseDto);
@@ -32,13 +32,21 @@ public class TestJAuthorization extends TestJBase {
 	}
 	
 	/*@Test
-	public void accessTokenForKurerRequestPost() throws Exception {
+	public void accessTokenForKurer() throws Exception {
 		String urlUploadImmutable = "test";
 		TokenResponseDto responseDto  = authorization.accessTokenForKurerRequestPost(urlUploadImmutable);
 		
 		logger.info("responseDto = "+responseDto);
 		
 	}*/
+	
+	@Test
+	public void accessTokenForDocs() throws Exception {
+		TokenResponseDto responseDto  = authorization.accessTokenForDocsRequestPost();
+		
+		logger.info("responseDto = "+responseDto);
+		
+	}
 	
 
 }

@@ -37,7 +37,9 @@ import no.systema.jservices.tvinn.kurermanifest.util.JwtUtils;
 @Service
 public class DifiJwtCreator {
 	private static Logger logger = Logger.getLogger(DifiJwtCreator.class.getName());
-
+	private final boolean IS_KURER = true;
+	private final boolean ISNOT_KURER = false;
+	
 	@Autowired
 	private CertManager certificateManager;
 
@@ -97,39 +99,10 @@ public class DifiJwtCreator {
 			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		}
-		//default
-		long expiration_l = expiration;
-		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.SECONDS);
-	    
-	    JwtUtils jwtUtils = new JwtUtils();
-	    Instant atomicIssuedAt = jwtUtils.adjustTimeFromInternet();
-	    Instant atomicexpiration = jwtUtils.adjustTimeFromInternet(atomicIssuedAt, expiration_l);
-	    if(atomicIssuedAt!=null && atomicexpiration!=null){
-	    	issuedAt = atomicIssuedAt;
-	    	expiration = atomicexpiration;
-	    }
-	    
-	    //adjust if possible. Some servers from our customers have wrong UTC times. We then try to get the internet atomic time here
-	    //this.adjustTimeOnInternet(issuedAt, expiration, expiration_l);
 		
-	    String result =  Jwts.builder()
-	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
-	            	.setAudience(difiTokenAudienceUrl)
-	            	.setIssuer(issuer)
-	            	//.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
-	            	.claim("scope", this.scopeExpft)
-	            	.setId(UUID.randomUUID().toString())
-	            	.setIssuedAt(Date.from(issuedAt))
-	            	.setExpiration(Date.from(expiration))
-	            	.signWith(SignatureAlgorithm.RS256, privateKey)
-	            	.compact();
-	    logger.info("createRequestJwt:" + result);
-	    //for debugging purposes at customer site
-		jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuer);
-		
+		String result = this.getJwtString(this.expiration, this.scopeExpft, encodedCertificate, privateKey, this.ISNOT_KURER);
 		return result;
-	    
+		
 	    
 	}
 	
@@ -155,39 +128,10 @@ public class DifiJwtCreator {
 			throw new RuntimeException(message, e);
 		}
 
+		String result = this.getJwtString(this.expirationKurer, this.scopeKurer, encodedCertificate, privateKey, this.IS_KURER);
+		return result;
 	
-		long expirationKurer_l = expirationKurer;
-		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-	    Instant expiration = issuedAt.plus(expirationKurer_l, ChronoUnit.SECONDS);
 		
-	    JwtUtils jwtUtils = new JwtUtils();
-	    Instant atomicIssuedAt = jwtUtils.adjustTimeFromInternet();
-	    Instant atomicexpiration = jwtUtils.adjustTimeFromInternet(atomicIssuedAt, expirationKurer_l);
-	    if(atomicIssuedAt!=null && atomicexpiration!=null){
-	    	issuedAt = atomicIssuedAt;
-	    	expiration = atomicexpiration;
-	    }
-	    
-		String result =  Jwts.builder()
-	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
-	            	.setHeaderParam(JwsHeader.TYPE, JwsHeader.JWT_TYPE)
-	            	.setAudience(this.difiTokenAudienceKurerUrl)
-	            	.setIssuer(this.issuerKurer)
-//	            	.claim("iss_onbehalfof", "toll-onbehalfof") //TODO when the sun is shining
-	            	.claim("scope", this.scopeKurer)
-	            	.setId(UUID.randomUUID().toString())
-	            	.setIssuedAt(Date.from(issuedAt))
-	            	.setExpiration(Date.from(expiration))
-	            	.signWith(SignatureAlgorithm.RS256, privateKey)
-	            	.compact();
-		
-		logger.info("createRequestJwt:" + result);
-	    
-		//for debugging purposes at customer site
-		jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuerKurer);
-		
-		return result;  
-	    
 	}
 	
 	/**
@@ -198,7 +142,7 @@ public class DifiJwtCreator {
 
 		String encodedCertificate;
 		PrivateKey privateKey;
-		String jwt;
+		
 		try {
 			encodedCertificate = certificateManager.getEncodedCertificate();
 			privateKey = certificateManager.getPrivateKey();
@@ -207,28 +151,68 @@ public class DifiJwtCreator {
 			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		}
+		
+		String result = this.getJwtString(this.expiration, this.scopeExpftDocs, encodedCertificate, privateKey, this.ISNOT_KURER);
+		return result;
 
 		
-		long expiration_l = expiration;
-		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.MINUTES);
-		
-		String result =  Jwts.builder()
-	            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificate))
-	            	.setAudience(difiTokenAudienceUrl)
-	            	.setIssuer(issuer)
-	            	.claim("scope", this.scopeExpftDocs)
-	            	.setId(UUID.randomUUID().toString())
-	            	.setIssuedAt(Date.from(issuedAt))
-	            	.setExpiration(Date.from(expiration))
-	            	.signWith(SignatureAlgorithm.RS256, privateKey)
-	            	.compact();
-	    logger.info("createRequestJwt:" + result);
-		return result;
-	    
-	    
 	}
 	
+	/**
+	 * Returns compact JWT string
+	 * 
+	 * @param expirationTime
+	 * @param encodedCertificate
+	 * @param scope
+	 * @param privateKey
+	 * @return
+	 */
+	private String getJwtString(int expirationLimitParam, String scopeParam, String encodedCertificateParam, 
+								PrivateKey privateKeyParam, boolean isKurer){
+		
+		String result = null;
+		
+		//default
+  		long expiration_l = expirationLimitParam;
+  		
+  		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+  	    Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.SECONDS);
+  	    
+  	    JwtUtils jwtUtils = new JwtUtils();
+  	    Instant atomicIssuedAt = jwtUtils.adjustTimeFromInternet();
+  	    Instant atomicexpiration = jwtUtils.adjustTimeFromInternet(atomicIssuedAt, expiration_l);
+  	    if(atomicIssuedAt!=null && atomicexpiration!=null){
+  	    	issuedAt = atomicIssuedAt;
+  	    	expiration = atomicexpiration;
+  	    }
+	    //Default
+  	    String audience = this.difiTokenAudienceUrl;
+  	    String issuer = this.issuer;
+  	    //only kurer
+  	    if(isKurer){
+  	    	audience = this.difiTokenAudienceKurerUrl;
+  	    	issuer = this.issuerKurer;
+  	    }
+  	    
+		result =  Jwts.builder()
+            	.setHeaderParam(JwsHeader.X509_CERT_CHAIN, Collections.singletonList(encodedCertificateParam))
+            	.setAudience(audience)
+            	.setIssuer(issuer)
+            	.claim("scope", scopeParam)
+            	.setId(UUID.randomUUID().toString())
+            	.setIssuedAt(Date.from(issuedAt))
+            	.setExpiration(Date.from(expiration))
+            	.signWith(SignatureAlgorithm.RS256, privateKeyParam)
+            	.compact();
+	
+    			logger.info("createRequestJwt:" + result);
+    			//for debugging purposes at customer site
+    			jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuer);
+	
+    			return result;
+		
+	}
+
 	/**
 	 * Convenience method for checking the JWT result.
 	 * 
@@ -241,5 +225,4 @@ public class DifiJwtCreator {
 	            .parseClaimsJws(createRequestJwt()).getBody();
 	    return claims;
 	}
-
 }

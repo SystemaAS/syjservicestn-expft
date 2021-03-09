@@ -69,6 +69,8 @@ private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class
 		String result = apiUploadClient.uploadDocuments(baseDir, sentDir , errorDir);
 		logger.info(result);	
 	}
+	
+	
 	@Test //OK --> Feb 2021
 	public void testClockOnJwt() {
 		long expiration_l = 3;
