@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.util.Log4jUtils;
+import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
+import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 /**
  * Internal use only!
@@ -34,6 +36,26 @@ public class TroubleShootingController {
 	@Autowired
 	DifiJwtCreator difiJwtCreator;
 	
+	@Autowired
+	Authorization authorization;
+	
+	/**
+	 * @Example: http://localhost:8080/syjservicestn-expft/testAccessToken.do
+	 * 
+	 * @param session
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "testAccessToken.do", method = { RequestMethod.GET })
+	public String testAccessToken(HttpSession session) throws Exception {
+		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
+		
+		logger.warn("responseDto = "+responseDto);
+		StringBuilder sb = new StringBuilder();
+		
+		session.invalidate();
+		return sb.toString();
+	}
 	/**
 	 * @Example: http://localhost:8080/syjservicestn-expft/verifyJWT.do?user=SYSTEMA
 	 * 
