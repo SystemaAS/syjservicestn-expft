@@ -62,8 +62,8 @@ public class RestTransmissionExpressManifestLogger {
 				
 				//session.setAttribute(TransportDispConstants.ACTIVE_URL_RPG_TRANSPORT_DISP, BASE_URL + "==>params: " + urlRequestParams.toString()); 
 		    	logger.info(Calendar.getInstance().getTime() + " CGI-start timestamp");
-		    	logger.info("URL: " + LOG_URL);
-		    	logger.info("URL PARAMS: " + urlRequestParams);
+		    	logger.warn("URL: " + LOG_URL);
+		    	logger.warn("URL PARAMS: " + urlRequestParams);
 		    	String jsonPayload = this.urlCgiProxyService.getJsonContent(LOG_URL, urlRequestParams.toString());
 		    	//Debug --> 
 		    	logger.info(Calendar.getInstance().getTime() +  " CGI-end timestamp");

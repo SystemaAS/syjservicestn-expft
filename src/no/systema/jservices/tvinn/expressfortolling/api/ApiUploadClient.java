@@ -118,8 +118,8 @@ public class ApiUploadClient  {
 					if (counter <= this.maxLimitOfFilesPerLoop && authTokenDto!=null){
 						try{
 							//Toll.no takes a json-payload as String
-							retval = upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
-							logger.info("######### OK:" + retval);
+							retval = this.upload_via_jsonString(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
+							logger.warn("######### OK:" + retval);
 							//Toll.no does not take a file as Multipart. Could be a reality in version 2
 							//retval = this.upload_via_streaming(new Utils().getFilePayloadStream(fileName), fileName, authTokenDto);
 							
@@ -374,7 +374,7 @@ public class ApiUploadClient  {
 	 */
 	private String upload_via_jsonString(InputStream inputStream, String fileName, TokenResponseDto authTokenDto) throws Exception {
 		
-		logger.info("A----->" + fileName);
+		logger.warn("A----->" + fileName);
 		//json payload
 		String jsonPayload = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
 		jsonPayload = new Utils().clearCarriageReturn(jsonPayload);
@@ -417,7 +417,7 @@ public class ApiUploadClient  {
 			logger.info("after REST call");
 			if(exchange!=null){
 				if(exchange.getStatusCode().is2xxSuccessful()) {
-					logger.info("OK -----> File uploaded = " + exchange.getStatusCode().toString());
+					logger.warn("OK -----> File uploaded = " + exchange.getStatusCode().toString());
 				}else{
 					logger.error("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
 					

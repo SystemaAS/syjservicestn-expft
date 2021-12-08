@@ -80,7 +80,7 @@ public class ExpressFortollingManifestController {
 	 */
 	@RequestMapping(value="prodUpload/expressmanifest", method={RequestMethod.GET})
 	public ResponseEntity<String> prodFileUploadByteArrayResource(HttpSession session) {
-		
+		logger.warn("upload to API from baseDir:" + baseDir);
 		apiUploadClient.setUploadUrlImmutable(uploadProdUrl);
 		String result = apiUploadClient.uploadPayloads(baseDir, sentDir, errorDir);
 		
@@ -141,7 +141,7 @@ public class ExpressFortollingManifestController {
 		if(result!=null && result.startsWith("2")){
 			if(result.startsWith("204")){
 				//meaning no files to fetch
-				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
+				logger.warn(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
 				retval = new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 			}else{
 				retval = new ResponseEntity<String>(HttpStatus.OK);
