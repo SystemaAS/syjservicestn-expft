@@ -2,7 +2,7 @@ package no.systema.jservices.tvinn.expressfortolling.api;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -20,7 +20,7 @@ import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 
 @Service
 public class Authorization {
-	private static Logger logger = Logger.getLogger(Authorization.class);
+	private static Logger logger = LogManager.getLogger(Authorization.class);
 
 	@Autowired
     private ApiClient apiClient;

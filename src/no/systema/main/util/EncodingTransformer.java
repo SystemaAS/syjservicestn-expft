@@ -10,7 +10,7 @@ import java.nio.charset.UnmappableCharacterException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 
 /**
  * This class is used to transform encodings. E.g. from ISO-8859-1 to UTF-8 and vice-versa
@@ -21,7 +21,7 @@ public class EncodingTransformer {
 	private static final String CLASSNAME = "EncodingTransformer";
 	private static final String ENCODING_RPG_BACKEND_LATIN_1 = "ISO-8859-1";
 	private static final String ENCODING_RPG_BACKEND_UTF_8 = "UTF-8";
-	private static final Logger logger = Logger.getLogger(EncodingTransformer.class.getName());
+	private static final Logger logger = LogManager.getLogger(EncodingTransformer.class.getName());
 	
 	
 	

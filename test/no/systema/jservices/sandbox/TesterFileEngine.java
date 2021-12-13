@@ -1,6 +1,6 @@
 package no.systema.jservices.sandbox;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +33,7 @@ import java.util.stream.Stream;
 @ContextConfiguration("classpath:test-configuration.xml")
 @TestPropertySource(locations="classpath:application-test.properties")
 public class TesterFileEngine {
-	private Logger logger = Logger.getLogger(TesterFileEngine.class);
+	private Logger logger = LogManager.getLogger(TesterFileEngine.class);
 	private FileManager fileMgr = new FileManager();
 	
 	{

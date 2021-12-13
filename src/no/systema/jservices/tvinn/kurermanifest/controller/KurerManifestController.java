@@ -1,6 +1,6 @@
 package no.systema.jservices.tvinn.kurermanifest.controller;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 
 @RestController
 public class KurerManifestController {
-	private static final Logger logger = Logger.getLogger(KurerManifestController.class);
+	private static final Logger logger = LogManager.getLogger(KurerManifestController.class);
 	
 	@Autowired
 	ApiKurerUploadClient apiKurerUploadClient;

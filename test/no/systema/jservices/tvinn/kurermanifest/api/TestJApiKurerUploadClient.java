@@ -2,7 +2,7 @@ package no.systema.jservices.tvinn.kurermanifest.api;
 
 import java.io.File;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +20,7 @@ import no.systema.jservices.tvinn.kurermanifest.logger.RestTransmissionLogger;
 @TestPropertySource(locations="classpath:application-test.properties")
 public class TestJApiKurerUploadClient {
 	
-private static final Logger logger = Logger.getLogger(TestJApiKurerUploadClient.class);
+private static final Logger logger = LogManager.getLogger(TestJApiKurerUploadClient.class);
 	
 	@Value("${kurer.file.source.directory}")
 	private String baseDir;

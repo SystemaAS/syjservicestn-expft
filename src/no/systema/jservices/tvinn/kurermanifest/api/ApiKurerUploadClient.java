@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -56,7 +56,7 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 @Service
 public class ApiKurerUploadClient  {
-	private static final Logger logger = Logger.getLogger(ApiKurerUploadClient.class);
+	private static final Logger logger = LogManager.getLogger(ApiKurerUploadClient.class);
 	private RestTemplate restTemplate;
 	private FileManager fileMgr = new FileManager();
 	

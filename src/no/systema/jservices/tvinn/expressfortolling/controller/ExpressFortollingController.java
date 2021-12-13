@@ -5,7 +5,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,7 +44,7 @@ import no.systema.main.util.ObjectMapperHalJson;
  */
 @RestController
 public class ExpressFortollingController {
-	private static Logger logger = Logger.getLogger(ExpressFortollingController.class.getName());
+	private static Logger logger = LogManager.getLogger(ExpressFortollingController.class.getName());
 	// pretty print
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();

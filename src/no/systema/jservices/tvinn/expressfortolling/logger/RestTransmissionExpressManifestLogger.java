@@ -6,7 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Calendar;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import no.systema.main.service.UrlCgiProxyService;
 
 @Service
 public class RestTransmissionExpressManifestLogger {
-	private static final Logger logger = Logger.getLogger(RestTransmissionExpressManifestLogger.class);
+	private static final Logger logger = LogManager.getLogger(RestTransmissionExpressManifestLogger.class);
 	private FileManager fileMgr = new FileManager();
 	
 	@Value("${expft.file.log.service.root}")

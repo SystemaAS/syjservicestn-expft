@@ -2,7 +2,7 @@ package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiUploadClient;
  */
 @RestController
 public class ExpressFortollingManifestController {
-	private static final Logger logger = Logger.getLogger(ExpressFortollingManifestController.class);
+	private static final Logger logger = LogManager.getLogger(ExpressFortollingManifestController.class);
 	
 	@Value("${expft.file.source.directory}")
     private String baseDir;

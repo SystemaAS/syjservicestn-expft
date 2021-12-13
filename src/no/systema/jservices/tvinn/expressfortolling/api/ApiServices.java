@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +50,7 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
  */
 @Service
 public class ApiServices {
-	private static Logger logger = Logger.getLogger(ApiServices.class.getName());
+	private static Logger logger = LogManager.getLogger(ApiServices.class.getName());
 	private RestTemplate restTemplate;
 	
 	@Autowired

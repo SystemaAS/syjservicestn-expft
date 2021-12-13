@@ -9,7 +9,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionExpre
 @TestPropertySource(locations="classpath:application-test.properties")
 public class TestJApiUploadClient extends TestJBase {
 	
-private static final Logger logger = Logger.getLogger(TestJApiUploadClient.class);
+private static final Logger logger = LogManager.getLogger(TestJApiUploadClient.class);
 	
 	@Value("${expft.file.source.directory}")
 	private String baseDir;

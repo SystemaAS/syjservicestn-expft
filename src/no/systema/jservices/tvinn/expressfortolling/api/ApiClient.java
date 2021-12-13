@@ -15,7 +15,7 @@ import java.util.Map.Entry;
 import java.util.TimeZone;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
@@ -53,7 +53,7 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
  */
 @Service
 public class ApiClient {
-	private static Logger logger = Logger.getLogger(ApiClient.class.getName());
+	private static Logger logger = LogManager.getLogger(ApiClient.class.getName());
 	
     private HttpHeaders defaultHeaders = new HttpHeaders();
     private RestTemplate restTemplate;
