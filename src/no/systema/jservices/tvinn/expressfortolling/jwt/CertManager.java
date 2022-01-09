@@ -17,13 +17,13 @@ import java.util.Base64;
 import javax.annotation.PostConstruct;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class CertManager {
-	private static Logger logger = LogManager.getLogger(CertManager.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(CertManager.class.getName());
 	private static String CATALINA_HOME = System.getProperty("catalina.home");
 
     @Value("${expft.keystore.file.path}")

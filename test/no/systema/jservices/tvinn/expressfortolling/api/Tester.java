@@ -13,7 +13,7 @@ import java.util.TimeZone;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.NtpV3Packet;
 import org.apache.commons.net.ntp.TimeInfo;
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,7 +23,7 @@ import no.systema.main.util.ObjectMapperHalJson;
 
 
 public class Tester   {
-	//private static final Logger logger = LogManager.getLogger(Tester.class);
+	//private static final Logger logger = LoggerFactory.getLogger(Tester.class);
 	
 	@Test
 	public void run() throws Exception{

@@ -6,7 +6,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import org.springframework.web.client.RestTemplate;
  * 
  */
 public class TestSchedularService {
-	 private Logger logger = LogManager.getLogger(TestSchedularService.class);
+	 private Logger logger = LoggerFactory.getLogger(TestSchedularService.class);
 	 long sleep = 5000;
 	 long numberOfTimes = 3;
 	 
@@ -38,7 +38,7 @@ public class TestSchedularService {
 }
 	 
 class PollingService implements Runnable {
-		private Logger logger = LogManager.getLogger(PollingService.class);
+		private Logger logger = LoggerFactory.getLogger(PollingService.class);
 		private String startUrl = "http://localhost:8080/syjservicestn-expft/testUpload";
 		 
 		private int count = 0;

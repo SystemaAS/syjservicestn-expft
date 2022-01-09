@@ -2,7 +2,7 @@ package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,7 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiUploadClient;
  */
 @RestController
 public class ExpressFortollingManifestController {
-	private static final Logger logger = LogManager.getLogger(ExpressFortollingManifestController.class);
+	private static final Logger logger = LoggerFactory.getLogger(ExpressFortollingManifestController.class);
 	
 	@Value("${expft.file.source.directory}")
     private String baseDir;
@@ -141,7 +141,7 @@ public class ExpressFortollingManifestController {
 		if(result!=null && result.startsWith("2")){
 			if(result.startsWith("204")){
 				//meaning no files to fetch
-				logger.warn(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
+				logger.warn(new ResponseEntity<String>(HttpStatus.NO_CONTENT).toString());
 				retval = new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 			}else{
 				retval = new ResponseEntity<String>(HttpStatus.OK);

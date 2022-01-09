@@ -9,7 +9,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ import no.systema.jservices.tvinn.expressfortolling.logger.RestTransmissionExpre
 @TestPropertySource(locations="classpath:application-test.properties")
 public class TestJApiUploadClient extends TestJBase {
 	
-private static final Logger logger = LogManager.getLogger(TestJApiUploadClient.class);
+private static final Logger logger = LoggerFactory.getLogger(TestJApiUploadClient.class);
 	
 	@Value("${expft.file.source.directory}")
 	private String baseDir;
@@ -76,8 +76,8 @@ private static final Logger logger = LogManager.getLogger(TestJApiUploadClient.c
 		long expiration_l = 3;
 		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.SECONDS);
 		Instant expiration = issuedAt.plus(expiration_l, ChronoUnit.MINUTES);
-		logger.info(Date.from(issuedAt));
-		logger.info(Date.from(expiration));
+		logger.info(Date.from(issuedAt).toString());
+		logger.info(Date.from(expiration).toString());
 		
 		//In format:2021-02-25T11:11:40
 		//DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME.withZone(ZoneId.from(ZoneOffset.UTC));

@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -54,7 +54,7 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
 @Service
 public class ApiUploadClient  {
-	private static final Logger logger = LogManager.getLogger(ApiUploadClient.class);
+	private static final Logger logger = LoggerFactory.getLogger(ApiUploadClient.class);
 	private RestTemplate restTemplate;
 	private FileManager fileMgr = new FileManager();
 	
@@ -162,7 +162,7 @@ public class ApiUploadClient  {
 			}catch(Exception e){
 				//e.printStackTrace();
 				retval = "ERROR_on_REST";
-				logger.fatal(retval + " " + e);
+				logger.error(retval + " " + e);
 			}
 			
 		}else{
@@ -257,7 +257,7 @@ public class ApiUploadClient  {
 			}catch(Exception e){
 				//e.printStackTrace();
 				retval = "ERROR_on_REST";
-				logger.fatal(retval);
+				logger.error(retval);
 			}
 			
 		}else{
@@ -309,11 +309,11 @@ public class ApiUploadClient  {
 				}catch(Exception e){
 					//e.printStackTrace();
 					retval = "ERROR_on_REST";
-					logger.fatal(retval);
+					logger.error(retval);
 				}
 			}else{
 				retval = "ERROR java.io.FileNotFoundException: " + fileName;
-				logger.fatal(retval);	
+				logger.error(retval);	
 			}
 		}
 		
@@ -328,7 +328,7 @@ public class ApiUploadClient  {
 	 * @return
 	 */
 	private String getError(Exception e){
-		logger.error(e);
+		logger.error(e.toString());
 		String ERROR_CODE = "xxxError";
 		//types 
 		String AUTHENTICATON_FAIL = "403";

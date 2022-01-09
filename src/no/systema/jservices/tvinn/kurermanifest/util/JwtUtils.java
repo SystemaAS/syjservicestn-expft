@@ -10,12 +10,12 @@ import java.util.Date;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.NtpV3Packet;
 import org.apache.commons.net.ntp.TimeInfo;
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
 
 public class JwtUtils {
-	private static Logger logger = LogManager.getLogger(JwtUtils.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(JwtUtils.class.getName());
 	private final String TIME_SERVER = "time-a.nist.gov";
 	/**
 	 * adjusts to the atomic time from internet (if within the time out)
@@ -41,7 +41,7 @@ public class JwtUtils {
 			logger.warn("Atomic internet time - issuedAt:" + Date.from(instant));
 			
 		}catch(Exception e){
-			logger.warn(e);
+			logger.warn(e.toString());
 		}
 		
 		return instant;
@@ -62,7 +62,7 @@ public class JwtUtils {
 		    logger.warn("Atomic internet time - expiration:" + Date.from(instant));
 		    
 		}catch(Exception e){
-			logger.warn(e);
+			logger.warn(e.toString());
 		}
 		
 		return instant;

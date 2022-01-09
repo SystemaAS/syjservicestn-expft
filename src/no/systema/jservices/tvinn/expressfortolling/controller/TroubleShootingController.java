@@ -5,7 +5,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,7 +28,7 @@ import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
  */
 @RestController
 public class TroubleShootingController {
-	private static Logger logger = LogManager.getLogger(TroubleShootingController.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(TroubleShootingController.class.getName());
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +46,7 @@ public class TestJApiServices extends TestJBase {
 	ApiServices apiServices;
 	
 	private Authorization authorization;
-	private static final Logger logger = LogManager.getLogger(TestJApiServices.class);
+	private static final Logger logger = LoggerFactory.getLogger(TestJApiServices.class);
 	//0eb9f81d-3385-4baa-95aa-07c73d4d8fd3 ORIG-simple-test
 	//private final String manifestId = "2350cab2-98f0-4b54-a4f7-a2ae453e61bd";
 	private final String manifestId = "e35a52a6-18ae-4746-a4b4-9e3f0edbacc6";

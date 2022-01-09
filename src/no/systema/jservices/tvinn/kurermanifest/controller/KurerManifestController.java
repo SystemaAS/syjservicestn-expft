@@ -1,6 +1,6 @@
 package no.systema.jservices.tvinn.kurermanifest.controller;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -15,7 +15,7 @@ import no.systema.jservices.tvinn.kurermanifest.api.ApiKurerUploadClient;
 
 @RestController
 public class KurerManifestController {
-	private static final Logger logger = LogManager.getLogger(KurerManifestController.class);
+	private static final Logger logger = LoggerFactory.getLogger(KurerManifestController.class);
 	
 	@Autowired
 	ApiKurerUploadClient apiKurerUploadClient;
@@ -51,7 +51,7 @@ public class KurerManifestController {
 		if(result!=null && result.startsWith("2")){
 			if(result.startsWith("204")){
 				//meaning no files to fetch
-				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
+				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT).toString());
 				return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 			}else{
 				return new ResponseEntity<String>(HttpStatus.OK);
@@ -84,7 +84,7 @@ public class KurerManifestController {
 		if(result!=null && result.startsWith("2")){
 			if(result.startsWith("204")){
 				//meaning no files to fetch
-				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT));
+				logger.info(new ResponseEntity<String>(HttpStatus.NO_CONTENT).toString());
 				return new ResponseEntity<String>(HttpStatus.NO_CONTENT);
 			}else{
 				return new ResponseEntity<String>(HttpStatus.OK);

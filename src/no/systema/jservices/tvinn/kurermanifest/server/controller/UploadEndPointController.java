@@ -1,6 +1,6 @@
 package no.systema.jservices.tvinn.kurermanifest.server.controller;
 
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +17,7 @@ import java.io.IOException;
 @RestController
 public class UploadEndPointController {
 	
-    private static final Logger logger = LogManager.getLogger(UploadEndPointController.class);
+    private static final Logger logger = LoggerFactory.getLogger(UploadEndPointController.class);
 
     /**
      * Simulation for file payload as multipartFile ...

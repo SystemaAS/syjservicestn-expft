@@ -17,7 +17,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.net.ntp.NTPUDPClient;
 import org.apache.commons.net.ntp.NtpV3Packet;
 import org.apache.commons.net.ntp.TimeInfo;
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -36,7 +36,7 @@ import no.systema.jservices.tvinn.kurermanifest.util.JwtUtils;
  */
 @Service
 public class DifiJwtCreator {
-	private static Logger logger = LogManager.getLogger(DifiJwtCreator.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(DifiJwtCreator.class.getName());
 	private final boolean IS_KURER = true;
 	private final boolean ISNOT_KURER = false;
 	

@@ -1,7 +1,7 @@
 package no.systema.main.util;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.*;
+import org.slf4j.*;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,7 +16,7 @@ import no.systema.jservices.tvinn.expressfortolling.controller.ExpressFortolling
  * @date Apr 2020
  */
 public class ObjectMapperHalJson {
-	private static Logger logger = LogManager.getLogger(ObjectMapperHalJson.class.getName());
+	private static Logger logger = LoggerFactory.getLogger(ObjectMapperHalJson.class.getName());
 	private String halJsonPayload;
 	private String targetNode;
 	
