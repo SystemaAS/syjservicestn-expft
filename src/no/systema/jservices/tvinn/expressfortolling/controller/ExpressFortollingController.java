@@ -60,6 +60,8 @@ public class ExpressFortollingController {
 	
 	/**
 	 * @Example: http://localhost:8080/syjservicestn-expft/transportationCompany.do?user=SYSTEMA&id=936809219
+	 * @Example: TOTEN in PROD: https://cust.toten.as:8443/syjservicestn-expft/transportationCompany.do?user=SYSTEMA&id=935000165
+	 * 
 	 */	
 	@RequestMapping(value="transportationCompany.do", method={RequestMethod.GET, RequestMethod.POST})
 	public ManifestTransportationCompanyDto getTransportationCompany(HttpSession session, 
