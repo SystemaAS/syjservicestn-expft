@@ -114,6 +114,7 @@ public class ExpressFortollingManifestController {
 		
 		apiUploadClient.setUploadUrlImmutable(uploadDocsUrl);
 		logger.warn("starting ...");
+		logger.warn(declId + "XXX" + docType + "XXX" + docPath);
 		String result = apiUploadClient.uploadDocumentsByUser(declId, docType, docPath);
 		logger.warn(result);
 		session.invalidate();
