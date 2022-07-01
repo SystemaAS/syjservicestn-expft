@@ -149,14 +149,16 @@ public class TestJApiServices extends TestJBase {
 	@Test //OK
 	public void testTypeOfMeansOfTransportAll() throws Exception {
 		String json = apiServices.getAllTypeOfMeansOfTransport();
-		logger.info("JSON = " + json);
+		//logger.info("JSON = " + json);
+		System.out.println("JSON:" + json);
 		//map to Dto
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(json, "/_embedded/typesOfMeansOfTransport");
 		StringBuffer jsonToConvert = new StringBuffer();
 		//get list of DTOs
 		ArrayList<ManifestTypesOfMeansOfTransportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestTypesOfMeansOfTransportDto>>() {
         });
-		logger.info("DTO = " + exports.toString());
+		//logger.info("DTO = " + exports.toString());
+		System.out.println("DTO:" + exports.toString());
 			
 	}
 	
@@ -218,7 +220,7 @@ public class TestJApiServices extends TestJBase {
 	public void testCountry() throws Exception {
 		ManifestCountryDto dto = apiServices.getCountry("NO");
 		System.out.println(dto);
-		logger.info("DTO = "+dto);
+		System.out.println("DTO = "+dto);
 	}
 	
 	@Test //OK
@@ -254,11 +256,16 @@ public class TestJApiServices extends TestJBase {
 		logger.info("DTO = " + dto.toString());
 	}
 	
+	//////////////////////////////
+	//nya exprf. movement road
+	/////////////////////////////
+	
 	@Test //OK
-	public void getPlaceOfEntryAll() throws Exception {
-		String json = apiServices.getAllPlaceOfEntry();
+	public void testAuthExpressMovementRoad() throws Exception {
+		String json = apiServices.testAuthExpressMovementRoad();
 		logger.info("JSON = " + json);
 	}
+
 	
 	
 	

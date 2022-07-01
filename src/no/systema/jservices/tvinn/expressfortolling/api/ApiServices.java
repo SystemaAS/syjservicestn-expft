@@ -65,17 +65,28 @@ public class ApiServices {
 	@Autowired
 	Authorization authorization;
 
+	@Value("${expft.basepath}")
+    private String basePath;
+	
 	@Value("${expft.basepath.version}")
     private String basePathVersion;	
 
-	@Value("${expft.basepath}")
-    private String basePath;		
-	
 	@Value("${expft.upload.url}")
 	private String uploadUrl;
 	
 	@Value("${expft.upload.prod.url}")
 	private String uploadProdUrl;
+	
+	
+	
+	@Value("${expft.basepath.movement.road}")
+    private String basePathMovementRoad;
+	
+	@Value("${expft.basepath.movement.road.version}")
+    private String basePathMovementRoadVersion;
+	
+	
+	
 	/**
 	 * Get all transportation companies for which the logged in user is a customs representative.
 	 * GET /api/exf/ekspressfortolling/transportation-company
@@ -748,7 +759,7 @@ public class ApiServices {
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
 
         //TODO refactor outside
-        apiClient.setBasePath(basePath);
+        apiClient.setBasePath(this.basePath);
         
         ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
         return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
@@ -757,6 +768,41 @@ public class ApiServices {
         
 		
 	}
+	
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String testAuthExpressMovementRoad() {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		
+		
+		Object postBody = null; //Not in use
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/test-auth").build().toUriString();
+		System.out.println(path);
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, null, null, returnType);
+        		
+	}
+
+	
 	
 	@Bean
 	public RestTemplate restTemplate(){

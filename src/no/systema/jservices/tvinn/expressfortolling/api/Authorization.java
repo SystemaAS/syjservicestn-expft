@@ -38,6 +38,9 @@ public class Authorization {
 	@Value("${kurer.audience}")
 	String difiTokenKurerAudienceUrl;
 	
+	@Value("${expft.basepath.movement.road.tolltoken}")
+	String tollAccessTokenUrl;
+	
 	 /**
      * Get the access token
      * 
@@ -75,6 +78,86 @@ public class Authorization {
         
         //TODO refactor outside
         apiClient.setBasePath(difiTokenAudienceUrl);
+        
+        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+    }	
+    
+    /**
+     * 
+     * @return
+     * @throws RestClientException
+     */
+    public TokenResponseDto accessTokenRequestPostMovementRoad() throws RestClientException {
+    	logger.info("accessTokenRequestPostMovementRoad()");
+    	Object postBody = null;  //Not in use
+    	
+    	TokenRequestDto tokenRequest = new TokenRequestDto();
+    	tokenRequest.setAssertion(difiJwtCreator.createRequestMovementRoadJwt());
+        
+        String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+              
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "grant_type", tokenRequest.getGrantType()));       
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "assertion", tokenRequest.getAssertion()));       
+        
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { 
+        	"application/x-www-form-urlencoded"
+        };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
+        
+        //TODO refactor outside
+        apiClient.setBasePath(difiTokenAudienceUrl);
+        
+        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+    }	
+    
+    /**
+     * switch Maskinporten Token with Toll token. Must be switch
+     * 
+     * ref. to--> https://toll.github.io/api/maskinporten.html#test-tilgang
+     * 
+     * 
+     * @param maskinPortenToken
+     * @return
+     * @throws RestClientException
+     */
+    public TokenResponseDto accessTokenRequestPostToll(TokenResponseDto maskinPortenToken) throws RestClientException {
+    	logger.info("accessTokenRequestPostToll(TokenRequestDto tokenRequest)");
+    	Object postBody = null;  //Not in use
+    	
+    	
+    	//https://api-test.toll.no/api/access/external/oauth/token
+        String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+              
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "grant_type", "token-exchange"));       
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "subject_token_type", "access_token")); 
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "subject_token", maskinPortenToken.getAccess_token()));
+        
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { 
+        	"application/x-www-form-urlencoded"
+        };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
+        
+        apiClient.setBasePath(this.tollAccessTokenUrl);
         
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
     }	

@@ -436,18 +436,20 @@ public class ApiClient {
         
         RequestEntity<Object> requestEntity = requestBuilder.body(selectBody(body, formParams, contentType));
         logger.info(requestEntity.toString());
-        logger.info("AAAAAAA");
+        logger.info("--> BEFORE restTemplate.exchange");
         ResponseEntity<T> responseEntity = restTemplate.exchange(requestEntity, returnType);
-        logger.info("BBBBBBB");
+        logger.info("--> AFTER restTemplate.exchange");
         //logger.info(responseEntity.toString());
         statusCode = responseEntity.getStatusCode();
+        logger.info("Status response (ApiClient.invokeAPI):" + statusCode);
+        //System.out.println("Status response:" + statusCode);
         responseHeaders = responseEntity.getHeaders();
 
         if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
         	return null;
         } else if (responseEntity.getStatusCode().is2xxSuccessful()) {
         	if (returnType == null) {
-            	return null;
+        		return null;
             }
             logger.info("getBody():" + responseEntity.getBody());
             return responseEntity.getBody();
@@ -456,6 +458,7 @@ public class ApiClient {
             throw new RestClientException("API returned " + statusCode + " and it wasn't handled by the RestTemplate error handler");
         }
     }
+    
     
     /**
      * Add headers to the request that is being built
