@@ -58,7 +58,7 @@ public class TestJApiServices extends TestJBase {
 		String SYSTEMA_ORGNR = "936809219";
 		ManifestTransportationCompanyDto dto = apiServices.getTransportationCompany(SYSTEMA_ORGNR);
 		logger.info("DTO = "+dto);
-		
+		System.out.println(dto);
 	}
 	
 	@Test //OK
