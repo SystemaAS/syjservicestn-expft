@@ -14,6 +14,26 @@ public class Tester {
 		MasterConsignment mc = new MasterConsignment();
 		//IssueDate
 		mc.setDocumentIssueDate("20220704");
+		//Representative
+		Representative rep = new Representative();
+		rep.setName("Bring AS");
+		rep.setIdentificationNumber("951357482");
+		rep.setStatus("2");
+		Address raddress = new Address();
+		raddress.setCity("OSLO");
+		raddress.setCountry("NO");
+		raddress.setStreetLine("Hausemanns gate");
+		raddress.setPostcode("0530");
+		raddress.setNumber("52F");
+		rep.setAddress(raddress);
+		//
+		List rcommList = new ArrayList();
+		rcommList.add(tester.populateCommunication("en-epost@mail.com", "EM"));
+		rcommList.add(tester.populateCommunication("0733794599", "TE"));
+		rep.setCommunication(rcommList);
+		mc.setRepresentative(rep);
+		
+		
 		//ActiveBorderTransMeans
 		mc.setActiveBorderTransportMeans(tester.populateActiveBorderTransportMeans());
 		//Consig.MasterLevel

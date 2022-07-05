@@ -12,22 +12,16 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 //@JsonPropertyOrder(alphabetic = true)
-public class MasterConsignment {
+public class HouseConsignment {
 	
 	//Mandatory*
 	private String documentIssueDate = "";
-	//Optional
-	private Representative representative;
-	//Mandatory*
-	private ActiveBorderTransportMeans activeBorderTransportMeans;
-	//Mandatory*
-	private CustomsOfficeOfFirstEntry customsOfficeOfFirstEntry;
-	//Mandatory*
-	private ConsignmentMasterLevel consignmentMasterLevel;
 	//Mandatory*
 	private Declarant declarant;
-	//Optional
-	private List<ReleasedConfirmation> releasedConfirmation;
+	//Mandatory
+	private Representative representative;
+	//Mandatory*
+	
 	
 	
 }

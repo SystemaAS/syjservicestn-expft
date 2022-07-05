@@ -7,12 +7,12 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PassiveBorderTransportMeans {
+public class PassiveTransportMeans {
 
 	private String identificationNumber = "";
 	private Integer typeOfIdentification = 0;
 	private String typeOfMeansOfTransport = "";
-	private String country = "";
+	private String countryCode = "";
 	
 	
 	

@@ -1,19 +1,20 @@
 package no.systema.jservices.tvinn.expressfortolling2.dao;
 
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PassiveBorderTransportMeans {
+public class Representative {
 
+	private String name = "";
 	private String identificationNumber = "";
-	private Integer typeOfIdentification = 0;
-	private String typeOfMeansOfTransport = "";
-	private String country = "";
-	
-	
+	private String status = "";
+	private Address address;
+	private List<Communication> communication;
 	
 }
