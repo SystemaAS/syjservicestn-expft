@@ -3,11 +3,13 @@ package no.systema.jservices.tvinn.expressfortolling2.dao;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class HouseConsignmentConsignmentHouseLevel {
 	
 	//Mandatory*
@@ -15,7 +17,7 @@ public class HouseConsignmentConsignmentHouseLevel {
 	//Mandatory*
 	private Double totalGrossMass = 0.00;
 	//Mandatory*
-	private String referenceNumberUCR = "";
+	private String referenceNumberUCR;
 	//Optional
 	private List<ExportFromEU> exportFromEU;
 	//Mandatory*
