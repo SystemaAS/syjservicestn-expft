@@ -35,6 +35,7 @@ import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfMeansOfT
 import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
+import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -259,14 +260,56 @@ public class TestJApiServices extends TestJBase {
 	//////////////////////////////
 	//nya exprf. movement road
 	/////////////////////////////
-	
 	@Test //OK
 	public void testAuthExpressMovementRoad() throws Exception {
 		String json = apiServices.testAuthExpressMovementRoad();
-		logger.info("JSON = " + json);
+		System.out.println("JSON = " + json);
 	}
-
 	
+	@Test //OK - real world test
+	public void createMasterConsignmentExpressMovementRoad() throws Exception {
+		MasterConsignment mc =  new TestMasterConsignmentDao().setMasterConsignment();
+		System.out.println(mc.getRepresentative().getName());
+		try {
+			String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
+			TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
+			System.out.println("JSON = " + json);
+			System.out.println("LRN = " + obj.getLrn());
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@Test //OK - NOT Working (neither in POSTMAN) ---> Vedstein Vada fråga. We need MRN
+	public void getMasterConsignmentExpressMovementRoad_validationStatus() throws Exception {
+			String lrn = "3cbfc24d-b6c4-438b-bdc1-f384f6125b1c";
+		try {
+			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
+			System.out.println("JSON = " + json);
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
+	/*@Test //OK - OBSOLETE just for testing purposes as Postman
+	public void createMasterConsignmentExpressMovementRoadRudimentary() throws Exception {
+		TestMasterConsignmentDao dao = new TestMasterConsignmentDao();
+		MasterConsignment mc = dao.setMasterConsignment();
+		System.out.println(mc.getRepresentative().getName());
+		try {
+			//String payload = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(mc);
+			String payload = new ObjectMapper().writeValueAsString(mc);
+			System.out.println(payload);
+			String json = apiServices.postMasterConsignmentExpressMovementRoad(payload);
+			System.out.println("JSON = " + json);
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+	}*/
 	
 	
 	
