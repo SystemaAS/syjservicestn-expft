@@ -18,11 +18,13 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.dto.*;
 import no.systema.jservices.common.dto.expressfortolling.ManifestActiveMeansOfTransportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesDto;
@@ -39,12 +41,16 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
+//@ExtendWith(SpringExtension.class)
 @ContextConfiguration("classpath:test-configuration.xml")
 @TestPropertySource(locations="classpath:application-test.properties")
+//@ContextConfiguration(classes = {ApiServices.class})
+
 public class TestJApiServices extends TestJBase {
 
 	@Autowired
 	ApiServices apiServices;
+	
 	
 	private Authorization authorization;
 	private static final Logger logger = LoggerFactory.getLogger(TestJApiServices.class);
@@ -56,6 +62,7 @@ public class TestJApiServices extends TestJBase {
 	
 	@Test //OK
 	public void getTransportationCompany() throws Exception {
+		
 		String SYSTEMA_ORGNR = "936809219";
 		ManifestTransportationCompanyDto dto = apiServices.getTransportationCompany(SYSTEMA_ORGNR);
 		logger.info("DTO = "+dto);
@@ -263,11 +270,12 @@ public class TestJApiServices extends TestJBase {
 	@Test //OK
 	public void testAuthExpressMovementRoad() throws Exception {
 		String json = apiServices.testAuthExpressMovementRoad();
-		System.out.println("JSON = " + json);
+		//System.out.println("JSON = " + json);
 	}
 	
-	@Test //OK - real world test
+	@Test //OK - 
 	public void createMasterConsignmentExpressMovementRoad() throws Exception {
+		//this will be populated by the SADEXMF Dto in real-world. We can not test it here unfortunately ...
 		MasterConsignment mc =  new TestMasterConsignmentDao().setMasterConsignment();
 		System.out.println(mc.getRepresentative().getName());
 		try {
@@ -283,7 +291,8 @@ public class TestJApiServices extends TestJBase {
 	
 	@Test //OK - NOT Working (neither in POSTMAN) ---> Vedstein Vada fråga. We need MRN
 	public void getMasterConsignmentExpressMovementRoad_validationStatus() throws Exception {
-			String lrn = "3cbfc24d-b6c4-438b-bdc1-f384f6125b1c";
+		//
+			String lrn = "74a92607-469d-4774-9d34-3ae25ca6db6d";
 		try {
 			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
 			System.out.println("JSON = " + json);

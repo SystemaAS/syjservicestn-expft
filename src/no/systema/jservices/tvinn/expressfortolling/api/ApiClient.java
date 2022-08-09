@@ -451,6 +451,7 @@ public class ApiClient {
         	if (returnType == null) {
         		return null;
             }
+        	
             logger.info("getBody():" + responseEntity.getBody());
             return responseEntity.getBody();
         } else {
