@@ -36,12 +36,17 @@ public class MapperMasterConsignment {
 		Representative rep = new Representative();
 		rep.setName(sourceDto.getEmnar());
 		rep.setIdentificationNumber(sourceDto.getEmrgr());
-		rep.setStatus(sourceDto.getEmstr());
+		
+		//rep.setStatus(sourceDto.getEmstr());
+		rep.setStatus("2");
+		
 		Address raddress = new Address();
 		raddress.setCity(sourceDto.getEmpsr());
 		raddress.setCountry(sourceDto.getEmlkr());
-		raddress.setStreetLine(sourceDto.getEmnrr());
-		raddress.setNumber(sourceDto.getEmnrr());
+		//PROD-->raddress.setStreetLine(sourceDto.getEmnrr());
+		raddress.setStreetLine("Hausemanns gate");
+		//PROD-->raddress.setNumber(sourceDto.getEmnrr());
+		raddress.setNumber("52F");
 		rep.setAddress(raddress);
 		//
 		List rcommList = new ArrayList();
@@ -122,7 +127,8 @@ public class MapperMasterConsignment {
 		Carrier carrier = new Carrier();
 		carrier.setName(sourceDto.getEmnat());
 		carrier.setIdentificationNumber(sourceDto.getEmrgt());
-		Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
+		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
+		Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		carrier.setAddress(cAddress);
 		carrier.setCommunication(this.setCommunication(sourceDto.getEmemt(), "ME"));
 		

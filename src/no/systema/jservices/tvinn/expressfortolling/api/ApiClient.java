@@ -441,20 +441,24 @@ public class ApiClient {
         logger.info("--> AFTER restTemplate.exchange");
         //logger.info(responseEntity.toString());
         statusCode = responseEntity.getStatusCode();
-        logger.info("Status response (ApiClient.invokeAPI):" + statusCode);
+        logger.warn("Status response (ApiClient.invokeAPI):" + statusCode);
         //System.out.println("Status response:" + statusCode);
         responseHeaders = responseEntity.getHeaders();
 
         if (responseEntity.getStatusCode() == HttpStatus.NO_CONTENT) {
+        	logger.warn("A");
         	return null;
+        	
         } else if (responseEntity.getStatusCode().is2xxSuccessful()) {
+        	logger.warn("B");
         	if (returnType == null) {
         		return null;
             }
         	
-            logger.info("getBody():" + responseEntity.getBody());
+            logger.warn("getBody():" + responseEntity.getBody());
             return responseEntity.getBody();
         } else {
+        	logger.warn("C");
             // The error handler built into the RestTemplate should handle 400 and 500 series errors.
             throw new RestClientException("API returned " + statusCode + " and it wasn't handled by the RestTemplate error handler");
         }

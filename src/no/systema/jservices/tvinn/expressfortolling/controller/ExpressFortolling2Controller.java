@@ -1,11 +1,14 @@
 package no.systema.jservices.tvinn.expressfortolling.controller;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpRequest;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +43,8 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.TestMasterConsignmentDao;
 import no.systema.jservices.tvinn.expressfortolling.api.TesterLrn;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
+import no.systema.jservices.tvinn.expressfortolling2.services.ApiLrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.services.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexService;
@@ -98,11 +103,16 @@ public class ExpressFortolling2Controller {
 	 */
 	@RequestMapping(value="postMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse createMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+	public GenericDtoResponse postMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
 																				@RequestParam(value = "emavd", required = true) String emavd,
 																				@RequestParam(value = "empro", required = true) String empro) throws Exception {
 		
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setAvd(emavd);
+		dtoResponse.setPro(empro);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
 		logger.warn("Inside postMasterConsignment");
 		//create new - master consignment at toll.no
 		try {
@@ -116,24 +126,102 @@ public class ExpressFortolling2Controller {
 						MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
 						logger.warn("Representative:" + mc.getRepresentative().getName());
 						String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
-						TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
+						ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
 						logger.warn("JSON = " + json);
 						logger.warn("LRN = " + obj.getLrn());
-						
-						dtoResponse.setUser(user);
-						dtoResponse.setAvd(emavd);
-						dtoResponse.setPro(empro);
+						//In case there was an error at end-point and the LRN was not returned
+						if(StringUtils.isEmpty(obj.getLrn())){
+							errMsg.append("LRN empty ?? <json raw>: " + json);
+							dtoResponse.setErrMsg(errMsg.toString());
+							break;
+						}else {
+							//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
+							String lrn = obj.getLrn();
+							dtoResponse.setLrn(lrn);
+							
+							//(2) get mrn from API
+							String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+							
+							//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
+							if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+								dtoResponse.setMrn(mrn);
+								
+								List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, emavd, empro, lrn, mrn);
+								if(xx!=null && xx.size()>0) {
+									for (SadexmfDto rec: xx) {
+										if(StringUtils.isNotEmpty(rec.getEmmid()) ){
+											//OK
+										}else {
+											errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+											dtoResponse.setErrMsg(errMsg.toString());
+										}
+									}
+								}
+								
+							}else {
+								errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
+								dtoResponse.setErrMsg(errMsg.toString());
+								break;
+							}
+						}
+						break; //only first in list
 						
 					}
+				}else {
+					errMsg.append(" no records ");
+					dtoResponse.setErrMsg(errMsg.toString());
 				}
+				
+			}else {
+				errMsg.append(" invalid user ");
+				dtoResponse.setErrMsg(errMsg.toString());
 			}
 			
 		}catch(Exception e) {
 			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
 		}
 		
 		return dtoResponse;
 	}
+	
+	/**
+	 * 
+	 * @param user
+	 * @param emavd
+	 * @param empro
+	 * @param lrn
+	 * @param mrn
+	 * @return
+	 */
+	private String getMrnMasterFromApi(GenericDtoResponse dtoResponse, String lrn) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("MRN = " + obj.getMasterReferenceNumber());
+			if(StringUtils.isEmpty(obj.getMasterReferenceNumber())) {
+				retval = obj.getMasterReferenceNumber();
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
+	
 	
 	/**
 	 * Get the manifest by id
