@@ -32,7 +32,7 @@ public class SadexService {
 	@Value("${http.syjservices.root.servlet}")
 	String serverRoot; 
 	
-	public List<SadexmfDto> getSadexmf(String user, String avd, String opd) {
+	public List<SadexmfDto> getSadexmf(String user, String avd, String pro) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -42,7 +42,7 @@ public class SadexService {
 				.path("/syjservicestn/syjsSADEXMF.do")
 				.queryParam("user", user)
 				.queryParam("emavd", avd)
-				.queryParam("empro", opd) 
+				.queryParam("empro", pro) 
 				.build()
 				.encode()
 				.toUri();
@@ -85,7 +85,7 @@ public class SadexService {
 	}
 	
 	
-	public List<SadexmfDto> updateLrnMrnSadexmf(String user, String avd, String opd, String lrn, String mrn) {
+	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -97,7 +97,7 @@ public class SadexService {
 				.queryParam("user", user)
 				.queryParam("mode", "UL")
 				.queryParam("emavd", avd)
-				.queryParam("emopd", opd)
+				.queryParam("empro", pro)
 				.queryParam("emuuid", lrn)
 				.queryParam("emmid", mrn)
 				.build()

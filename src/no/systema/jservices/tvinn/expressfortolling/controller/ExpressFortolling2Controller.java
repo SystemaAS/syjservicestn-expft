@@ -94,6 +94,8 @@ public class ExpressFortolling2Controller {
 	}
 	/**
 	 * Creates a new Master Consignment through an API - POST
+	 * The operation is only valid when the lrn(emuuid) and mrn(emmid) are empty at SADEXMF
+	 * It these fields are already in place your should use the PUT method OR erase the emuuid and emmid on db
 	 * 
 	 * @param session
 	 * @param user
@@ -123,48 +125,57 @@ public class ExpressFortolling2Controller {
 					logger.warn("list size:" + list.size());
 					
 					for (SadexmfDto sadexmfDto: list) {
-						MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
-						logger.warn("Representative:" + mc.getRepresentative().getName());
-						String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
-						ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
-						logger.warn("JSON = " + json);
-						logger.warn("LRN = " + obj.getLrn());
-						//In case there was an error at end-point and the LRN was not returned
-						if(StringUtils.isEmpty(obj.getLrn())){
-							errMsg.append("LRN empty ?? <json raw>: " + json);
-							dtoResponse.setErrMsg(errMsg.toString());
-							break;
-						}else {
-							//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
-							String lrn = obj.getLrn();
-							dtoResponse.setLrn(lrn);
-							
-							//(2) get mrn from API
-							String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
-							
-							//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
-							if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-								dtoResponse.setMrn(mrn);
-								
-								List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, emavd, empro, lrn, mrn);
-								if(xx!=null && xx.size()>0) {
-									for (SadexmfDto rec: xx) {
-										if(StringUtils.isNotEmpty(rec.getEmmid()) ){
-											//OK
-										}else {
-											errMsg.append("MRN empty after SADEXMF-update:" + mrn);
-											dtoResponse.setErrMsg(errMsg.toString());
-										}
-									}
-								}
-								
-							}else {
-								errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
+						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
+						if(StringUtils.isEmpty(sadexmfDto.getEmmid()) && StringUtils.isEmpty(sadexmfDto.getEmuuid() )) {
+							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
+							logger.warn("Representative:" + mc.getRepresentative().getName());
+							String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
+							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							logger.warn("JSON = " + json);
+							logger.warn("LRN = " + obj.getLrn());
+							//In case there was an error at end-point and the LRN was not returned
+							if(StringUtils.isEmpty(obj.getLrn())){
+								errMsg.append("LRN empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
+							}else {
+								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
+								String lrn = obj.getLrn();
+								dtoResponse.setLrn(lrn);
+								
+								//(2) get mrn from API
+								//PROD-->
+								String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+								//TEST-->String mrn = "XXXKKK";
+								
+								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
+								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+									dtoResponse.setMrn(mrn);
+									
+									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn);
+									if(xx!=null && xx.size()>0) {
+										for (SadexmfDto rec: xx) {
+											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
+												//OK
+											}else {
+												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+												dtoResponse.setErrMsg(errMsg.toString());
+											}
+										}
+									}
+									
+								}else {
+									errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
+									dtoResponse.setErrMsg(errMsg.toString());
+									break;
+								}
 							}
+							break; //only first in list
+							
+						}else {
+							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST ");
+							dtoResponse.setErrMsg(errMsg.toString());
 						}
-						break; //only first in list
 						
 					}
 				}else {
@@ -186,40 +197,6 @@ public class ExpressFortolling2Controller {
 		}
 		
 		return dtoResponse;
-	}
-	
-	/**
-	 * 
-	 * @param user
-	 * @param emavd
-	 * @param empro
-	 * @param lrn
-	 * @param mrn
-	 * @return
-	 */
-	private String getMrnMasterFromApi(GenericDtoResponse dtoResponse, String lrn) {
-		
-		String retval = "";
-		
-		try{
-			
-			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
-			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
-			logger.warn("JSON = " + json);
-			logger.warn("MRN = " + obj.getMasterReferenceNumber());
-			if(StringUtils.isEmpty(obj.getMasterReferenceNumber())) {
-				retval = obj.getMasterReferenceNumber();
-			}
-		}catch(Exception e) {
-			e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			dtoResponse.setErrMsg(sw.toString());
-			
-		}
-		
-		return retval;
 	}
 	
 	
@@ -302,6 +279,37 @@ public class ExpressFortolling2Controller {
 		}
 		return true;
 	}	
+	
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 * @return
+	 */
+	private String getMrnMasterFromApi(GenericDtoResponse dtoResponse, String lrn) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("MRN = " + obj.getMasterReferenceNumber());
+			if(StringUtils.isEmpty(obj.getMasterReferenceNumber())) {
+				retval = obj.getMasterReferenceNumber();
+			}
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
 	
 	
 	/**
