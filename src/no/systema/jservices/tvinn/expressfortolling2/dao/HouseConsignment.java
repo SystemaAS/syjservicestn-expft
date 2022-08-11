@@ -20,7 +20,7 @@ public class HouseConsignment {
 	private String documentIssueDate;
 	//Mandatory*
 	private Declarant declarant;
-	//Mandatory
+	//Mandatory*
 	private Representative representative;
 	//Mandatory*
 	

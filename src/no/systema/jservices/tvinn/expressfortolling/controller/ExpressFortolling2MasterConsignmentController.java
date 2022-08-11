@@ -43,12 +43,12 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.TestMasterConsignmentDao;
 import no.systema.jservices.tvinn.expressfortolling.api.TesterLrn;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.services.ApiLrnDto;
-import no.systema.jservices.tvinn.expressfortolling2.services.ApiMrnDto;
-import no.systema.jservices.tvinn.expressfortolling2.services.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfDto;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Express fortolling API.

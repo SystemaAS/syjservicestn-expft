@@ -20,6 +20,9 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+
 
 @Service
 public class SadexmfService {

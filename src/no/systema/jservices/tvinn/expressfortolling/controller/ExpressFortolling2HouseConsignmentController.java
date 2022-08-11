@@ -43,14 +43,14 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.TestMasterConsignmentDao;
 import no.systema.jservices.tvinn.expressfortolling.api.TesterLrn;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.services.ApiLrnDto;
-import no.systema.jservices.tvinn.expressfortolling2.services.ApiMrnDto;
-import no.systema.jservices.tvinn.expressfortolling2.services.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfDto;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Express fortolling API.
@@ -116,58 +116,61 @@ public class ExpressFortolling2HouseConsignmentController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadexhfDto dto: list) {
-						logger.warn(dto.toString());
-						//Always shoot for a new POST. Since we can have orphan House (without MRN) we are not able to send a PUT until the master has been sent.
-						//Therefore it will be always a POST
+						//DEBUG logger.warn(dto.toString());
+						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
+						if(StringUtils.isEmpty(dto.getEhmid()) && StringUtils.isEmpty(dto.getEhuuid() )) {
 						
-						/*MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
-						logger.warn("Representative:" + mc.getRepresentative().getName());
-						//API
-						String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
-						ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
-						logger.warn("JSON = " + json);
-						logger.warn("LRN = " + obj.getLrn());
-						//In case there was an error at end-point and the LRN was not returned
-						if(StringUtils.isEmpty(obj.getLrn())){
-							errMsg.append("LRN empty ?? <json raw>: " + json);
-							dtoResponse.setErrMsg(errMsg.toString());
-							break;
-						}else {
-							//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
-							String lrn = obj.getLrn();
-							dtoResponse.setLrn(lrn);
-							
-							//(2) get mrn from API
-							//PROD-->
-							//String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
-							//TEST-->
-							String mrn = "22NO4TU2HUD59UCBT2";
-							
-							//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
-							if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-								dtoResponse.setMrn(mrn);
-								
-								List<SadexmfDto> xx = sadexhfService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn);
-								if(xx!=null && xx.size()>0) {
-									for (SadexmfDto rec: xx) {
-										if(StringUtils.isNotEmpty(rec.getEmmid()) ){
-											//OK
-										}else {
-											errMsg.append("MRN empty after SADEXMF-update:" + mrn);
-											dtoResponse.setErrMsg(errMsg.toString());
-										}
-									}
-								}
-								
-							}else {
-								errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
+							/*MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
+							logger.warn("Representative:" + mc.getRepresentative().getName());
+							//API
+							String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
+							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							logger.warn("JSON = " + json);
+							logger.warn("LRN = " + obj.getLrn());
+							//In case there was an error at end-point and the LRN was not returned
+							if(StringUtils.isEmpty(obj.getLrn())){
+								errMsg.append("LRN empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
+							}else {
+								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
+								String lrn = obj.getLrn();
+								dtoResponse.setLrn(lrn);
+								
+								//(2) get mrn from API
+								//PROD-->
+								//String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+								//TEST-->
+								String mrn = "22NO4TU2HUD59UCBT2";
+								
+								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
+								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+									dtoResponse.setMrn(mrn);
+									
+									List<SadexmfDto> xx = sadexhfService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn);
+									if(xx!=null && xx.size()>0) {
+										for (SadexmfDto rec: xx) {
+											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
+												//OK
+											}else {
+												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+												dtoResponse.setErrMsg(errMsg.toString());
+											}
+										}
+									}
+									
+								}else {
+									errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
+									dtoResponse.setErrMsg(errMsg.toString());
+									break;
+								}
 							}
+							break; //only first in list
+							*/
+						}else {
+							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST ");
+							dtoResponse.setErrMsg(errMsg.toString());
 						}
-						break; //only first in list
-						*/
-						
 						
 					}
 				}else {

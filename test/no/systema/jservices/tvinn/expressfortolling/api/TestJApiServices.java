@@ -23,6 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.dto.*;
@@ -37,6 +38,7 @@ import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfMeansOfT
 import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
+import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.main.util.ObjectMapperHalJson;
 
@@ -278,6 +280,12 @@ public class TestJApiServices extends TestJBase {
 		//this will be populated by the SADEXMF Dto in real-world. We can not test it here unfortunately ...
 		MasterConsignment mc =  new TestMasterConsignmentDao().setMasterConsignment();
 		System.out.println(mc.getRepresentative().getName());
+		
+		//Debug
+		//ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		//String json = ow.writeValueAsString(mc);
+		//System.out.println(json);
+				
 		try {
 			String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
 			TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
@@ -303,22 +311,27 @@ public class TestJApiServices extends TestJBase {
 		
 	}
 	
-	/*@Test //OK - OBSOLETE just for testing purposes as Postman
-	public void createMasterConsignmentExpressMovementRoadRudimentary() throws Exception {
-		TestMasterConsignmentDao dao = new TestMasterConsignmentDao();
-		MasterConsignment mc = dao.setMasterConsignment();
-		System.out.println(mc.getRepresentative().getName());
+	@Test //OK - 
+	public void createHouseConsignmentExpressMovementRoad() throws Exception {
+		//this will be populated by the SADEXMF Dto in real-world. We can not test it here unfortunately ...
+		HouseConsignment hc =  new TestHouseConsignmentDao().setHouseConsignment();
+		System.out.println(hc.getRepresentative().getName());
+		
+		//Debug
+		//ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		//String json = ow.writeValueAsString(hc);
+		//System.out.println(json);
+		
 		try {
-			//String payload = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(mc);
-			String payload = new ObjectMapper().writeValueAsString(mc);
-			System.out.println(payload);
-			String json = apiServices.postMasterConsignmentExpressMovementRoad(payload);
+			/*String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
+			TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
 			System.out.println("JSON = " + json);
+			System.out.println("LRN = " + obj.getLrn());
+			*/
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
-	}*/
+	}
 	
 	
 	

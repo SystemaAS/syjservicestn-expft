@@ -14,6 +14,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.Consignor;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Crew;
 import no.systema.jservices.tvinn.expressfortolling2.dao.CustomsOfficeOfFirstEntry;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Declarant;
+import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Operator;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PassiveBorderTransportMeans;
@@ -24,27 +25,47 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.Representative;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
-import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 
-public class MapperMasterConsignment {
+public class MapperHouseConsignment {
 	
 	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
-	public MasterConsignment mapMasterConsignment(SadexmfDto sourceDto) {
+	public HouseConsignment mapMasterConsignment(SadexhfDto sourceDto) {
 		
-		MasterConsignment mc = new MasterConsignment();
+		HouseConsignment hc = new HouseConsignment();
 		//IssueDate
-		mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+		hc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+		
+		//Declarant
+		Declarant dec = new Declarant();
+		dec.setName("Posten Norge AS");
+		Address address = new Address();
+		address.setCity("Oslo");
+		address.setCountry("NO");
+		address.setStreetLine("");
+		address.setPostcode("0001");
+		address.setNumber("10B");
+		address.setPoBox("P.B 194");
+		dec.setAddress(address);
+		//
+		List commList = new ArrayList();
+		commList.add(this.populateCommunication("xxx@gmail.com", "EM"));
+		commList.add(this.populateCommunication("0733794505", "TE"));
+		dec.setCommunication(commList);
+		hc.setDeclarant(dec);
+		
+		
 		//Representative
 		Representative rep = new Representative();
-		rep.setName(sourceDto.getEmnar());
-		rep.setIdentificationNumber(sourceDto.getEmrgr());
+		rep.setName("Bring AS");
+		rep.setIdentificationNumber("951357482");
 		
 		//rep.setStatus(sourceDto.getEmstr());
 		rep.setStatus("2");
 		
 		Address raddress = new Address();
-		raddress.setCity(sourceDto.getEmpsr());
-		raddress.setCountry(sourceDto.getEmlkr());
+		raddress.setCity("Oslo");
+		raddress.setCountry("NO");
 		//PROD-->raddress.setStreetLine(sourceDto.getEmnrr());
 		raddress.setStreetLine("Hausemanns gate");
 		//PROD-->raddress.setNumber(sourceDto.getEmnrr());
@@ -52,12 +73,13 @@ public class MapperMasterConsignment {
 		rep.setAddress(raddress);
 		//
 		List rcommList = new ArrayList();
-		rcommList.add(this.populateCommunication(sourceDto.getEmemr(), "ME"));
+		rcommList.add(this.populateCommunication("en-epost@mail.no", "ME"));
 		//rcommList.add(this.populateCommunication("0733794599", "TE"));
 		rep.setCommunication(rcommList);
-		mc.setRepresentative(rep);
+		hc.setRepresentative(rep);
 		
 		
+		/*
 		//ActiveBorderTransMeans
 		mc.setActiveBorderTransportMeans(this.populateActiveBorderTransportMeans(sourceDto));
 		
@@ -69,19 +91,7 @@ public class MapperMasterConsignment {
 		mc.setCustomsOfficeOfFirstEntry(cOffice);
 		
 		
-		//Declarant
-		Declarant dec = new Declarant();
-		dec.setName(sourceDto.getEmnad());
-		Address address = new Address();
-		address.setCity(sourceDto.getEmpsd());
-		address.setCountry(sourceDto.getEmlkd());
-		dec.setAddress(address);
-		//
-		List commList = new ArrayList();
-		commList.add(this.populateCommunication("xxx@gmail.com", "EM"));
-		commList.add(this.populateCommunication("0733794505", "TE"));
-		dec.setCommunication(commList);
-		mc.setDeclarant(dec);
+		
 		
 		//ReleasedConfirmation
 		List relList = new ArrayList();
@@ -94,8 +104,8 @@ public class MapperMasterConsignment {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		
-		return mc;
+		*/
+		return hc;
 	}
 	
 	
@@ -109,7 +119,7 @@ public class MapperMasterConsignment {
 		return communication;
 	}
 	
-	
+	/*
 	private ConsignmentMasterLevel populateConsignmentMasterLevel(SadexmfDto sourceDto,String docNumber, String type) {
 		
 		TransportDocumentHouseLevel tdh = new TransportDocumentHouseLevel();
@@ -135,22 +145,7 @@ public class MapperMasterConsignment {
 		carrier.setCommunication(this.setCommunication(sourceDto.getEmemt(), "ME"));
 		
 		cml.setCarrier(carrier);
-		//
-		/*Consignee consignee = new Consignee();
-		cml.setConsignee(consignee);
-		//
-		Consignor consignor = new Consignor();
-		cml.setConsignor(consignor);
-		//
-		PlaceOfLoading pl = new PlaceOfLoading();
-		PlaceOfUnloading punl = new PlaceOfUnloading();
-		cml.setPlaceOfLoading(pl);
-		cml.setPlaceOfUnloading(punl);
 		
-		//
-		PassiveBorderTransportMeans pbtm = new PassiveBorderTransportMeans();
-		cml.setPassiveBorderTransportMeans(pbtm);
-		*/
 		//
 		TransportEquipment te = new TransportEquipment();
 		te.setContainerIdentificationNumber(sourceDto.getEmcnr());
@@ -166,7 +161,8 @@ public class MapperMasterConsignment {
 		
 		return cml;
 	}
-	
+	*/
+	/*
 	private List<Communication> setCommunication(String id, String type) {
 		Communication communication = new Communication();
 		communication.setIdentifier(id);
@@ -234,5 +230,5 @@ public class MapperMasterConsignment {
 		
 		return address;
 	}
-	
+	*/
 }

@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.expressfortolling2.services;
+package no.systema.jservices.tvinn.expressfortolling2.dto;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +16,14 @@ import lombok.Data;
  * @date aug 2022
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class GenericDtoContainer {
+public class GenericDtoResponse {
 	
 	private String user = null;
+	private String avd = null;
+	private String pro = null;
+	private String tdn = "";
+	private String lrn = "";
+	private String mrn = "";
 	private String errMsg = "";
-	private List<Object> list = new ArrayList<Object>();
+	
 }

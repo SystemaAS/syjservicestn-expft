@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.expressfortolling2.services;
+package no.systema.jservices.tvinn.expressfortolling2.dto;
 
 import java.util.HashMap;
 import java.util.Map; 
