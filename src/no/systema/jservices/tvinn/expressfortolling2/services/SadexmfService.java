@@ -22,8 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 @Service
-public class SadexService {
-	private static final Logger logger = LoggerFactory.getLogger(SadexService.class);
+public class SadexmfService {
+	private static final Logger logger = LoggerFactory.getLogger(SadexmfService.class);
 	
 	
 	@Autowired
@@ -191,5 +191,9 @@ public class SadexService {
 		
 		return result; 
 	}
+	
+	
+	
+	
 
 }

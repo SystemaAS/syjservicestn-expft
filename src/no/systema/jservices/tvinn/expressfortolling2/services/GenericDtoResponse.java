@@ -21,6 +21,7 @@ public class GenericDtoResponse {
 	private String user = null;
 	private String avd = null;
 	private String pro = null;
+	private String tdn = "";
 	private String lrn = "";
 	private String mrn = "";
 	private String errMsg = "";
