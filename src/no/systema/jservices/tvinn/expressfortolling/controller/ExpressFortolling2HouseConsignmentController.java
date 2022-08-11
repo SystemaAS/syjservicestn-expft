@@ -116,6 +116,7 @@ public class ExpressFortolling2HouseConsignmentController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadexhfDto dto: list) {
+						logger.warn(dto.toString());
 						//Always shoot for a new POST. Since we can have orphan House (without MRN) we are not able to send a PUT until the master has been sent.
 						//Therefore it will be always a POST
 						

@@ -44,7 +44,7 @@ public class SadexhfService {
 				.queryParam("user", user)
 				.queryParam("ehavd", avd)
 				.queryParam("ehpro", pro) 
-				.queryParam("ehtdn", pro) 
+				.queryParam("ehtdn", tdn) 
 				.build()
 				.encode()
 				.toUri();
