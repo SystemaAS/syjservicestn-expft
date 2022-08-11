@@ -23,7 +23,8 @@ public class HouseConsignment {
 	//Mandatory*
 	private Representative representative;
 	//Mandatory*
-	
+	@JsonProperty("consignmentHouseLevel")
+	private HouseConsignmentConsignmentHouseLevel houseConsignmentConsignmentHouseLevel; 
 	
 	
 }

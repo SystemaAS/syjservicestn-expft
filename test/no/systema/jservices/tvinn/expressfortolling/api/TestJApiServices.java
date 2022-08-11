@@ -40,6 +40,8 @@ import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
+import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -314,13 +316,13 @@ public class TestJApiServices extends TestJBase {
 	@Test //OK - 
 	public void createHouseConsignmentExpressMovementRoad() throws Exception {
 		//this will be populated by the SADEXMF Dto in real-world. We can not test it here unfortunately ...
-		HouseConsignment hc =  new TestHouseConsignmentDao().setHouseConsignment();
+		HouseConsignment hc =  new MapperHouseConsignment().mapMasterConsignment(new SadexhfDto());
 		System.out.println(hc.getRepresentative().getName());
 		
 		//Debug
-		//ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-		//String json = ow.writeValueAsString(hc);
-		//System.out.println(json);
+		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		String json = ow.writeValueAsString(hc);
+		System.out.println(json);
 		
 		try {
 			/*String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);

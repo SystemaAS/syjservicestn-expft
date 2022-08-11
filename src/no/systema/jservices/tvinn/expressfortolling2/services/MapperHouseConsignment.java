@@ -5,6 +5,7 @@ import java.util.List;
 
 import no.systema.jservices.tvinn.expressfortolling2.dao.ActiveBorderTransportMeans;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Address;
+import no.systema.jservices.tvinn.expressfortolling2.dao.AddressCountry;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Carrier;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Communication;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Consignee;
@@ -14,12 +15,16 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.Consignor;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Crew;
 import no.systema.jservices.tvinn.expressfortolling2.dao.CustomsOfficeOfFirstEntry;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Declarant;
+import no.systema.jservices.tvinn.expressfortolling2.dao.ExportFromEU;
+import no.systema.jservices.tvinn.expressfortolling2.dao.GoodsItem;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
+import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignmentConsignmentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Operator;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PassiveBorderTransportMeans;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PlaceOfLoading;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PlaceOfUnloading;
+import no.systema.jservices.tvinn.expressfortolling2.dao.PreviousDocuments;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ReleasedConfirmation;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Representative;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseLevel;
@@ -79,12 +84,9 @@ public class MapperHouseConsignment {
 		hc.setRepresentative(rep);
 		
 		
-		/*
-		//ActiveBorderTransMeans
-		mc.setActiveBorderTransportMeans(this.populateActiveBorderTransportMeans(sourceDto));
+		hc.setHouseConsignmentConsignmentHouseLevel(this.populateHouseConsignmentConsignmentHouseLevel(sourceDto));
 		
-		//Consig.MasterLevel - documentNumber IMPORTANT (parent to houseConsignment documentNumber)
-		mc.setConsignmentMasterLevel(this.populateConsignmentMasterLevel(sourceDto, "123123", "N750"));
+		/*
 		//CustomsOffice
 		CustomsOfficeOfFirstEntry cOffice = new CustomsOfficeOfFirstEntry();
 		cOffice.setReferenceNumber("NO344001");
@@ -119,50 +121,90 @@ public class MapperHouseConsignment {
 		return communication;
 	}
 	
-	/*
-	private ConsignmentMasterLevel populateConsignmentMasterLevel(SadexmfDto sourceDto,String docNumber, String type) {
+	
+	
+	private HouseConsignmentConsignmentHouseLevel populateHouseConsignmentConsignmentHouseLevel(SadexhfDto sourceDto) {
 		
-		TransportDocumentHouseLevel tdh = new TransportDocumentHouseLevel();
-		tdh.setDocumentNumber(docNumber);
-		tdh.setType(type);
-		//
+		HouseConsignmentConsignmentHouseLevel chl = new HouseConsignmentConsignmentHouseLevel();
+		chl.setContainerIndicator(10);
+		chl.setTotalGrossMass(103.23);
+		chl.setReferenceNumberUCR("string");
 		
-		ConsignmentHouseLevel chl = new ConsignmentHouseLevel();
-		chl.setTransportDocumentHouseLevel(tdh);
+		List _exportFromEUList = new ArrayList();
+		ExportFromEU exportFromEU = new ExportFromEU();
+		exportFromEU.setExportId("22SEE1452362514521");
+		exportFromEU.setTypeOfExport("UGE_EXPORT");
+		_exportFromEUList.add(exportFromEU);
+		chl.setExportFromEU(_exportFromEUList);
 		
-		List tmp = new ArrayList();
-		tmp.add(chl);
-		ConsignmentMasterLevel cml = new ConsignmentMasterLevel();
-		cml.setContainerIndicator(String.valueOf(sourceDto.getEmcn()));
-		cml.setGrossMass(String.valueOf(sourceDto.getEmvkb()));
-		//
-		Carrier carrier = new Carrier();
-		carrier.setName(sourceDto.getEmnat());
-		carrier.setIdentificationNumber(sourceDto.getEmrgt());
+		chl.setImportProcedure("IMMEDIATE_RELEASE_IMPORT");
+		/*
+		List prevDocsList = new ArrayList();
+		PreviousDocuments prevDocs = new PreviousDocuments();
+		prevDocs.setReferenceNumber("22NO12345678987654");
+		prevDocs.setTypeOfReference("CUDE");
+		prevDocs.setDeclarantNumber("123456789");
+		prevDocs.setDeclarationDate("2022-05-16");
+		prevDocs.setSequenceNumber("123");
+		prevDocsList.add(prevDocs);
+		chl.setPreviousDocuments(prevDocsList);
+		*/
+		PlaceOfLoading ploading = new PlaceOfLoading();
+		ploading.setLocation("string");
+		ploading.setUnloCode("NO SVD");
+		AddressCountry ploadAddress = new AddressCountry();
+		ploadAddress.setCountry("NO");
+		ploading.setAddress(ploadAddress);
+ 		chl.setPlaceOfLoading(ploading);
+ 		
+		PlaceOfUnloading punloading = new PlaceOfUnloading();
+		punloading.setLocation("string");
+		punloading.setUnloCode("NO SVD");
+		AddressCountry punloadAddress = new AddressCountry();
+		ploadAddress.setCountry("NO");
+		punloading.setAddress(ploadAddress);
+		chl.setPlaceOfUnloading(punloading);
+		
+		Consignee consignee = new Consignee();
+		consignee.setName("Consignee Jonsson");
+		consignee.setIdentificationNumber("951325847");
 		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
 		Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
-		carrier.setAddress(cAddress);
-		carrier.setCommunication(this.setCommunication(sourceDto.getEmemt(), "ME"));
+		consignee.setAddress(cAddress);
+		consignee.setCommunication(this.setCommunication("en-epost@mail.no", "ME"));
+		chl.setConsignee(consignee);
 		
-		cml.setCarrier(carrier);
+		Consignor consignor = new Consignor();
+		consignor.setName("Consignor Svensson");
+		consignor.setIdentificationNumber("951325847");
+		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
+		Address cgorAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
+		consignor.setAddress(cgorAddress);
+		consignor.setCommunication(this.setCommunication("consignor@mail.no", "ME"));
+		chl.setConsignor(consignor);
 		
-		//
-		TransportEquipment te = new TransportEquipment();
-		te.setContainerIdentificationNumber(sourceDto.getEmcnr());
-		List _l1 = new ArrayList();
-		_l1.add(te);
-		cml.setTranportEquipment(_l1);
+		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
+		transpDocHouseLevel.setDocumentNumber("string");
+		transpDocHouseLevel.setType("N714");
+		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
-		TransportDocumentMasterLevel td = new TransportDocumentMasterLevel();
-		td.setDocumentNumber("1111112");
-		td.setType("N750");
-		cml.setTransportDocumentMasterLevel(td);
-		cml.setConsignmentHouseLevel(tmp);
+		List goodsItem = this.getGoodsItemList();
+		chl.setGoodsItem(goodsItem);
 		
-		return cml;
+		
+		
+		return chl;
+		
 	}
-	*/
-	/*
+	
+	private List<GoodsItem> getGoodsItemList() {
+		List tmp = new ArrayList();
+		//TODO !!
+		//HERE
+		
+		return tmp;
+	}
+	
 	private List<Communication> setCommunication(String id, String type) {
 		Communication communication = new Communication();
 		communication.setIdentifier(id);
@@ -171,7 +213,7 @@ public class MapperHouseConsignment {
 		tmp.add(communication);
 		return tmp;
 	}
-	
+	/*
 	private ActiveBorderTransportMeans populateActiveBorderTransportMeans(SadexmfDto sourceDto) {
 		ActiveBorderTransportMeans ab = new ActiveBorderTransportMeans();
 		ab.setIdentificationNumber("DK 123654");
@@ -219,6 +261,7 @@ public class MapperHouseConsignment {
 		releasedConfirmation.setEmailAddress(email);
 		return releasedConfirmation;
 	}
+	*/
 	
 	private Address setAddress(String city, String country, String postCode, String street, String number) {
 		Address address = new Address();
@@ -230,5 +273,5 @@ public class MapperHouseConsignment {
 		
 		return address;
 	}
-	*/
+	
 }
