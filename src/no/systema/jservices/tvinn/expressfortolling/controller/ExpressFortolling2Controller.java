@@ -93,9 +93,10 @@ public class ExpressFortolling2Controller {
 		
 	}
 	/**
-	 * Creates a new Master Consignment through an API - POST
+	 * Creates a new Master Consignment through the API - POST
 	 * The operation is only valid when the lrn(emuuid) and mrn(emmid) are empty at SADEXMF
-	 * It these fields are already in place your should use the PUT method OR erase the emuuid and emmid on db
+	 * (1)If these fields are already in place your should use the PUT method OR 
+	 * (2)erase the emuuid and emmid on db before using POST again
 	 * 
 	 * @param session
 	 * @param user
@@ -129,6 +130,7 @@ public class ExpressFortolling2Controller {
 						if(StringUtils.isEmpty(sadexmfDto.getEmmid()) && StringUtils.isEmpty(sadexmfDto.getEmuuid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
 							logger.warn("Representative:" + mc.getRepresentative().getName());
+							//API
 							String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
 							logger.warn("JSON = " + json);
@@ -145,8 +147,9 @@ public class ExpressFortolling2Controller {
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
-								//TEST-->String mrn = "XXXKKK";
+								//String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+								//TEST-->
+								String mrn = "22NO4TU2HUD59UCBT2";
 								
 								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
@@ -180,6 +183,160 @@ public class ExpressFortolling2Controller {
 					}
 				}else {
 					errMsg.append(" no records ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(" invalid user ");
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		return dtoResponse;
+	}
+	
+	/**
+	 * Updates an existing Master Consignment. Requires an existing MRN (emmid at SADEXMF)
+	 * @param request
+	 * @param user
+	 * @param emavd
+	 * @param empro
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="putMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse putMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
+		
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setMrn(mrn);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		logger.warn("Inside putMasterConsignment - MRNnr: " + mrn);
+		//create new - master consignment at toll.no
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				List<SadexmfDto> list = sadexService.getSadexmfForUpdate(user, mrn);
+				
+				if(list != null && list.size()>0) {
+					logger.warn("list size:" + list.size());
+					
+					for (SadexmfDto sadexmfDto: list) {
+						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
+						if(StringUtils.isNotEmpty(sadexmfDto.getEmmid()) && StringUtils.isNotEmpty(sadexmfDto.getEmuuid() )) {
+							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
+							logger.warn("Representative:" + mc.getRepresentative().getName());
+							//API
+							String json = apiServices.putMasterConsignmentExpressMovementRoad(mc, mrn);
+							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							logger.warn("JSON = " + json);
+							logger.warn("LRN = " + obj.getLrn());
+							//put in response
+							dtoResponse.setLrn(obj.getLrn());
+							dtoResponse.setAvd(String.valueOf(sadexmfDto.getEmavd()));
+							dtoResponse.setPro(String.valueOf(sadexmfDto.getEmpro()));
+							//In case there was an error at end-point and the LRN was not returned
+							if(StringUtils.isEmpty(obj.getLrn())){
+								errMsg.append("LRN empty ?? <json raw>: " + json);
+								dtoResponse.setErrMsg(errMsg.toString());
+								break;
+							}
+							break; //only first in list
+							
+						}else {
+							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any PUT ");
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+						
+					}
+				}else {
+					errMsg.append(" no records to fetch from SADEXMF ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(" invalid user ");
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		return dtoResponse;
+	}
+	/**
+	 * Delete MasterConsignment in API-server
+	 * @param request
+	 * @param user
+	 * @param mrn
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="deleteMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse deleteMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
+		
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setMrn(mrn);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		logger.warn("Inside deleteMasterConsignment - MRNnr: " + mrn);
+		//create new - master consignment at toll.no
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				List<SadexmfDto> list = sadexService.getSadexmfForUpdate(user, mrn);
+				
+				if(list != null && list.size()>0) {
+					logger.warn("list size:" + list.size());
+					
+					for (SadexmfDto sadexmfDto: list) {
+						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
+						if(StringUtils.isNotEmpty(sadexmfDto.getEmmid()) && StringUtils.isNotEmpty(sadexmfDto.getEmuuid() )) {
+							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
+							logger.warn("Representative:" + mc.getRepresentative().getName());
+							//API
+							String json = apiServices.deleteMasterConsignmentExpressMovementRoad(mc, mrn);
+							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							logger.warn("JSON = " + json);
+							logger.warn("LRN = " + obj.getLrn());
+							//put in response
+							dtoResponse.setLrn(obj.getLrn());
+							dtoResponse.setAvd(String.valueOf(sadexmfDto.getEmavd()));
+							dtoResponse.setPro(String.valueOf(sadexmfDto.getEmpro()));
+							//In case there was an error at end-point and the LRN was not returned
+							if(StringUtils.isEmpty(obj.getLrn())){
+								errMsg.append("LRN empty ?? <json raw>: " + json);
+								dtoResponse.setErrMsg(errMsg.toString());
+								break;
+							}
+							break; //only first in list
+							
+						}else {
+							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any DELETE ");
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+						
+					}
+				}else {
+					errMsg.append(" no records to fetch from SADEXMF ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				

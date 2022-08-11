@@ -810,7 +810,11 @@ public class ApiServices {
         		
 	}
 
-
+	/**
+	 * Create new - POST
+	 * @param mc
+	 * @return
+	 */
 	public String postMasterConsignmentExpressMovementRoad(MasterConsignment mc) {
 		  
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
@@ -843,6 +847,86 @@ public class ApiServices {
         
         
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+	/**
+	 * Update - PUT
+	 * @param mc
+	 * @param mrn
+	 * @return
+	 */
+	public String putMasterConsignmentExpressMovementRoad(MasterConsignment mc, String mrn) {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		
+		
+		Object postBody = mc;
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment/" + mrn).build().toUriString();
+		System.out.println(path);
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        
+        return apiClient.invokeAPI(path, HttpMethod.PUT, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+	/**
+	 * DELETE Master
+	 * @param mc
+	 * @param mrn
+	 * @return
+	 */
+	public String deleteMasterConsignmentExpressMovementRoad(MasterConsignment mc, String mrn) {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		
+		
+		Object postBody = mc;
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment/" + mrn).build().toUriString();
+		System.out.println(path);
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        
+        return apiClient.invokeAPI(path, HttpMethod.DELETE, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
         		
 	}
 	/**

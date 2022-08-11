@@ -84,6 +84,57 @@ public class SadexService {
 		return result; 
 	}
 	
+	public List<SadexmfDto> getSadexmfForUpdate(String user, String mrn) {
+		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADEXMF.do")
+				.queryParam("user", user)
+				.queryParam("emmid", mrn)
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
+					//get item lines
+					if(pojo!=null) {
+						result.add(pojo);
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	
 	
 	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
