@@ -7,26 +7,36 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.ActiveBorderTransportMe
 import no.systema.jservices.tvinn.expressfortolling2.dao.Address;
 import no.systema.jservices.tvinn.expressfortolling2.dao.AddressCountry;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Carrier;
+import no.systema.jservices.tvinn.expressfortolling2.dao.Commodity;
+import no.systema.jservices.tvinn.expressfortolling2.dao.CommodityCode;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Communication;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Consignee;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ConsignmentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ConsignmentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Consignor;
+import no.systema.jservices.tvinn.expressfortolling2.dao.CountryOfOrigin;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Crew;
 import no.systema.jservices.tvinn.expressfortolling2.dao.CustomsOfficeOfFirstEntry;
+import no.systema.jservices.tvinn.expressfortolling2.dao.DangerousGoods;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Declarant;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ExportFromEU;
 import no.systema.jservices.tvinn.expressfortolling2.dao.GoodsItem;
+import no.systema.jservices.tvinn.expressfortolling2.dao.GoodsMeasure;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignmentConsignmentHouseLevel;
+import no.systema.jservices.tvinn.expressfortolling2.dao.ItemAmountInvoiced;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Operator;
+import no.systema.jservices.tvinn.expressfortolling2.dao.Packaging;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PassiveBorderTransportMeans;
+import no.systema.jservices.tvinn.expressfortolling2.dao.PassiveTransportMeans;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PlaceOfLoading;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PlaceOfUnloading;
 import no.systema.jservices.tvinn.expressfortolling2.dao.PreviousDocuments;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ReleasedConfirmation;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Representative;
+import no.systema.jservices.tvinn.expressfortolling2.dao.TotalAmountInvoiced;
+import no.systema.jservices.tvinn.expressfortolling2.dao.TransportCharges;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
@@ -191,18 +201,118 @@ public class MapperHouseConsignment {
 		List goodsItem = this.getGoodsItemList();
 		chl.setGoodsItem(goodsItem);
 		
+		//(Optional)Transport Equipment
+		List transpEquipmentList = new ArrayList();
+		TransportEquipment transportEquipment = new TransportEquipment();
+		transportEquipment.setContainerIdentificationNumber("2342342432SAS");
+		transpEquipmentList.add(transportEquipment);
+		chl.setTransportEquipment(transpEquipmentList);
 		
+		
+		//(Optional)Passive Transport Means
+		List ptmList = new ArrayList();
+		PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
+		passiveTransportMeans.setCountryCode("DK");
+		passiveTransportMeans.setIdentificationNumber("DK 123456");
+		passiveTransportMeans.setTypeOfIdentification(30);
+		passiveTransportMeans.setTypeOfMeansOfTransport("150");
+		ptmList.add(passiveTransportMeans);
+		chl.setPassiveTransportMeans(ptmList);
+		
+		
+		TransportCharges transpCharges = new TransportCharges();
+		transpCharges.setMethodOfPayment("s");
+		transpCharges.setCurrency("NOK");
+		transpCharges.setValue(0.0);
+		chl.setTransportCharges(transpCharges);
+		
+		
+		TotalAmountInvoiced totalAmount = new TotalAmountInvoiced();
+		totalAmount.setValue(0.0);
+		totalAmount.setCurrency("NOK");
+		chl.setTotalAmountInvoiced(totalAmount);
 		
 		return chl;
 		
 	}
-	
+	/**
+	 * 
+	 * @return
+	 */
 	private List<GoodsItem> getGoodsItemList() {
-		List tmp = new ArrayList();
-		//TODO !!
-		//HERE
+		List goodsItemList = new ArrayList();
 		
-		return tmp;
+		GoodsItem item = new GoodsItem();
+		item.setDeclarationGoodsItemNumber("2");
+		item.setTransitGoodsItemNumber("3");
+		item.setTypeOfGoods("11");
+		
+		ItemAmountInvoiced itemAmountInvoiced = new ItemAmountInvoiced();
+		itemAmountInvoiced.setCurrency("str");
+		itemAmountInvoiced.setValue(0.0);
+		item.setItemAmountInvoiced(itemAmountInvoiced);
+		
+		Commodity commodity = new Commodity();
+		commodity.setDescriptionOfGoods("string");
+		commodity.setCusCode("string");
+		CommodityCode commodityCode = new CommodityCode();
+		commodityCode.setCombinedNomenclatureCode("00");
+		commodityCode.setHarmonizedSystemSubheadingCode("551100");
+		commodity.setCommodityCode(commodityCode);
+		//Dangerous goods
+		List dangGoodsList = new ArrayList();
+		DangerousGoods dangerousGoods = new DangerousGoods();
+		dangerousGoods.setUnNumber("1055");
+		dangGoodsList.add(dangerousGoods);
+		commodity.setDangerousGoods(dangGoodsList);
+		//Goods measure
+		GoodsMeasure goodsMeasure = new GoodsMeasure();
+		goodsMeasure.setGrossMass(0.0);
+		goodsMeasure.setNetMass(0.0);
+		goodsMeasure.setSupplementaryUnits("STK");
+		commodity.setGoodsMeasure(goodsMeasure);
+		//
+		item.setCommodity(commodity);
+		
+		//Country of Origin
+		CountryOfOrigin countryOfOrigin = new CountryOfOrigin();
+		countryOfOrigin.setCountry("SE");
+		item.setCountryOfOrigin(countryOfOrigin);
+		
+		//Packaging
+		List packagingList = new ArrayList();
+		Packaging packaging = new Packaging();
+		packaging.setNumberOfPackages(0);
+		packaging.setShippingMarks("String");
+		packaging.setTypeOfPackages("PX");
+		packagingList.add(packaging);
+		item.setPackaging(packagingList);
+		
+		//Passive Transport Means
+		List ptmList = new ArrayList();
+		PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
+		passiveTransportMeans.setCountryCode("DK");
+		passiveTransportMeans.setIdentificationNumber("DK 123456");
+		passiveTransportMeans.setTypeOfIdentification(30);
+		passiveTransportMeans.setTypeOfMeansOfTransport("150");
+		ptmList.add(passiveTransportMeans);
+		item.setPassiveTransportMeans(ptmList);
+		
+		//Transport Equipment
+		List transpEquipmentList = new ArrayList();
+		TransportEquipment transportEquipment = new TransportEquipment();
+		transportEquipment.setContainerIdentificationNumber("2342342432SAS");
+		transpEquipmentList.add(transportEquipment);
+		item.setTransportEquipment(transpEquipmentList);
+		
+		
+		//add to goods item list
+		goodsItemList.add(item);
+		
+		
+		
+		return goodsItemList;
+		
 	}
 	
 	private List<Communication> setCommunication(String id, String type) {
