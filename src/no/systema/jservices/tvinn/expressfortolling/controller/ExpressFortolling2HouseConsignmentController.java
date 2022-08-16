@@ -42,12 +42,14 @@ import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationC
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.TestMasterConsignmentDao;
 import no.systema.jservices.tvinn.expressfortolling.api.TesterLrn;
+import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
@@ -120,10 +122,13 @@ public class ExpressFortolling2HouseConsignmentController {
 						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
 						if(StringUtils.isEmpty(dto.getEhmid()) && StringUtils.isEmpty(dto.getEhuuid() )) {
 						
-							/*MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
-							logger.warn("Representative:" + mc.getRepresentative().getName());
+							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
+							logger.warn("Representative:" + hc.getRepresentative().getName());
+							logger.warn("House documentNumber:" + hc.getHouseConsignmentConsignmentHouseLevel().getTransportDocumentHouseLevel().getDocumentNumber());
+							logger.warn("House totalAmountInvoiced:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalAmountInvoiced().getValue() 
+																	+ hc.getHouseConsignmentConsignmentHouseLevel().getTotalAmountInvoiced().getCurrency());
 							//API
-							String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
+							String json = apiServices.postHouseConsignmentExpressMovementRoad(hc);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("LRN = " + obj.getLrn());
@@ -133,6 +138,7 @@ public class ExpressFortolling2HouseConsignmentController {
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
 							}else {
+								
 								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
@@ -147,13 +153,13 @@ public class ExpressFortolling2HouseConsignmentController {
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									dtoResponse.setMrn(mrn);
 									
-									List<SadexmfDto> xx = sadexhfService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), lrn, mrn);
 									if(xx!=null && xx.size()>0) {
-										for (SadexmfDto rec: xx) {
-											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
+										for (SadexhfDto rec: xx) {
+											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
 											}else {
-												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+												errMsg.append("MRN empty after SADEXHF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
 											}
 										}
@@ -164,9 +170,10 @@ public class ExpressFortolling2HouseConsignmentController {
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
+								
 							}
 							break; //only first in list
-							*/
+							
 						}else {
 							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST ");
 							dtoResponse.setErrMsg(errMsg.toString());

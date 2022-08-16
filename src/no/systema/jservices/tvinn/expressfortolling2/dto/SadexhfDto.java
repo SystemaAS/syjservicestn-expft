@@ -1,6 +1,8 @@
 package no.systema.jservices.tvinn.expressfortolling2.dto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map; 
 import lombok.Data;
 
@@ -110,6 +112,7 @@ public class SadexhfDto  {
 	private String ehplk  = ""; // tegn            2       2      1532        begge    kjøretøynasjonalitet
 	private String ehtrid = ""; // tegn           17      17      1534        begge    bilnr               
 	private Integer eh3039e= 0; // sonet        6  0       6      1551        begge    ekspedisjonsenhet
-
+	//goodsItem
+	private List<SadexifDto> goodsItemList = new ArrayList<SadexifDto>();
 	
 }

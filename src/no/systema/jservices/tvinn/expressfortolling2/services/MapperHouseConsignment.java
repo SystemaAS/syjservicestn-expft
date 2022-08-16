@@ -45,11 +45,11 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 public class MapperHouseConsignment {
 	
 	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
-	public HouseConsignment mapMasterConsignment(SadexhfDto sourceDto) {
+	public HouseConsignment mapHouseConsignment(SadexhfDto sourceDto) {
 		
 		HouseConsignment hc = new HouseConsignment();
 		//IssueDate
-		hc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+		hc.setDocumentIssueDate("2022-08-16T11:49:52Z");
 		
 		//Declarant
 		Declarant dec = new Declarant();
@@ -194,8 +194,8 @@ public class MapperHouseConsignment {
 		chl.setConsignor(consignor);
 		
 		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
-		transpDocHouseLevel.setDocumentNumber("string");
-		transpDocHouseLevel.setType("N714");
+		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
+		transpDocHouseLevel.setType(sourceDto.getEhdkht());
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
 		List goodsItem = this.getGoodsItemList();
@@ -228,7 +228,7 @@ public class MapperHouseConsignment {
 		
 		
 		TotalAmountInvoiced totalAmount = new TotalAmountInvoiced();
-		totalAmount.setValue(0.0);
+		totalAmount.setValue(100.0);
 		totalAmount.setCurrency("NOK");
 		chl.setTotalAmountInvoiced(totalAmount);
 		

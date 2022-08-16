@@ -32,6 +32,9 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+
 import no.systema.jservices.common.dto.expressfortolling.ManifestCountryDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
 import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
@@ -40,6 +43,7 @@ import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
 import no.systema.jservices.common.util.CommonClientHttpRequestInterceptor;
 import no.systema.jservices.common.util.CommonResponseErrorHandler;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
+import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 
@@ -829,6 +833,8 @@ public class ApiServices {
         //https://api-test.toll.no/api/movement/road/v1/test-auth
 		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment").build().toUriString();
 		System.out.println(path);
+		logger.warn(path);
+		
         
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
@@ -869,7 +875,8 @@ public class ApiServices {
         //https://api-test.toll.no/api/movement/road/v1/test-auth
 		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment/" + mrn).build().toUriString();
 		System.out.println(path);
-        
+		logger.warn(path);
+		
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
@@ -909,7 +916,8 @@ public class ApiServices {
         //https://api-test.toll.no/api/movement/road/v1/test-auth
 		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment/" + mrn).build().toUriString();
 		System.out.println(path);
-        
+		logger.warn(path);
+		
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
@@ -934,65 +942,54 @@ public class ApiServices {
 	 * @param jsonPayload
 	 * @return
 	 */
-	/*
-	public String postMasterConsignmentExpressMovementRoad(String jsonPayload) {
-		this.restTemplate = this.restTemplate();
-		String retval = "";
-		
+	public String postHouseConsignmentExpressMovementRoad(HouseConsignment hc) {
+		  
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
-        String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment").build().toUriString();
-		//System.out.println(path);
-		HttpHeaders headers = new HttpHeaders();
-		//it has to be JSON UTF8 otherwise it won't work
-		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
-		//headers.setContentType(MediaType.APPLICATION_JSON);
-		headers.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
-		headers.add("Accept", "application/json;charset=utf-8");
-		
-		HttpEntity<?> entity = new HttpEntity<>(jsonPayload, headers);
-		HttpMethod httpMethod = HttpMethod.POST;
-		
-        //apiClient.setBasePath(this.basePathMovementRoad);
-		URI url = null;
-		try{
-			url = new URI(this.basePathMovementRoad + path);
-			System.out.println("URL:" + url.toString());
-		}catch(Exception e){
-			e.printStackTrace();
+		//Debug for JSON string
+		try {
+			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+			String json = ow.writeValueAsString(hc);
+			logger.warn(json);
+		}catch(Exception e) {
+			e.toString();
+			
 		}
-        //////START REST/////////
-  		ResponseEntity<String> exchange = null;
-  		try{
-  			//final ParameterizedTypeReference<String> typeReference = new ParameterizedTypeReference<String>() {};
-  			System.out.println("before REST call");
-  			exchange = this.restTemplate.exchange(url, httpMethod, entity, String.class);
-  			System.out.println("after REST call");
-  			if(exchange!=null){
-  				if(exchange.getStatusCode().is2xxSuccessful()) {
-  					System.out.println("OK -----> MasterConsignment body uploaded = " + exchange.getStatusCode().toString());
-  					
-  				}else{
-  					System.out.println("ERROR : FATAL ... on File uploaded = " + exchange.getStatusCode().toString() + exchange.getBody() );
-  					
-  				}
-  				retval = exchange.getBody();
-  			}
-  		}catch(HttpClientErrorException e){
-  			//DEBUG -->String responseBody = e.getResponseBodyAsString();
-  			//DEBUG -->logger.error("ERROR http code:" + e.getRawStatusCode());
-  			//DEBUG -->logger.error("Response body:" + responseBody);
-  			throw e;
-  		}
-  		////////END REST/////////
-  		return retval; 
-        		
-	}*/
+		Object postBody = hc;
+		
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/house-consignment").build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
 
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        
+        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+	
+	
+	
+	
 	
 	public String getValidationStatusMasterConsignmentExpressMovementRoad(String lrn) {
 		  
@@ -1008,7 +1005,8 @@ public class ApiServices {
         //https://api-test.toll.no/api/movement/road/v1/test-auth
 		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment/validation-status/" + lrn).build().toUriString();
 		System.out.println(path);
-        
+		logger.warn(path);
+		
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();

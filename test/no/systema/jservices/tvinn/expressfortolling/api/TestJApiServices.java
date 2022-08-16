@@ -316,7 +316,7 @@ public class TestJApiServices extends TestJBase {
 	@Test //OK - 
 	public void createHouseConsignmentExpressMovementRoad() throws Exception {
 		//this will be populated by the SADEXMF Dto in real-world. We can not test it here unfortunately ...
-		HouseConsignment hc =  new MapperHouseConsignment().mapMasterConsignment(new SadexhfDto());
+		HouseConsignment hc =  new MapperHouseConsignment().mapHouseConsignment(new SadexhfDto());
 		System.out.println(hc.getRepresentative().getName());
 		
 		//Debug
