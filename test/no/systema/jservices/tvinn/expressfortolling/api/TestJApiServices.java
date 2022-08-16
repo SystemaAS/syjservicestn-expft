@@ -42,6 +42,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
+import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
 import no.systema.main.util.ObjectMapperHalJson;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -284,10 +285,8 @@ public class TestJApiServices extends TestJBase {
 		System.out.println(mc.getRepresentative().getName());
 		
 		//Debug
-		//ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-		//String json = ow.writeValueAsString(mc);
-		//System.out.println(json);
-				
+		//System.out.println(GenericJsonStringPrinter.debug(mc));
+		
 		try {
 			String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
 			TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
@@ -297,12 +296,13 @@ public class TestJApiServices extends TestJBase {
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+		
 	}
 	
 	@Test //OK - NOT Working (neither in POSTMAN) ---> Vedstein Vada fråga. We need MRN
 	public void getMasterConsignmentExpressMovementRoad_validationStatus() throws Exception {
 		//
-			String lrn = "74a92607-469d-4774-9d34-3ae25ca6db6d";
+			String lrn = "2dcb6055-c482-491c-8baf-fe23d61881e8";
 		try {
 			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
 			System.out.println("JSON = " + json);

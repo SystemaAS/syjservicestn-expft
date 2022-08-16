@@ -24,6 +24,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.Representative;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 
 public class TestMasterConsignmentDao {
 
@@ -102,20 +103,27 @@ public class TestMasterConsignmentDao {
 		return communication;
 	}
 	
+   private ConsignmentHouseLevel populateConsignmentHouseLevel(String id, String type) {
+		
+	   ConsignmentHouseLevel houseLevel = new ConsignmentHouseLevel();
+	   TransportDocumentHouseLevel tdh = new TransportDocumentHouseLevel();
+	   tdh.setDocumentNumber(id);
+	   tdh.setType(type);
+	   houseLevel.setTransportDocumentHouseLevel(tdh);
+	   return houseLevel;
+	}
+	
 	
 	private ConsignmentMasterLevel populateConsignmentMasterLevel(String docNumber, String type) {
 		
-		TransportDocumentHouseLevel tdh = new TransportDocumentHouseLevel();
-		tdh.setDocumentNumber(docNumber);
-		tdh.setType(type);
-		//
+		List list = new ArrayList();
+		list.add(this.populateConsignmentHouseLevel("1233334566", "N740"));
+		list.add(this.populateConsignmentHouseLevel("7898798789", "N713"));
 		
-		ConsignmentHouseLevel chl = new ConsignmentHouseLevel();
-		chl.setTransportDocumentHouseLevel(tdh);
-		
-		List tmp = new ArrayList();
-		tmp.add(chl);
 		ConsignmentMasterLevel cml = new ConsignmentMasterLevel();
+		cml.setConsignmentHouseLevel(list);
+		
+		
 		cml.setContainerIndicator("1");
 		cml.setGrossMass("100");
 		//
@@ -154,7 +162,7 @@ public class TestMasterConsignmentDao {
 		td.setDocumentNumber("1111112");
 		td.setType("N750");
 		cml.setTransportDocumentMasterLevel(td);
-		cml.setConsignmentHouseLevel(tmp);
+		
 		
 		return cml;
 	}

@@ -32,6 +32,9 @@ public class SadexmfService {
 	@Autowired
 	RestTemplate restTemplate;
 	
+	@Autowired
+	SadexhfService sadexhfService;
+	
 	@Value("${http.syjservices.root.servlet}")
 	String serverRoot; 
 	
@@ -71,7 +74,9 @@ public class SadexmfService {
 				
 				for(Object o: dtoContainer.getList()){
 					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
-					//get item lines
+					//get houses' dto for documentNumbers later on
+					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(user, avd, pro));
+					logger.info(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
 					}

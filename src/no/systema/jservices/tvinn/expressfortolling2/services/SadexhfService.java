@@ -92,7 +92,58 @@ public class SadexhfService {
 		return result; 
 	}
 	
-	
+	public List<SadexhfDto> getDocumentNumberListFromHouses(String user, String avd, String pro) {
+		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADEXHF.do")
+				.queryParam("user", user)
+				.queryParam("ehavd", avd)
+				.queryParam("ehpro", pro) 
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.debug(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADEXHF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADEXHF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadexhfDto pojo = mapper.convertValue(o, SadexhfDto.class);
+					
+					if(pojo!=null) {
+						result.add(pojo);
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+
 	private List<SadexifDto> getItemLines(String user, String avd, String pro, String tdn) {
 		List<SadexifDto> result = new ArrayList<SadexifDto>();
 		

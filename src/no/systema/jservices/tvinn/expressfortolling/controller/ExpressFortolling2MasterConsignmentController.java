@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -49,6 +50,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
+import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Express fortolling API.
@@ -126,11 +128,17 @@ public class ExpressFortolling2MasterConsignmentController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadexmfDto sadexmfDto: list) {
+						//DEBUG
+						logger.info(sadexmfDto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
+						
 						if(StringUtils.isEmpty(sadexmfDto.getEmmid()) && StringUtils.isEmpty(sadexmfDto.getEmuuid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
 							logger.warn("Representative:" + mc.getRepresentative().getName());
+							//Debug
+							logger.debug(GenericJsonStringPrinter.debug(mc));
 							//API
+							
 							String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
 							logger.warn("JSON = " + json);
@@ -144,7 +152,7 @@ public class ExpressFortolling2MasterConsignmentController {
 								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
-								
+								/* WAITING for Vestein in order to get MRN correctly
 								//(2) get mrn from API
 								//PROD-->
 								//String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
@@ -172,6 +180,7 @@ public class ExpressFortolling2MasterConsignmentController {
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
+								*/
 							}
 							break; //only first in list
 							

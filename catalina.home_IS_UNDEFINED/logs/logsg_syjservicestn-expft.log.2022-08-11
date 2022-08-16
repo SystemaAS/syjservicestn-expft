@@ -1,0 +1,36 @@
+2022-08-11 12:53:48.739 [WARN] no.systema.jservices.tvinn.expressfortolling.api.TestJApiServices:316 - {
+  "documentIssueDate" : "2022-08-04T07:49:52Z",
+  "declarant" : {
+    "name" : "Posten Norge AS",
+    "address" : {
+      "city" : "Oslo",
+      "country" : "NO",
+      "postcode" : "0001",
+      "streetLine" : "",
+      "number" : "10B",
+      "poBox" : "P.B 194"
+    },
+    "communication" : [ {
+      "identifier" : "xxx@gmail.com",
+      "type" : "EM"
+    }, {
+      "identifier" : "0733794505",
+      "type" : "TE"
+    } ]
+  },
+  "representative" : {
+    "name" : "Bring AS",
+    "identificationNumber" : "951357482",
+    "status" : "2",
+    "address" : {
+      "city" : "Oslo",
+      "country" : "NO",
+      "streetLine" : "Hausemanns gate",
+      "number" : "52F"
+    },
+    "communication" : [ {
+      "identifier" : "en-epost@mail.no",
+      "type" : "ME"
+    } ]
+  }
+}

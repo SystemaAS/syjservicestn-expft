@@ -148,17 +148,17 @@ public class MapperHouseConsignment {
 		chl.setExportFromEU(_exportFromEUList);
 		
 		chl.setImportProcedure("IMMEDIATE_RELEASE_IMPORT");
-		/*
+		
 		List prevDocsList = new ArrayList();
 		PreviousDocuments prevDocs = new PreviousDocuments();
 		prevDocs.setReferenceNumber("22NO12345678987654");
 		prevDocs.setTypeOfReference("CUDE");
 		prevDocs.setDeclarantNumber("123456789");
-		prevDocs.setDeclarationDate("2022-05-16");
-		prevDocs.setSequenceNumber("123");
+		prevDocs.setDeclarationDate("2022-08-10");
+		prevDocs.setSequenceNumber("1");
 		prevDocsList.add(prevDocs);
 		chl.setPreviousDocuments(prevDocsList);
-		*/
+		
 		PlaceOfLoading ploading = new PlaceOfLoading();
 		ploading.setLocation("string");
 		ploading.setUnloCode("NO SVD");

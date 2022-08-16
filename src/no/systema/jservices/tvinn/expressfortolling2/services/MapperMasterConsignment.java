@@ -3,6 +3,8 @@ package no.systema.jservices.tvinn.expressfortolling2.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
 import no.systema.jservices.tvinn.expressfortolling2.dao.ActiveBorderTransportMeans;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Address;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Carrier;
@@ -24,6 +26,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.Representative;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 
 public class MapperMasterConsignment {
@@ -62,7 +65,7 @@ public class MapperMasterConsignment {
 		mc.setActiveBorderTransportMeans(this.populateActiveBorderTransportMeans(sourceDto));
 		
 		//Consig.MasterLevel - documentNumber IMPORTANT (parent to houseConsignment documentNumber)
-		mc.setConsignmentMasterLevel(this.populateConsignmentMasterLevel(sourceDto, "123123", "N750"));
+		mc.setConsignmentMasterLevel(this.populateConsignmentMasterLevel(sourceDto));
 		//CustomsOffice
 		CustomsOfficeOfFirstEntry cOffice = new CustomsOfficeOfFirstEntry();
 		cOffice.setReferenceNumber("NO344001");
@@ -108,21 +111,34 @@ public class MapperMasterConsignment {
 		communication.setType(type);
 		return communication;
 	}
+	/**
+	 * Most important child in master: all house documentNumbers of the house consignments
+	 * @param id
+	 * @param type
+	 * @return
+	 */
+	private ConsignmentHouseLevel populateConsignmentHouseLevel(String id, String type) {
+		
+	   ConsignmentHouseLevel houseLevel = new ConsignmentHouseLevel();
+	   TransportDocumentHouseLevel tdh = new TransportDocumentHouseLevel();
+	   tdh.setDocumentNumber(id);
+	   tdh.setType(type);
+	   houseLevel.setTransportDocumentHouseLevel(tdh);
+	   return houseLevel;
+	}
 	
-	
-	private ConsignmentMasterLevel populateConsignmentMasterLevel(SadexmfDto sourceDto,String docNumber, String type) {
-		
-		TransportDocumentHouseLevel tdh = new TransportDocumentHouseLevel();
-		tdh.setDocumentNumber(docNumber);
-		tdh.setType(type);
-		//
-		
-		ConsignmentHouseLevel chl = new ConsignmentHouseLevel();
-		chl.setTransportDocumentHouseLevel(tdh);
-		
-		List tmp = new ArrayList();
-		tmp.add(chl);
+	private ConsignmentMasterLevel populateConsignmentMasterLevel(SadexmfDto sourceDto) {
+		//documentNumbers for all house consignments of this master
+		List list = new ArrayList();
+		for (SadexhfDto houseDto : sourceDto.getHouseDtoList()) {
+			if(StringUtils.isNotEmpty(houseDto.getEhdkh())) {
+				list.add(this.populateConsignmentHouseLevel(houseDto.getEhdkh(), houseDto.getEhdkht()));
+			}
+		}
 		ConsignmentMasterLevel cml = new ConsignmentMasterLevel();
+		cml.setConsignmentHouseLevel(list);
+		
+		//Container and gross mass
 		cml.setContainerIndicator(String.valueOf(sourceDto.getEmcn()));
 		cml.setGrossMass(String.valueOf(sourceDto.getEmvkb()));
 		//
@@ -162,7 +178,6 @@ public class MapperMasterConsignment {
 		td.setDocumentNumber("1111112");
 		td.setType("N750");
 		cml.setTransportDocumentMasterLevel(td);
-		cml.setConsignmentHouseLevel(tmp);
 		
 		return cml;
 	}

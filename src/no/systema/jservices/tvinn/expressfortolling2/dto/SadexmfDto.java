@@ -1,6 +1,8 @@
 package no.systema.jservices.tvinn.expressfortolling2.dto;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map; 
 import lombok.Data;
 
@@ -132,7 +134,9 @@ public class SadexmfDto {
 	private String emrcem = ""; // tegn           50      50      1949        begge    releasedconf. epost.
 	private String emerr  = ""; // tegn           50      50      1999        begge    feilmelding ved snd 
 	
-	
+	//all houses in order to get documentNumber from SADEXHF
+	private List<SadexhfDto> houseDtoList = new ArrayList<SadexhfDto>();
+		
 	
 	
 }

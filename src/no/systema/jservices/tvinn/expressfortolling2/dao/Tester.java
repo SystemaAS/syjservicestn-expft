@@ -86,7 +86,7 @@ public class Tester {
 		//
 		
 		ConsignmentHouseLevel chl = new ConsignmentHouseLevel();
-		chl.setTransportDocumentHouseLevel(tdh);
+		//chl.setTransportDocumentHouseLevel(tdh);
 		
 		List tmp = new ArrayList();
 		tmp.add(chl);
@@ -117,7 +117,7 @@ public class Tester {
 		
 		TransportDocumentMasterLevel td = new TransportDocumentMasterLevel();
 		cml.setTransportDocumentMasterLevel(td);
-		cml.setConsignmentHouseLevel(tmp);
+		//cml.setConsignmentHouseLevel(tmp);
 		
 		return cml;
 	}
