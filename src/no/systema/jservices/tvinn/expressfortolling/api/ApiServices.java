@@ -786,6 +786,7 @@ public class ApiServices {
 		  
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		logger.warn("maskinporten token OK");
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
@@ -940,55 +941,6 @@ public class ApiServices {
         return apiClient.invokeAPI(path, HttpMethod.DELETE, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
         		
 	}
-	/**
-	 * For testing purposes - use the above (without json-String)
-	 * @param jsonPayload
-	 * @return
-	 */
-	public String postHouseConsignmentExpressMovementRoad(HouseConsignment hc) {
-		  
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
-		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
-		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
-		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
-		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
-		
-		//Debug for JSON string
-		try {
-			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-			String json = ow.writeValueAsString(hc);
-			logger.warn(json);
-		}catch(Exception e) {
-			e.toString();
-			
-		}
-		Object postBody = hc;
-		
-		
-        //https://api-test.toll.no/api/movement/road/v1/test-auth
-		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/house-consignment").build().toUriString();
-		System.out.println(path);
-		logger.warn(path);
-		
-        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
-        final HttpHeaders headerParams = new HttpHeaders();
-        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
-        
-        headerParams.add("Accept-Charset", "utf-8");
-        final String[] accepts = { "application/json" };
-        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
-        final String[] contentTypes = { };
-        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
-
-        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
-        apiClient.setBasePath(this.basePathMovementRoad);
-       
-        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
-        
-        
-        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
-        		
-	}
 	
 	
 	/**
@@ -1045,6 +997,55 @@ public class ApiServices {
         		
 	}
 
+	/**
+	 * For testing purposes - use the above (without json-String)
+	 * @param jsonPayload
+	 * @return
+	 */
+	public String postHouseConsignmentExpressMovementRoad(HouseConsignment hc) {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		
+		//Debug for JSON string
+		try {
+			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+			String json = ow.writeValueAsString(hc);
+			logger.warn(json);
+		}catch(Exception e) {
+			e.toString();
+			
+		}
+		Object postBody = hc;
+		
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/house-consignment").build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        
+        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
 	
 
 	

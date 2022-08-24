@@ -193,14 +193,14 @@ public class MapperMasterConsignment {
 	
 	private ActiveBorderTransportMeans populateActiveBorderTransportMeans(SadexmfDto sourceDto) {
 		ActiveBorderTransportMeans ab = new ActiveBorderTransportMeans();
-		ab.setIdentificationNumber("AA123456");
+		//ab.setIdentificationNumber("AA123456");
 		ab.setTypeOfIdentification("30");
 		ab.setTypeOfMeansOfTransport("150");
 		ab.setNationalityCode("SE");
 		ab.setModeOfTransportCode("3");
-		/*
+		
 		ab.setIdentificationNumber(sourceDto.getEmkmrk());
-		ab.setTypeOfIdentification(sourceDto.getEmktm());
+		/*ab.setTypeOfIdentification(sourceDto.getEmktm());
 		ab.setTypeOfMeansOfTransport(sourceDto.getEmptm());
 		ab.setNationalityCode(sourceDto.getEmplk());
 		ab.setModeOfTransportCode(sourceDto.getEmktkd());

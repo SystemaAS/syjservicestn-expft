@@ -435,10 +435,10 @@ public class ApiClient {
         addHeadersToRequest(defaultHeaders, requestBuilder);
         
         RequestEntity<Object> requestEntity = requestBuilder.body(selectBody(body, formParams, contentType));
-        logger.info(requestEntity.toString());
-        logger.info("--> BEFORE restTemplate.exchange");
+        logger.warn(requestEntity.toString());
+        logger.warn("--> BEFORE restTemplate.exchange");
         ResponseEntity<T> responseEntity = restTemplate.exchange(requestEntity, returnType);
-        logger.info("--> AFTER restTemplate.exchange");
+        logger.warn("--> AFTER restTemplate.exchange");
         //logger.info(responseEntity.toString());
         statusCode = responseEntity.getStatusCode();
         logger.warn("Status response (ApiClient.invokeAPI):" + statusCode);
