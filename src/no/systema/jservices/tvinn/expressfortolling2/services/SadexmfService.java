@@ -190,14 +190,14 @@ public class SadexmfService {
 				result = null;
 			}else {
 				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
-				
-				for(Object o: dtoContainer.getList()){
-					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
-					//get item lines
-					if(pojo!=null) {
-						result.add(pojo);
-					}
+				SadexmfDto pojo = new SadexmfDto();
+				if(mode.startsWith("D")){
+					//nothing since it is DELETE;
+				}else {
+					//set it in order to have a valid response
+					pojo.setEmmid(mrn);
 				}
+				result.add(pojo);
 				
 			}
 

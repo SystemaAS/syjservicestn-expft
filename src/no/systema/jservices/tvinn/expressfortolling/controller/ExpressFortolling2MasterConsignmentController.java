@@ -293,6 +293,7 @@ public class ExpressFortolling2MasterConsignmentController {
 									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
+											//logger.warn(rec.toString());
 											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
 												//OK
 											}else {
@@ -480,7 +481,12 @@ public class ExpressFortolling2MasterConsignmentController {
 						String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
 						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 							errMsg.append(dtoResponse.getErrMsg());
-							dtoResponse.setErrMsg("");
+							
+							if(StringUtils.isNotEmpty(mrn)) {
+								dtoResponse.setErrMsg("");
+							}else {
+								dtoResponse.setErrMsg(errMsg.toString());
+							}
 						}else {
 							dtoResponse.setMrn(mrn);
 						}
@@ -497,7 +503,7 @@ public class ExpressFortolling2MasterConsignmentController {
 			}
 			
 		}catch(Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			//Get out stackTrace to the response (errMsg)
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
@@ -539,11 +545,12 @@ public class ExpressFortolling2MasterConsignmentController {
 				dtoResponse.setErrMsg(json);
 			}
 		}catch(Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			//Get out stackTrace to the response (errMsg)
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
 			
 		}
 		

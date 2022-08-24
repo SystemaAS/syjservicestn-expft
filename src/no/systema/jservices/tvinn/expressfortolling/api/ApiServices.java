@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -988,10 +991,13 @@ public class ApiServices {
 	}
 	
 	
-	
-	
-	
-	public String getValidationStatusMasterConsignmentExpressMovementRoad(String lrn) {
+	/**
+	 * 
+	 * @param lrn
+	 * @return
+	 * @throws Exception
+	 */
+	public String getValidationStatusMasterConsignmentExpressMovementRoad(String lrn) throws Exception {
 		  
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
@@ -1021,8 +1027,21 @@ public class ApiServices {
         apiClient.setBasePath(this.basePathMovementRoad);
        
         ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        String tmpResponse = "";
         
-        return apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        try {
+        	tmpResponse = apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        	
+        }catch(Exception e) {
+        	//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			throw new Exception(sw.toString());
+        }
+        
+        
+        return tmpResponse;
         		
 	}
 
