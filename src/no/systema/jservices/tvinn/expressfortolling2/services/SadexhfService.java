@@ -91,7 +91,13 @@ public class SadexhfService {
 		
 		return result; 
 	}
-	
+	/**
+	 * The method is called from a Master service. It is use to fill the master documentNumber-house-list from this list
+	 * @param user
+	 * @param avd
+	 * @param pro
+	 * @return
+	 */
 	public List<SadexhfDto> getDocumentNumberListFromHouses(String user, String avd, String pro) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		

@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.*;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -292,7 +293,12 @@ public class TestJApiServices extends TestJBase {
 			TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
 			System.out.println("JSON = " + json);
 			System.out.println("LRN = " + obj.getLrn());
-			
+			/*if(StringUtils.isNotEmpty(obj.getLrn())) {
+				//GET test
+				String getJson = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(obj.getLrn());
+				System.out.println("JSON-GET = " + json);
+				
+			}*/
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -301,8 +307,10 @@ public class TestJApiServices extends TestJBase {
 	
 	@Test //OK - NOT Working (neither in POSTMAN) ---> Vedstein Vada fråga. We need MRN
 	public void getMasterConsignmentExpressMovementRoad_validationStatus() throws Exception {
-		//
-			String lrn = "2dcb6055-c482-491c-8baf-fe23d61881e8";
+			//String lrn = "20048fc7-0405-45b0-9063-1b6b1acb0ac3";
+			String lrn = "50a534b2-3e0d-4c34-8218-00fcbf909ae1"; // in db original for first MRN
+			
+			
 		try {
 			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
 			System.out.println("JSON = " + json);
@@ -312,6 +320,11 @@ public class TestJApiServices extends TestJBase {
 		}
 		
 	}
+	
+	
+	//putMaster must be tested in controller since there are a lot of dependencies with the mapper
+	//...
+	
 	
 	@Test //OK - 
 	public void createHouseConsignmentExpressMovementRoad() throws Exception {

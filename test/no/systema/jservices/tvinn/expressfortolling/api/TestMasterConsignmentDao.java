@@ -36,7 +36,7 @@ public class TestMasterConsignmentDao {
 		//Representative
 		Representative rep = new Representative();
 		rep.setName("Systema AS");
-		rep.setIdentificationNumber("936809219");
+		rep.setIdentificationNumber("951357482");
 		rep.setStatus("2");
 		Address raddress = new Address();
 		raddress.setCity("OSLO");
@@ -118,7 +118,7 @@ public class TestMasterConsignmentDao {
 		
 		List list = new ArrayList();
 		list.add(this.populateConsignmentHouseLevel("1233334566", "N740"));
-		list.add(this.populateConsignmentHouseLevel("7898798789", "N713"));
+		list.add(this.populateConsignmentHouseLevel("7898798789", "N740"));
 		
 		ConsignmentMasterLevel cml = new ConsignmentMasterLevel();
 		cml.setConsignmentHouseLevel(list);
@@ -129,7 +129,7 @@ public class TestMasterConsignmentDao {
 		//
 		Carrier carrier = new Carrier();
 		carrier.setName("Kari Nordman");
-		carrier.setIdentificationNumber("951623487");
+		carrier.setIdentificationNumber("951357482");
 		Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		carrier.setAddress(cAddress);
 		carrier.setCommunication(this.setCommunication("mail@mail.se", "ME"));
@@ -178,7 +178,7 @@ public class TestMasterConsignmentDao {
 	
 	private ActiveBorderTransportMeans populateActiveBorderTransportMeans() {
 		ActiveBorderTransportMeans ab = new ActiveBorderTransportMeans();
-		ab.setIdentificationNumber("DK 123654");
+		ab.setIdentificationNumber("AA 123654");
 		ab.setTypeOfIdentification("30");
 		ab.setTypeOfMeansOfTransport("150");
 		ab.setNationalityCode("SE");
@@ -189,7 +189,7 @@ public class TestMasterConsignmentDao {
 		//
 		Operator operator = new Operator();
 		operator.setName("Kari Nordman");
-		operator.setCitizenship("UK");
+		operator.setCitizenship("NO");
 		operator.setDateOfBirth("1982-06-22");
 		//
 		ab.setOperator(operator);

@@ -143,8 +143,17 @@ public class SadexmfService {
 		return result; 
 	}
 	
-	
-	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn) {
+	/**
+	 * 
+	 * @param user
+	 * @param avd
+	 * @param pro
+	 * @param lrn
+	 * @param mrn
+	 * @param mode
+	 * @return
+	 */
+	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn, String mode) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -154,7 +163,7 @@ public class SadexmfService {
 				.fromUriString(serverRoot)
 				.path("/syjservicestn/syjsSADEXMF_U.do")
 				.queryParam("user", user)
-				.queryParam("mode", "UL")
+				.queryParam("mode", mode)
 				.queryParam("emavd", avd)
 				.queryParam("empro", pro)
 				.queryParam("emuuid", lrn)

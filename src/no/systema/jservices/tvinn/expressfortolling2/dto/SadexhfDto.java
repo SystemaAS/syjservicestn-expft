@@ -3,10 +3,14 @@ package no.systema.jservices.tvinn.expressfortolling2.dto;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map; 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SadexhfDto  {
 
 	private String ehst   = ""; // tegn            1       1         1        begge    status    

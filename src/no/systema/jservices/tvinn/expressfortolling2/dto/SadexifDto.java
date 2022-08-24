@@ -1,10 +1,14 @@
 package no.systema.jservices.tvinn.expressfortolling2.dto;
 
 import java.util.HashMap;
-import java.util.Map; 
+import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SadexifDto {
 
 	private String eist   = ""; // tegn            1       1         1        begge    status    
