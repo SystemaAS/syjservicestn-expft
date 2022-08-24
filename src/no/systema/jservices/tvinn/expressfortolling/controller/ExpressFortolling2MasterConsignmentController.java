@@ -54,12 +54,48 @@ import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
- * Main entrance for accessing Express fortolling API.
+ * Main entrance for accessing Express fortolling Version 2 API.
+ * 
+ * ===================================================================
+ * Flow description with respect to the API and the SADEXMF db table
+ * ===================================================================
+ * 	===============================
+ * 	(A) Get MRN Ekspres - POST (API)
+ *	=============================== 
+ *	(1) Först POST (krav: emuuid & emmid EMPTY)
+ *	Systema AS
+ *	toll-token expires_in:999
+ *	/movement/road/v1/master-consignment
+ *	JSON = {"lrn":"1bdf0f33-f42e-48e2-b334-3944722e3fe5"}
+ *	LRN = 1bdf0f33-f42e-48e2-b334-3944722e3fe5
+	
+ *	(2) GET /master-consignment/validation-status/{lrn}
+ *	Mrn and status on response. Update SADEXMF with lrn=emuuid and mrn=emmid  
+	
+ *	===========================
+ * 	(B) Update Mrn - PUT (API)
+ *	===========================
+ *	(1) PUT /master-consignment/{masterReferenceNumber}
+ *	Response returns new Lrn which must be updated in SADEXMF. Only Lrn update 
+ *	IMPORTANT! -->Last Lrn received is the one valid for GET validation-status 
+ *	
+ * 	
+ *	=============================
+ *	(C) Delete Mrn - DELETE (API)
+ *	=============================
+ *	(1) DELETE /master-consignment/{masterReferenceNumber}
+ *	Response returns new Lrn which we dont save.
+ *	(2) Emuuid and Emmid (SADEXMF) are blanked. The record is not deleted in db but is ready for new POST
+ *	This item (2) could change by deleting the record totally ...
+ *
+ *  NOTE! 
+ *	(D) To see the status of a given MRN att any given moment use the end-point --> getMasterConsignment.do in this Controller
  * 
  * @author oscardelatorre
  * @date Aug 2022
  *
  */
+
 @RestController
 public class ExpressFortolling2MasterConsignmentController {
 	private static Logger logger = LoggerFactory.getLogger(ExpressFortolling2MasterConsignmentController.class.getName());
@@ -215,7 +251,8 @@ public class ExpressFortolling2MasterConsignmentController {
 	}
 	
 	/**
-	 * Updates an existing Master Consignment. Requires an existing MRN (emmid at SADEXMF)
+	 * 
+	 * Updates an existing Master Consignment through the API - PUT. Requires an existing MRN (emmid at SADEXMF)
 	 * @param request
 	 * @param user
 	 * @param emavd
@@ -339,7 +376,7 @@ public class ExpressFortolling2MasterConsignmentController {
 		return dtoResponse;
 	}
 	/**
-	 * Delete MasterConsignment in API-server
+	 * Delete MasterConsignment through the API - DELETE
 	 * @param request
 	 * @param user
 	 * @param mrn
@@ -453,7 +490,7 @@ public class ExpressFortolling2MasterConsignmentController {
 	
 	
 	/**
-	 * Get the manifest by id
+	 * Gets Master Consignment status through the API - GET
 	 * @Example http://localhost:8080/syjservicestn-expft/getManifest.do?user=SYSTEMA&id=f2bfbb94-afae-4af3-a4ff-437f787d322f
 	 * @param session
 	 * @param user
