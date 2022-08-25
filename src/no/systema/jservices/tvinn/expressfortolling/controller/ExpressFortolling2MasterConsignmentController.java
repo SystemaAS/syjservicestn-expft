@@ -410,8 +410,8 @@ public class ExpressFortolling2MasterConsignmentController {
 					for (SadexmfDto sadexmfDto: list) {
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
 						if(StringUtils.isNotEmpty(sadexmfDto.getEmmid()) && StringUtils.isNotEmpty(sadexmfDto.getEmuuid() )) {
-							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
-							logger.warn("Representative:" + mc.getRepresentative().getName());
+							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignmentForDelete(sadexmfDto);
+							logger.warn("Declarant:" + mc.getDeclarant().getName());
 							//API
 							String json = apiServices.deleteMasterConsignmentExpressMovementRoad(mc, mrn);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
@@ -549,6 +549,9 @@ public class ExpressFortolling2MasterConsignmentController {
 		
 		return dtoResponse;
 	}
+	
+	
+	
 	
 	private boolean checkUser(String user) {
 		if (!bridfDaoService.userNameExist(user)) {

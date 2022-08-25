@@ -102,6 +102,44 @@ public class MapperMasterConsignment {
 	}
 	
 	
+	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
+	/**
+	 * Only issueDate and declarant for delete
+	 * @param sourceDto
+	 * @return
+	 */
+	public MasterConsignment mapMasterConsignmentForDelete(SadexmfDto sourceDto) {
+			
+			MasterConsignment mc = new MasterConsignment();
+			//IssueDate
+			mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+			
+			//Declarant
+			Declarant dec = new Declarant();
+			dec.setName(sourceDto.getEmnad());
+			Address address = new Address();
+			address.setCity(sourceDto.getEmpsd());
+			address.setCountry(sourceDto.getEmlkd());
+			dec.setAddress(address);
+			//Mandatory (communication)
+			List commList = new ArrayList();
+			commList.add(this.populateCommunication("xxx@gmail.com", "EM"));
+			commList.add(this.populateCommunication("0733794505", "TE"));
+			dec.setCommunication(commList);
+			//
+			mc.setDeclarant(dec);
+			
+			
+			try {
+				//System.out.println(obj.writerWithDefaultPrettyPrinter().writeValueAsString(mc));
+			}catch(Exception e) {
+				e.printStackTrace();
+			}
+			
+			return mc;
+		}
+		
+	
 	
 	
 	private Communication populateCommunication(String id, String type) {
