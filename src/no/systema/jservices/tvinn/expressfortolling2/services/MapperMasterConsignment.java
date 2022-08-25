@@ -250,9 +250,17 @@ public class MapperMasterConsignment {
 		ab.setNationalityCode(sourceDto.getEmplk());
 		ab.setModeOfTransportCode(sourceDto.getEmktkd());
 		*/
+		DateUtils dateUtils = new DateUtils();
 		ab.setActualDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
+		//PROD ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
+		
 		ab.setEstimatedDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
+		//PROD ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
+		
 		ab.setEstimatedDateAndTimeOfArrival("2022-09-20T07:49:52Z");
+		//PROD ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetad(), sourceDto.getEmetat()));
+		
+		
 		//
 		Operator operator = new Operator();
 		operator.setName(sourceDto.getEmsjaf());

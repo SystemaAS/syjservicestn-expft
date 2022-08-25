@@ -8,6 +8,9 @@ public class TesterDate {
 		String tmp = dateZulu.replaceAll("-", "").substring(0,8);
 		System.out.println(tmp);
 		
+		DateUtils dateUtil = new DateUtils();
+		String zulu = dateUtil.getZuluTimeWithoutMilliseconds(20220825, 100003);
+		System.out.println(zulu);
 	}
 
 }

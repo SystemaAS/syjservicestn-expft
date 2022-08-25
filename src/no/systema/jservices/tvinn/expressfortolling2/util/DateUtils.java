@@ -64,6 +64,32 @@ public class DateUtils {
 	}
 	
 	/**
+	 * Expecting date: yyyyMMdd, time:HHmmss
+	 * 
+	 * @param date
+	 * @param time
+	 * @return
+	 */
+	public String getZuluTimeWithoutMilliseconds(Integer date, Integer time) {
+		String zoneDateString = "";
+		try {
+			
+			DateTimeFormatter formatterIn = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+			DateTimeFormatter formatterOut = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + String.valueOf(time) , formatterIn.withZone(ZoneId.systemDefault()));
+			ZonedDateTime zdtInLocalTimeline = zdtWithZoneOffset.withZoneSameInstant(ZoneId.systemDefault());
+			
+			zoneDateString = formatterOut.format(zdtInLocalTimeline);
+			
+		}catch(Exception e) {
+			//logger.error(LoggerException.doLog(e).toString());
+			e.printStackTrace();
+		}
+		
+		return zoneDateString;
+	}
+	
+	/**
 	 * Tullverket "CreationTime"
 	 * Datum och klockslag då kuvertet skapades. 
 	 * Datumet och klockslaget kan vara tidigare än översändningstidpunkten och ersätter inte eventuell tidstämpel som sätts av transportprotokollet. 
