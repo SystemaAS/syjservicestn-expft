@@ -153,7 +153,7 @@ public class SadexmfService {
 	 * @param mode
 	 * @return
 	 */
-	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn, String mode) {
+	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn, String sendDate, String mode) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -168,6 +168,7 @@ public class SadexmfService {
 				.queryParam("empro", pro)
 				.queryParam("emuuid", lrn)
 				.queryParam("emmid", mrn)
+				.queryParam("emdtin", Integer.parseInt(sendDate))
 				.build()
 				.encode()
 				.toUri();

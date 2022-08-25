@@ -3,6 +3,9 @@ package no.systema.jservices.tvinn.expressfortolling2.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import no.systema.jservices.tvinn.expressfortolling2.dao.ActiveBorderTransportMeans;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Address;
 import no.systema.jservices.tvinn.expressfortolling2.dao.AddressCountry;
@@ -41,15 +44,18 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseL
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
+import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 public class MapperHouseConsignment {
+	private static final Logger logger = LoggerFactory.getLogger(MapperMasterConsignment.class);
 	
 	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
 	public HouseConsignment mapHouseConsignment(SadexhfDto sourceDto) {
 		
 		HouseConsignment hc = new HouseConsignment();
 		//IssueDate
-		hc.setDocumentIssueDate("2022-08-16T11:49:52Z");
+		//hc.setDocumentIssueDate("2022-08-16T11:49:52Z");
+		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
 		
 		//Declarant
 		Declarant dec = new Declarant();

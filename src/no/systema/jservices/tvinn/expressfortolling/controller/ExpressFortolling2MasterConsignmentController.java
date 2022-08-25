@@ -202,7 +202,10 @@ public class ExpressFortolling2MasterConsignmentController {
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									dtoResponse.setMrn(mrn);
 									String mode = "ULM";
-									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, mode);
+									//we must update the send date as well. Only 8-numbers
+									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									
+									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
 											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
@@ -327,7 +330,10 @@ public class ExpressFortolling2MasterConsignmentController {
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									dtoResponse.setMrn(mrn);
 									String mode = "UL";
-									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, mode);
+									//we must update the send date as well. Only 8-numbers
+									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									
+									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
 											//logger.warn(rec.toString());
@@ -436,7 +442,10 @@ public class ExpressFortolling2MasterConsignmentController {
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									dtoResponse.setMrn(mrn);
 									String mode = "DL";
-									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, mode);
+									//we must update the send date as well. Only 8-numbers
+									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									
+									List<SadexmfDto> xx = sadexService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
 											if(StringUtils.isEmpty(rec.getEmmid()) ){

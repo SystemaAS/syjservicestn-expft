@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ActiveBorderTransportMeans;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Address;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Carrier;
@@ -28,15 +30,19 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMaster
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 public class MapperMasterConsignment {
+	private static final Logger logger = LoggerFactory.getLogger(MapperMasterConsignment.class);
 	
 	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
 	public MasterConsignment mapMasterConsignment(SadexmfDto sourceDto) {
 		
 		MasterConsignment mc = new MasterConsignment();
 		//IssueDate
-		mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+		//mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+		mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
+		logger.warn(mc.getDocumentIssueDate());
 		//Representative
 		Representative rep = new Representative();
 		rep.setName(sourceDto.getEmnar());
@@ -112,8 +118,9 @@ public class MapperMasterConsignment {
 			
 			MasterConsignment mc = new MasterConsignment();
 			//IssueDate
-			mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
-			
+			//mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
+			mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
+			logger.warn(mc.getDocumentIssueDate());
 			//Declarant
 			Declarant dec = new Declarant();
 			dec.setName(sourceDto.getEmnad());
