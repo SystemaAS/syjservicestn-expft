@@ -333,16 +333,16 @@ public class TestJApiServices extends TestJBase {
 		System.out.println(hc.getRepresentative().getName());
 		
 		//Debug
-		ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-		String json = ow.writeValueAsString(hc);
-		System.out.println(json);
+		//ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+		//String json = ow.writeValueAsString(hc);
+		//System.out.println(json);
 		
 		try {
-			/*String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
+			String json = apiServices.postHouseConsignmentExpressMovementRoad(hc);
 			TesterLrn obj = new ObjectMapper().readValue(json, TesterLrn.class);
 			System.out.println("JSON = " + json);
 			System.out.println("LRN = " + obj.getLrn());
-			*/
+			
 		}catch(Exception e) {
 			e.printStackTrace();
 		}

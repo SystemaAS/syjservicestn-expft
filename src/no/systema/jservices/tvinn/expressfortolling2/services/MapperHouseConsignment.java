@@ -213,7 +213,7 @@ public class MapperHouseConsignment {
 		List ptmList = new ArrayList();
 		PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
 		passiveTransportMeans.setCountryCode("DK");
-		passiveTransportMeans.setIdentificationNumber("DK 123456");
+		passiveTransportMeans.setIdentificationNumber("DK123456");
 		passiveTransportMeans.setTypeOfIdentification(30);
 		passiveTransportMeans.setTypeOfMeansOfTransport("150");
 		ptmList.add(passiveTransportMeans);
