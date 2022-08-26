@@ -15,7 +15,7 @@ public class Consignor {
 
 	private String name;
 	private String identificationNumber;
-	private String typeOfPerson;
+	private Integer typeOfPerson = 1;
 	private Address address;
 	private List<Communication> communication;
 	

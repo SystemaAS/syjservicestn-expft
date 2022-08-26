@@ -27,6 +27,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.GoodsItem;
 import no.systema.jservices.tvinn.expressfortolling2.dao.GoodsMeasure;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignmentConsignmentHouseLevel;
+import no.systema.jservices.tvinn.expressfortolling2.dao.ImportProcedure;
 import no.systema.jservices.tvinn.expressfortolling2.dao.ItemAmountInvoiced;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Operator;
@@ -59,20 +60,22 @@ public class MapperHouseConsignment {
 		
 		//Declarant
 		Declarant dec = new Declarant();
+		
 		dec.setName("Posten Norge AS");
 		Address address = new Address();
 		address.setCity("Oslo");
 		address.setCountry("NO");
-		address.setStreetLine("");
+		address.setStreetLine("Hausemanns gate");
 		address.setPostcode("0001");
 		address.setNumber("10B");
 		address.setPoBox("P.B 194");
 		dec.setAddress(address);
 		//
 		List commList = new ArrayList();
-		commList.add(this.populateCommunication("xxx@gmail.com", "EM"));
+		commList.add(this.populateCommunication("xxx@gmail.com", "ME"));
 		commList.add(this.populateCommunication("0733794505", "TE"));
 		dec.setCommunication(commList);
+		
 		hc.setDeclarant(dec);
 		
 		
@@ -142,7 +145,7 @@ public class MapperHouseConsignment {
 	private HouseConsignmentConsignmentHouseLevel populateHouseConsignmentConsignmentHouseLevel(SadexhfDto sourceDto) {
 		
 		HouseConsignmentConsignmentHouseLevel chl = new HouseConsignmentConsignmentHouseLevel();
-		chl.setContainerIndicator(10);
+		chl.setContainerIndicator(1);
 		chl.setTotalGrossMass(103.23);
 		chl.setReferenceNumberUCR("string");
 		
@@ -153,7 +156,10 @@ public class MapperHouseConsignment {
 		_exportFromEUList.add(exportFromEU);
 		chl.setExportFromEU(_exportFromEUList);
 		
-		chl.setImportProcedure("IMMEDIATE_RELEASE_IMPORT");
+		ImportProcedure importProcedure = new ImportProcedure();
+		importProcedure.setImportProcedure("IMMEDIATE_RELEASE_IMPORT");
+		importProcedure.setOutgoingProcedure("EXP");
+		chl.setImportProcedure(importProcedure);
 		
 		List prevDocsList = new ArrayList();
 		PreviousDocuments prevDocs = new PreviousDocuments();
@@ -184,6 +190,7 @@ public class MapperHouseConsignment {
 		Consignee consignee = new Consignee();
 		consignee.setName("Consignee Jonsson");
 		consignee.setIdentificationNumber("951325847");
+		consignee.setTypeOfPerson(1);
 		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
 		Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		consignee.setAddress(cAddress);
@@ -193,6 +200,7 @@ public class MapperHouseConsignment {
 		Consignor consignor = new Consignor();
 		consignor.setName("Consignor Svensson");
 		consignor.setIdentificationNumber("951325847");
+		consignor.setTypeOfPerson(1);
 		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
 		Address cgorAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		consignor.setAddress(cgorAddress);
@@ -254,7 +262,7 @@ public class MapperHouseConsignment {
 		item.setTypeOfGoods("11");
 		
 		ItemAmountInvoiced itemAmountInvoiced = new ItemAmountInvoiced();
-		itemAmountInvoiced.setCurrency("str");
+		itemAmountInvoiced.setCurrency("NOK");
 		itemAmountInvoiced.setValue(0.0);
 		item.setItemAmountInvoiced(itemAmountInvoiced);
 		
@@ -307,7 +315,7 @@ public class MapperHouseConsignment {
 		//Transport Equipment
 		List transpEquipmentList = new ArrayList();
 		TransportEquipment transportEquipment = new TransportEquipment();
-		transportEquipment.setContainerIdentificationNumber("2342342432SAS");
+		transportEquipment.setContainerIdentificationNumber("12345678901234567");
 		transpEquipmentList.add(transportEquipment);
 		item.setTransportEquipment(transpEquipmentList);
 		

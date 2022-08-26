@@ -21,7 +21,7 @@ public class HouseConsignmentConsignmentHouseLevel {
 	//Optional
 	private List<ExportFromEU> exportFromEU;
 	//Mandatory*
-	private String importProcedure;
+	private ImportProcedure importProcedure;
 	//Optional
 	private List<PreviousDocuments> previousDocuments;
 	//Optional

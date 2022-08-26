@@ -15,6 +15,7 @@ public class Consignee {
 
 	private String name;
 	private String identificationNumber;
+	private Integer typeOfPerson = 1;
 	private Address address;
 	private List<Communication> communication;
 	
