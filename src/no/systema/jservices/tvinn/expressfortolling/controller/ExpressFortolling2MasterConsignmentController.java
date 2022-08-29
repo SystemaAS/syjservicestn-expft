@@ -142,6 +142,8 @@ public class ExpressFortolling2MasterConsignmentController {
 	 * @param emavd
 	 * @param empro
 	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/postMasterConsignment?user=NN&emavd=1&empro=501941
 	 */
 	@RequestMapping(value="postMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -262,6 +264,8 @@ public class ExpressFortolling2MasterConsignmentController {
 	 * @param empro
 	 * @return
 	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/putMasterConsignment?user=NN&emavd=1&empro=501941&mrn=XXX
 	 */
 	@RequestMapping(value="putMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -388,6 +392,8 @@ public class ExpressFortolling2MasterConsignmentController {
 	 * @param mrn
 	 * @return
 	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/deleteMasterConsignment?user=NN&mrn=XXX
 	 */
 	@RequestMapping(value="deleteMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody

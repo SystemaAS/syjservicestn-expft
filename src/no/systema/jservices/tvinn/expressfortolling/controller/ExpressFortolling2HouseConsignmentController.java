@@ -212,7 +212,19 @@ public class ExpressFortolling2HouseConsignmentController {
 		return dtoResponse;
 	}
 	
-	
+	/**
+	 * 
+	 * @param request
+	 * @param user
+	 * @param ehavd
+	 * @param ehpro
+	 * @param ehtdn
+	 * @param mrn
+	 * @return
+	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/putHouseConsignment?user=NN&ehavd=1&ehpro=501941&ehtdn=38&mrn=XXX
+	 */
 	@RequestMapping(value="putHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse putHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
@@ -339,7 +351,20 @@ public class ExpressFortolling2HouseConsignmentController {
 		return dtoResponse;
 	}
 	
-	
+	/**
+	 * 
+	 * @param request
+	 * @param user
+	 * @param ehavd
+	 * @param ehpro
+	 * @param ehtdn
+	 * @param mrn
+	 * @return
+	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/deleteHouseConsignment?user=NN&ehavd=1&ehpro=501941&ehtdn=38&mrn=XXX
+	 * 
+	 */
 	@RequestMapping(value="deleteHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse deleteHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
@@ -452,53 +477,17 @@ public class ExpressFortolling2HouseConsignmentController {
 		return dtoResponse;
 	}
 	
-	
-	
-	private boolean checkUser(String user) {
-		if (!bridfDaoService.userNameExist(user)) {
-			throw new RuntimeException("ERROR: parameter, user, is not valid!");
-		}
-		return true;
-	}	
-	
 	/**
 	 * 
-	 * @param dtoResponse
+	 * @param request
+	 * @param user
 	 * @param lrn
 	 * @return
+	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/getHouseConsignment?user=NN&lrn=XXX
+	 * 
 	 */
-	private String getMrnHouseFromApi(GenericDtoResponse dtoResponse, String lrn) {
-		
-		String retval = "";
-		
-		try{
-			
-			String json = apiServices.getValidationStatusHouseConsignmentExpressMovementRoad(lrn);
-			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
-			logger.warn("JSON = " + json);
-			logger.warn("MRN = " + obj.getMasterReferenceNumber());
-			dtoResponse.setStatus(obj.getStatus());
-			
-			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
-				retval = obj.getMasterReferenceNumber();
-			}else {
-				dtoResponse.setErrMsg(json);
-			}
-			
-		}catch(Exception e) {
-			//e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
-			
-		}
-		
-		return retval;
-	}
-	
-	
 	@RequestMapping(value="getHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
@@ -551,5 +540,53 @@ public class ExpressFortolling2HouseConsignmentController {
 		
 		return dtoResponse;
 	}
+	
+	
+	private boolean checkUser(String user) {
+		if (!bridfDaoService.userNameExist(user)) {
+			throw new RuntimeException("ERROR: parameter, user, is not valid!");
+		}
+		return true;
+	}	
+	
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 * @return
+	 */
+	private String getMrnHouseFromApi(GenericDtoResponse dtoResponse, String lrn) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusHouseConsignmentExpressMovementRoad(lrn);
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("MRN = " + obj.getMasterReferenceNumber());
+			dtoResponse.setStatus(obj.getStatus());
+			
+			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
+				retval = obj.getMasterReferenceNumber();
+			}else {
+				dtoResponse.setErrMsg(json);
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
+			
+		}
+		
+		return retval;
+	}
+	
+	
+	
 	
 }
