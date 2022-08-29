@@ -13,6 +13,10 @@ import lombok.Data;
 public class TransportEquipment {
 	
 	private String containerIdentificationNumber;
+	private String containerPackedStatus;
+	private String containerSupplierType;
+	private String containerSizeAndType;
+	
 	
 
 }

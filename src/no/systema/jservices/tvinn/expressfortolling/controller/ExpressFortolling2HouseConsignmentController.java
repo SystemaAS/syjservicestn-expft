@@ -92,6 +92,8 @@ public class ExpressFortolling2HouseConsignmentController {
 	 * @param emavd
 	 * @param empro
 	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/postHouseConsignment?user=NN&ehavd=1&ehpro=501941&ehtdn=38
 	 */
 	@RequestMapping(value="postHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -145,17 +147,26 @@ public class ExpressFortolling2HouseConsignmentController {
 								
 								//(2) get mrn from API
 								//PROD-->
-								//String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+								String mrn = this.getMrnHouseFromApi(dtoResponse, lrn);
+								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
+									errMsg.append(dtoResponse.getErrMsg());
+									dtoResponse.setErrMsg("");
+								}
+								//logger.warn("A");
 								//TEST-->
-								String mrn = "22NO4TU2HUD59UCBT2";
+								//String mrn = "22NO4TU2HUD59UCBT2";
 								
 								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									dtoResponse.setMrn(mrn);
-									
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), lrn, mrn);
+									String mode = "ULM";
+									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									//logger.warn("B");
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									//logger.warn("C");
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
+											//logger.warn("D:" + rec.toString());
 											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
 											}else {
@@ -175,7 +186,7 @@ public class ExpressFortolling2HouseConsignmentController {
 							break; //only first in list
 							
 						}else {
-							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST ");
+							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
@@ -201,46 +212,103 @@ public class ExpressFortolling2HouseConsignmentController {
 		return dtoResponse;
 	}
 	
-	/*
-	@RequestMapping(value="putMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	
+	@RequestMapping(value="putHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse putMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
+	public GenericDtoResponse putHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "ehavd", required = true) String ehavd,
+																				@RequestParam(value = "ehpro", required = true) String ehpro,
+																				@RequestParam(value = "ehtdn", required = true) String ehtdn,
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
+		dtoResponse.setAvd(ehavd);
+		dtoResponse.setPro(ehpro);
+		dtoResponse.setTdn(ehtdn);
 		dtoResponse.setMrn(mrn);
+		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
+		logger.warn("Inside postHouseConsignment");
+		
+		
+		//create new - master consignment at toll.no
 		logger.warn("Inside putMasterConsignment - MRNnr: " + mrn);
 		//create new - master consignment at toll.no
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexhfService.getSadexmfForUpdate(user, mrn);
+				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(user, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
 					
-					for (SadexmfDto sadexmfDto: list) {
+					for (SadexhfDto dto: list) {
+						logger.warn(dto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(sadexmfDto.getEmmid()) && StringUtils.isNotEmpty(sadexmfDto.getEmuuid() )) {
-							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
-							logger.warn("Representative:" + mc.getRepresentative().getName());
-							//API
-							String json = apiServices.putMasterConsignmentExpressMovementRoad(mc, mrn);
+						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
+							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
+							logger.warn("Declarant:" + hc.getDeclarant().getName());
+							//API - PROD
+							String json = apiServices.putHouseConsignmentExpressMovementRoad(hc, mrn);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("LRN = " + obj.getLrn());
+							
+							//TEST
+							/*ApiLrnDto obj = new ApiLrnDto();
+							Integer x = new Random().ints(1, 100)
+						      .findFirst()
+						      .getAsInt();
+							
+							obj.setLrn("b-666-777-888" + x);
+							String json = "";
+							*/
+							
+							
 							//put in response
 							dtoResponse.setLrn(obj.getLrn());
-							dtoResponse.setAvd(String.valueOf(sadexmfDto.getEmavd()));
-							dtoResponse.setPro(String.valueOf(sadexmfDto.getEmpro()));
+							dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
+							dtoResponse.setPro(String.valueOf(dto.getEhpro()));
+							dtoResponse.setTdn(String.valueOf(dto.getEhtdn()));
 							//In case there was an error at end-point and the LRN was not returned
 							if(StringUtils.isEmpty(obj.getLrn())){
 								errMsg.append("LRN empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
+								
+							}else {
+								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
+								String lrn = obj.getLrn();
+								dtoResponse.setLrn(lrn);
+								
+								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+									dtoResponse.setMrn(mrn);
+									String mode = "UL";
+									//we must update the send date as well. Only 8-numbers
+									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									if(xx!=null && xx.size()>0) {
+										for (SadexhfDto rec: xx) {
+											//logger.warn(rec.toString());
+											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
+												//OK
+											}else {
+												errMsg.append("MRN empty after SADEXHF-update:" + mrn);
+												dtoResponse.setErrMsg(errMsg.toString());
+											}
+										}
+									}
+									
+								}else {
+									errMsg.append("LRN empty after PUT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXHF): " + mrn);
+									dtoResponse.setErrMsg(errMsg.toString());
+									break;
+								}
+							
 							}
 							break; //only first in list
 							
@@ -251,85 +319,7 @@ public class ExpressFortolling2HouseConsignmentController {
 						
 					}
 				}else {
-					errMsg.append(" no records to fetch from SADEXMF ");
-					dtoResponse.setErrMsg(errMsg.toString());
-				}
-				
-			}else {
-				errMsg.append(" invalid user ");
-				dtoResponse.setErrMsg(errMsg.toString());
-			}
-			
-		}catch(Exception e) {
-			e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			dtoResponse.setErrMsg(sw.toString());
-		}
-		
-		return dtoResponse;
-	}
-	*/
-	/**
-	 * Delete MasterConsignment in API-server
-	 * @param request
-	 * @param user
-	 * @param mrn
-	 * @return
-	 * @throws Exception
-	 */
-	/*
-	@RequestMapping(value="deleteMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
-	@ResponseBody
-	public GenericDtoResponse deleteMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
-		
-		GenericDtoResponse dtoResponse = new GenericDtoResponse();
-		dtoResponse.setUser(user);
-		dtoResponse.setMrn(mrn);
-		StringBuilder errMsg = new StringBuilder("ERROR ");
-		
-		logger.warn("Inside deleteMasterConsignment - MRNnr: " + mrn);
-		//create new - master consignment at toll.no
-		try {
-			if(checkUser(user)) {
-				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexhfService.getSadexmfForUpdate(user, mrn);
-				
-				if(list != null && list.size()>0) {
-					logger.warn("list size:" + list.size());
-					
-					for (SadexmfDto sadexmfDto: list) {
-						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(sadexmfDto.getEmmid()) && StringUtils.isNotEmpty(sadexmfDto.getEmuuid() )) {
-							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(sadexmfDto);
-							logger.warn("Representative:" + mc.getRepresentative().getName());
-							//API
-							String json = apiServices.deleteMasterConsignmentExpressMovementRoad(mc, mrn);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
-							logger.warn("JSON = " + json);
-							logger.warn("LRN = " + obj.getLrn());
-							//put in response
-							dtoResponse.setLrn(obj.getLrn());
-							dtoResponse.setAvd(String.valueOf(sadexmfDto.getEmavd()));
-							dtoResponse.setPro(String.valueOf(sadexmfDto.getEmpro()));
-							//In case there was an error at end-point and the LRN was not returned
-							if(StringUtils.isEmpty(obj.getLrn())){
-								errMsg.append("LRN empty ?? <json raw>: " + json);
-								dtoResponse.setErrMsg(errMsg.toString());
-								break;
-							}
-							break; //only first in list
-							
-						}else {
-							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any DELETE ");
-							dtoResponse.setErrMsg(errMsg.toString());
-						}
-						
-					}
-				}else {
-					errMsg.append(" no records to fetch from SADEXMF ");
+					errMsg.append(" no records to fetch from SADEXHF ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				
@@ -349,7 +339,120 @@ public class ExpressFortolling2HouseConsignmentController {
 		return dtoResponse;
 	}
 	
-	*/
+	
+	@RequestMapping(value="deleteHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse deleteHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+																									@RequestParam(value = "ehavd", required = true) String ehavd,
+																									@RequestParam(value = "ehpro", required = true) String ehpro,
+																									@RequestParam(value = "ehtdn", required = true) String ehtdn,
+																									@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+																								
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setAvd(ehavd);
+		dtoResponse.setPro(ehpro);
+		dtoResponse.setTdn(ehtdn);
+		dtoResponse.setMrn(mrn);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		logger.warn("Inside deleteHouseConsignment - MRNnr: " + mrn);
+		//create new - master consignment at toll.no
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(user, mrn);
+				
+				if(list != null && list.size()>0) {
+					logger.warn("list size:" + list.size());
+					
+					for (SadexhfDto dto: list) {
+						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
+						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
+							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
+							logger.warn("Declarant:" + hc.getDeclarant().getName());
+							//API
+							String json = apiServices.deleteHouseConsignmentExpressMovementRoad(hc, mrn);
+							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							logger.warn("JSON = " + json);
+							logger.warn("LRN = " + obj.getLrn());
+							//put in response
+							dtoResponse.setLrn(obj.getLrn());
+							dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
+							dtoResponse.setPro(String.valueOf(dto.getEhpro()));
+							dtoResponse.setTdn(String.valueOf(dto.getEhtdn()));
+							
+							//In case there was an error at end-point and the LRN was not returned
+							if(StringUtils.isEmpty(obj.getLrn())){
+								errMsg.append("LRN empty ?? <json raw>: " + json);
+								dtoResponse.setErrMsg(errMsg.toString());
+								break;
+								
+							}else {
+								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
+								String lrn = obj.getLrn();
+								dtoResponse.setLrn(lrn);
+								
+								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+									dtoResponse.setMrn(mrn);
+									String mode = "DL";
+									//we must update the send date as well. Only 8-numbers
+									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									if(xx!=null && xx.size()>0) {
+										for (SadexhfDto rec: xx) {
+											if(StringUtils.isEmpty(rec.getEhmid()) ){
+												//OK
+											}else {
+												errMsg.append("MRN has not been removed after SADEXHF-delete-light mrn:" + mrn);
+												dtoResponse.setErrMsg(errMsg.toString());
+											}
+										}
+									}
+									
+								}else {
+									errMsg.append("LRN empty after DELETE-LIGHT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXHF): " + mrn);
+									dtoResponse.setErrMsg(errMsg.toString());
+									break;
+								}
+							
+							}
+							
+							
+							
+							
+							break; //only first in list
+							
+						}else {
+							errMsg.append(" LRN/MRN are empty (SADEXHF). This operation is invalid. Make sure emuuid(lrn)/emmid(mrn) fields have values before any DELETE ");
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+						
+					}
+				}else {
+					errMsg.append(" no records to fetch from SADEXHF ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(" invalid user ");
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		return dtoResponse;
+	}
+	
+	
 	
 	private boolean checkUser(String user) {
 		if (!bridfDaoService.userNameExist(user)) {
@@ -370,19 +473,25 @@ public class ExpressFortolling2HouseConsignmentController {
 		
 		try{
 			
-			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
+			String json = apiServices.getValidationStatusHouseConsignmentExpressMovementRoad(lrn);
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("MRN = " + obj.getMasterReferenceNumber());
-			if(StringUtils.isEmpty(obj.getMasterReferenceNumber())) {
+			dtoResponse.setStatus(obj.getStatus());
+			
+			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
 				retval = obj.getMasterReferenceNumber();
+			}else {
+				dtoResponse.setErrMsg(json);
 			}
+			
 		}catch(Exception e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			//Get out stackTrace to the response (errMsg)
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
 			
 		}
 		
@@ -390,57 +499,57 @@ public class ExpressFortolling2HouseConsignmentController {
 	}
 	
 	
-	/**
-	 * http://localhost:8080/syjservicestn-expft/getManifestStatus.do?user=SYSTEMA&id=f2bfbb94-afae-4af3-a4ff-437f787d322f
-	 * @param session
-	 * @param user
-	 * @param id
-	 * @return
-	 * @throws Exception
-	 */
-	/*
-	@RequestMapping(value="getManifestStatus.do", method={RequestMethod.GET, RequestMethod.POST}) 
-	public Object getManifestStatus(HttpSession session, @RequestParam(value = "user", required = true) String user, 
-														@RequestParam(value = "id", required = true) String id) throws Exception {
-		logger.warn("getManifestStatus.do, id="+id);
+	@RequestMapping(value="getHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse getHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
-		checkUser(user);
-		try{
-			String payload = apiServices.getManifest(id);
-			//convert to Dto (we do not do this in the service since we must see the JSON string in case of errors. It is easier to follow...
-			ObjectMapperHalJson objMapper = new ObjectMapperHalJson(payload, "");
-			ObjectMapperHalJson objMapper_TC = new ObjectMapperHalJson(payload, "/_embedded/transportationCompany");
-			
-			//Manifest Parent
-			StringBuffer jsonToConvert = new StringBuffer();
-			ManifestDto manifestDto = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestDto>() {});
-			
-			//Transp.Company
-			if(objMapper_TC.isValidTargetNode()){
-				jsonToConvert.delete(0, jsonToConvert.length());
-				ManifestTransportationCompanyDto transportationCompanyDto = objMapper_TC.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestTransportationCompanyDto>() {});
-				manifestDto.setTransportationCompany(transportationCompanyDto);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setLrn(lrn);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		logger.warn("Inside getHouseConsignment - LRNnr: " + lrn);
+		//create new - master consignment at toll.no
+		try {
+			if(checkUser(user)) {
+					//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+					if(StringUtils.isNotEmpty(lrn)) {
+						dtoResponse.setLrn(lrn);
+						
+						String mrn = this.getMrnHouseFromApi(dtoResponse, lrn);
+						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
+							errMsg.append(dtoResponse.getErrMsg());
+							
+							if(StringUtils.isNotEmpty(mrn)) {
+								dtoResponse.setErrMsg("");
+							}else {
+								dtoResponse.setErrMsg(errMsg.toString());
+							}
+						}else {
+							dtoResponse.setMrn(mrn);
+						}
+						
+					}else {
+						errMsg.append("LRN empty ?" + "-->LRN:" + lrn);
+						dtoResponse.setErrMsg(errMsg.toString());
+						
+					}
+											
+			}else {
+				errMsg.append(" invalid user ");
+				dtoResponse.setErrMsg(errMsg.toString());
 			}
 			
-			ManifestStatusDto dto = new ManifestStatusDto();
-			dto.setManifestId(manifestDto.getManifestId());
-			dto.setStatus(manifestDto.getStatus());
-			dto.setTimeOfDeparture(manifestDto.getTimeOfDeparture());
-			dto.setTimeOfRelease(manifestDto.getTimeOfRelease());
-			dto.setLastChanged(manifestDto.getLastChanged());
-			return dto;
-			
-		}catch(Exception e){
-			ManifestStatusDto dto = new ManifestStatusDto();
-			dto.setManifestId(e.toString());
-			return dto;
-			
-		}finally{
-			
-			session.invalidate();
-			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
 		}
 		
+		return dtoResponse;
 	}
-	*/
+	
 }

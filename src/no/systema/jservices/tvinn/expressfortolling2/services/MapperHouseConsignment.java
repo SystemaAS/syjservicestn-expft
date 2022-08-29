@@ -173,7 +173,7 @@ public class MapperHouseConsignment {
 		
 		PlaceOfLoading ploading = new PlaceOfLoading();
 		ploading.setLocation("string");
-		ploading.setUnloCode("NO SVD");
+		//ploading.setUnloCode("NO SVD");
 		AddressCountry ploadAddress = new AddressCountry();
 		ploadAddress.setCountry("NO");
 		ploading.setAddress(ploadAddress);
@@ -181,7 +181,7 @@ public class MapperHouseConsignment {
  		
 		PlaceOfUnloading punloading = new PlaceOfUnloading();
 		punloading.setLocation("string");
-		punloading.setUnloCode("NO SVD");
+		//punloading.setUnloCode("NO SVD");
 		AddressCountry punloadAddress = new AddressCountry();
 		ploadAddress.setCountry("NO");
 		punloading.setAddress(ploadAddress);
@@ -210,6 +210,9 @@ public class MapperHouseConsignment {
 		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
 		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
 		transpDocHouseLevel.setType(sourceDto.getEhdkht());
+		//TEST
+		transpDocHouseLevel.setDocumentNumber("1111112");
+		transpDocHouseLevel.setType("N750");
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
 		List goodsItem = this.getGoodsItemList();
@@ -218,7 +221,13 @@ public class MapperHouseConsignment {
 		//(Optional)Transport Equipment
 		List transpEquipmentList = new ArrayList();
 		TransportEquipment transportEquipment = new TransportEquipment();
-		transportEquipment.setContainerIdentificationNumber("2342342432SAS");
+		transportEquipment.setContainerIdentificationNumber("12345678901234567");
+		
+		//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]
+		transportEquipment.setContainerPackedStatus("A");
+		
+		transportEquipment.setContainerSizeAndType("22");
+		transportEquipment.setContainerSupplierType("1");
 		transpEquipmentList.add(transportEquipment);
 		chl.setTransportEquipment(transpEquipmentList);
 		
@@ -235,7 +244,9 @@ public class MapperHouseConsignment {
 		
 		
 		TransportCharges transpCharges = new TransportCharges();
-		transpCharges.setMethodOfPayment("s");
+		//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]"
+		transpCharges.setMethodOfPayment("A");
+
 		transpCharges.setCurrency("NOK");
 		transpCharges.setValue(0.0);
 		chl.setTransportCharges(transpCharges);
@@ -260,6 +271,7 @@ public class MapperHouseConsignment {
 		item.setDeclarationGoodsItemNumber("2");
 		item.setTransitGoodsItemNumber("3");
 		item.setTypeOfGoods("11");
+		item.setReferenceNumberUCR("1234565");
 		
 		ItemAmountInvoiced itemAmountInvoiced = new ItemAmountInvoiced();
 		itemAmountInvoiced.setCurrency("NOK");
@@ -268,17 +280,21 @@ public class MapperHouseConsignment {
 		
 		Commodity commodity = new Commodity();
 		commodity.setDescriptionOfGoods("string");
-		commodity.setCusCode("string");
+		
+		//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]"
+		//commodity.setCusCode("A");
+		
 		CommodityCode commodityCode = new CommodityCode();
 		commodityCode.setCombinedNomenclatureCode("00");
 		commodityCode.setHarmonizedSystemSubheadingCode("551100");
 		commodity.setCommodityCode(commodityCode);
-		//Dangerous goods
-		List dangGoodsList = new ArrayList();
+		//(Optional)Dangerous goods
+		/*List dangGoodsList = new ArrayList();
 		DangerousGoods dangerousGoods = new DangerousGoods();
 		dangerousGoods.setUnNumber("1055");
 		dangGoodsList.add(dangerousGoods);
 		commodity.setDangerousGoods(dangGoodsList);
+		*/
 		//Goods measure
 		GoodsMeasure goodsMeasure = new GoodsMeasure();
 		goodsMeasure.setGrossMass(0.0);
@@ -312,13 +328,14 @@ public class MapperHouseConsignment {
 		ptmList.add(passiveTransportMeans);
 		item.setPassiveTransportMeans(ptmList);
 		
-		//Transport Equipment
-		List transpEquipmentList = new ArrayList();
+		//(Optional)Transport Equipment
+		/*List transpEquipmentList = new ArrayList();
 		TransportEquipment transportEquipment = new TransportEquipment();
 		transportEquipment.setContainerIdentificationNumber("12345678901234567");
+		transportEquipment.setContainerPackedStatus("0");
 		transpEquipmentList.add(transportEquipment);
 		item.setTransportEquipment(transpEquipmentList);
-		
+		*/
 		
 		//add to goods item list
 		goodsItemList.add(item);

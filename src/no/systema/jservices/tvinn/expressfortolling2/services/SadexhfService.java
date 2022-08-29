@@ -42,6 +42,9 @@ public class SadexhfService {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
+		logger.warn("AVD:" + avd);
+		logger.warn("PRO:" + pro);
+		logger.warn("TDN:" + tdn);
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
@@ -91,6 +94,61 @@ public class SadexhfService {
 		
 		return result; 
 	}
+	
+	
+	public List<SadexhfDto> getSadexhfForUpdate(String user, String mrn) {
+		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADEXHF.do")
+				.queryParam("user", user)
+				.queryParam("ehmid", mrn)
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadexhfDto pojo = mapper.convertValue(o, SadexhfDto.class);
+					//get item lines
+					if(pojo!=null) {
+						result.add(pojo);
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	
+	
+	
 	/**
 	 * The method is called from a Master service. It is use to fill the master documentNumber-house-list from this list
 	 * @param user
@@ -204,21 +262,28 @@ public class SadexhfService {
 	}
 	
 	
-	public List<SadexhfDto> updateLrnMrnSadexhf(String user, Integer avd, Integer pro, String lrn, String mrn) {
+	public List<SadexhfDto> updateLrnMrnSadexhf(String user, Integer avd, Integer pro, Integer tdn, String lrn, String mrn, String sendDate, String mode) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
+		logger.warn("AVD:" + avd);
+		logger.warn("PRO:" + pro);
+		logger.warn("TDN:" + tdn);
+		
+		
 		//example
 		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
 				.path("/syjservicestn/syjsSADEXHF_U.do")
 				.queryParam("user", user)
-				.queryParam("mode", "UL")
+				.queryParam("mode", mode)
 				.queryParam("ehavd", avd)
 				.queryParam("ehpro", pro)
+				.queryParam("ehtdn", tdn)
 				.queryParam("ehuuid", lrn)
 				.queryParam("ehmid", mrn)
+				//sendDate ?? field
 				.build()
 				.encode()
 				.toUri();
@@ -242,13 +307,14 @@ public class SadexhfService {
 			}else {
 				logger.warn("select-SADEXHF-REST-http-response:" + response.getStatusCodeValue());
 				
-				for(Object o: dtoContainer.getList()){
-					SadexhfDto pojo = mapper.convertValue(o, SadexhfDto.class);
-					//get item lines
-					if(pojo!=null) {
-						result.add(pojo);
-					}
+				SadexhfDto pojo = new SadexhfDto();
+				if(mode.startsWith("D")){
+					//nothing since it is DELETE;
+				}else {
+					//set it in order to have a valid response
+					pojo.setEhmid(mrn);
 				}
+				result.add(pojo);
 				
 			}
 
@@ -256,7 +322,7 @@ public class SadexhfService {
 			logger.error(e.toString());
 			result = null;
 		}
-		
+		logger.warn(result.toString());
 		return result; 
 	}
 
