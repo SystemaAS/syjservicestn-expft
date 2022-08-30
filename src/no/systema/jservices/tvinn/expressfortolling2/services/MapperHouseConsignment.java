@@ -3,6 +3,7 @@ package no.systema.jservices.tvinn.expressfortolling2.services;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +55,11 @@ public class MapperHouseConsignment {
 	public HouseConsignment mapHouseConsignment(SadexhfDto sourceDto) {
 		
 		HouseConsignment hc = new HouseConsignment();
-		//IssueDate
+		//(Mandatory) IssueDate
 		//hc.setDocumentIssueDate("2022-08-16T11:49:52Z");
 		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
 		
-		//Declarant
+		//(Mandatory) Declarant
 		Declarant dec = new Declarant();
 		
 		dec.setName("Posten Norge AS");
@@ -79,13 +80,16 @@ public class MapperHouseConsignment {
 		hc.setDeclarant(dec);
 		
 		
-		//Representative
+		//(Mandatory) Representative
 		Representative rep = new Representative();
 		rep.setName("Bring AS");
 		rep.setIdentificationNumber("951357482");
-		
-		//rep.setStatus(sourceDto.getEmstr());
-		rep.setStatus("2");
+		//status
+		if(StringUtils.isNotEmpty(sourceDto.getEhstr())){
+			rep.setStatus(sourceDto.getEhstr());
+		}else {
+			rep.setStatus("2");
+		}
 		
 		Address raddress = new Address();
 		raddress.setCity("Oslo");
@@ -102,30 +106,10 @@ public class MapperHouseConsignment {
 		rep.setCommunication(rcommList);
 		hc.setRepresentative(rep);
 		
-		
+		//(Mandatory) 
 		hc.setHouseConsignmentConsignmentHouseLevel(this.populateHouseConsignmentConsignmentHouseLevel(sourceDto));
 		
-		/*
-		//CustomsOffice
-		CustomsOfficeOfFirstEntry cOffice = new CustomsOfficeOfFirstEntry();
-		cOffice.setReferenceNumber("NO344001");
-		mc.setCustomsOfficeOfFirstEntry(cOffice);
 		
-		
-		
-		
-		//ReleasedConfirmation
-		List relList = new ArrayList();
-		relList.add(this.populateReleasedConfirmation("yyy@doe.com"));
-		mc.setReleasedConfirmation(relList);
-		
-		
-		try {
-			//System.out.println(obj.writerWithDefaultPrettyPrinter().writeValueAsString(mc));
-		}catch(Exception e) {
-			e.printStackTrace();
-		}
-		*/
 		return hc;
 	}
 	
@@ -143,122 +127,160 @@ public class MapperHouseConsignment {
 	
 	
 	private HouseConsignmentConsignmentHouseLevel populateHouseConsignmentConsignmentHouseLevel(SadexhfDto sourceDto) {
+		DateUtils dateUtils = new DateUtils("yyyyMMdd", "yyyy-MM-dd");
 		
 		HouseConsignmentConsignmentHouseLevel chl = new HouseConsignmentConsignmentHouseLevel();
-		chl.setContainerIndicator(1);
-		chl.setTotalGrossMass(103.23);
-		chl.setReferenceNumberUCR("string");
+		chl.setContainerIndicator(sourceDto.getEhcnin());
+		chl.setTotalGrossMass(sourceDto.getEhvkb());
+		chl.setReferenceNumberUCR(sourceDto.getEhucr());
 		
-		List _exportFromEUList = new ArrayList();
-		ExportFromEU exportFromEU = new ExportFromEU();
-		exportFromEU.setExportId("22SEE1452362514521");
-		exportFromEU.setTypeOfExport("UGE_EXPORT");
-		_exportFromEUList.add(exportFromEU);
-		chl.setExportFromEU(_exportFromEUList);
+		List exportFromEUList = new ArrayList();
+		if(StringUtils.isNotEmpty(sourceDto.getEheid())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(sourceDto.getEheid());
+			exportFromEU.setTypeOfExport(sourceDto.getEhetypt());
+			exportFromEUList.add(exportFromEU);
+			chl.setExportFromEU(exportFromEUList);
+		}
 		
 		ImportProcedure importProcedure = new ImportProcedure();
-		importProcedure.setImportProcedure("IMMEDIATE_RELEASE_IMPORT");
+		importProcedure.setImportProcedure(sourceDto.getEhprt());
+		//TRA/EXP/TRE
 		importProcedure.setOutgoingProcedure("EXP");
 		chl.setImportProcedure(importProcedure);
 		
 		List prevDocsList = new ArrayList();
-		PreviousDocuments prevDocs = new PreviousDocuments();
-		prevDocs.setReferenceNumber("22NO12345678987654");
-		prevDocs.setTypeOfReference("CUDE");
-		prevDocs.setDeclarantNumber("123456789");
-		prevDocs.setDeclarationDate("2022-08-10");
-		prevDocs.setSequenceNumber("1");
-		prevDocsList.add(prevDocs);
-		chl.setPreviousDocuments(prevDocsList);
+		if(StringUtils.isNotEmpty(sourceDto.getEhtrnr())) {
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setReferenceNumber(sourceDto.getEhtrnr());
+			prevDocs.setTypeOfReference(sourceDto.getEhtrty());
+			prevDocs.setDeclarantNumber(sourceDto.getEhrg());
+			prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(sourceDto.getEh0068a())));
+			prevDocs.setSequenceNumber(String.valueOf(sourceDto.getEh0068b()));
+			prevDocsList.add(prevDocs);
+			chl.setPreviousDocuments(prevDocsList);
+		}else {
+			/*PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setReferenceNumber("22NO12345678987654");
+			prevDocs.setTypeOfReference("CUDE");
+			prevDocs.setDeclarantNumber("123456789");
+			prevDocs.setDeclarationDate("2022-08-10");
+			prevDocs.setSequenceNumber("1");
+			prevDocsList.add(prevDocs);
+			chl.setPreviousDocuments(prevDocsList);
+			*/
+		}
 		
 		PlaceOfLoading ploading = new PlaceOfLoading();
-		ploading.setLocation("string");
+		ploading.setLocation(sourceDto.getEhsdft());
 		//ploading.setUnloCode("NO SVD");
 		AddressCountry ploadAddress = new AddressCountry();
-		ploadAddress.setCountry("NO");
+		ploadAddress.setCountry(sourceDto.getEhlkf());
 		ploading.setAddress(ploadAddress);
  		chl.setPlaceOfLoading(ploading);
  		
 		PlaceOfUnloading punloading = new PlaceOfUnloading();
-		punloading.setLocation("string");
+		punloading.setLocation(sourceDto.getEhsdtt());
 		//punloading.setUnloCode("NO SVD");
 		AddressCountry punloadAddress = new AddressCountry();
-		ploadAddress.setCountry("NO");
+		ploadAddress.setCountry(sourceDto.getEhlkt());
 		punloading.setAddress(ploadAddress);
 		chl.setPlaceOfUnloading(punloading);
 		
 		Consignee consignee = new Consignee();
-		consignee.setName("Consignee Jonsson");
-		consignee.setIdentificationNumber("951325847");
-		consignee.setTypeOfPerson(1);
-		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
-		Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
+		consignee.setName(sourceDto.getEhnam());
+		consignee.setIdentificationNumber(sourceDto.getEhrgm());
+		if(this.isPrivatePerson(sourceDto)) {
+			consignee.setTypeOfPerson(1); //personnumer = 11 siffror
+		}else {
+			consignee.setTypeOfPerson(2); //orgnr = 9 siffror
+		}
+		//PROD-->
+		Address cAddress = this.setAddress(sourceDto.getEhpsm(), sourceDto.getEhlkm(), sourceDto.getEhpnm(), sourceDto.getEhad1m(), sourceDto.getEhnrm());
+		//Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		consignee.setAddress(cAddress);
-		consignee.setCommunication(this.setCommunication("en-epost@mail.no", "ME"));
+		consignee.setCommunication(this.setCommunication(sourceDto.getEhemm(), sourceDto.getEhemmt()));
 		chl.setConsignee(consignee);
 		
 		Consignor consignor = new Consignor();
-		consignor.setName("Consignor Svensson");
-		consignor.setIdentificationNumber("951325847");
-		consignor.setTypeOfPerson(1);
-		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
-		Address cgorAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
+		consignor.setName(sourceDto.getEhnas());
+		consignor.setIdentificationNumber(sourceDto.getEhrgs());
+		if(this.isPrivatePerson(sourceDto)) {
+			consignor.setTypeOfPerson(1);
+		}else {
+			consignor.setTypeOfPerson(2);
+		}
+		Address cgorAddress = this.setAddress(sourceDto.getEhpss(), sourceDto.getEhlks(), sourceDto.getEhpns(), sourceDto.getEhad1s(), sourceDto.getEhnrs());
+		//Address cgorAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		consignor.setAddress(cgorAddress);
-		consignor.setCommunication(this.setCommunication("consignor@mail.no", "ME"));
+		consignor.setCommunication(this.setCommunication(sourceDto.getEhems(), sourceDto.getEhemst()));
 		chl.setConsignor(consignor);
 		
 		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
 		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
 		transpDocHouseLevel.setType(sourceDto.getEhdkht());
-		//TEST
-		transpDocHouseLevel.setDocumentNumber("1111112");
-		transpDocHouseLevel.setType("N750");
+		//(Mandatory) DocumentNumber
+		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
+		transpDocHouseLevel.setType(sourceDto.getEhdkht());
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
 		List goodsItem = this.getGoodsItemList();
 		chl.setGoodsItem(goodsItem);
 		
 		//(Optional)Transport Equipment
-		List transpEquipmentList = new ArrayList();
-		TransportEquipment transportEquipment = new TransportEquipment();
-		transportEquipment.setContainerIdentificationNumber("12345678901234567");
-		
-		//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]
-		transportEquipment.setContainerPackedStatus("A");
-		
-		transportEquipment.setContainerSizeAndType("22");
-		transportEquipment.setContainerSupplierType("1");
-		transpEquipmentList.add(transportEquipment);
-		chl.setTransportEquipment(transpEquipmentList);
-		
+		if(StringUtils.isNotEmpty(sourceDto.getEhcnr())) {
+			List transpEquipmentList = new ArrayList();
+			TransportEquipment transportEquipment = new TransportEquipment();
+			transportEquipment.setContainerIdentificationNumber(sourceDto.getEhcnr());
+	
+			//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]
+			transportEquipment.setContainerPackedStatus("A");
+			transportEquipment.setContainerSizeAndType("22");
+			transportEquipment.setContainerSupplierType("1");
+			transpEquipmentList.add(transportEquipment);
+			chl.setTransportEquipment(transpEquipmentList);
+		}
 		
 		//(Optional)Passive Transport Means
 		List ptmList = new ArrayList();
-		PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
-		passiveTransportMeans.setCountryCode("DK");
-		passiveTransportMeans.setIdentificationNumber("DK123456");
-		passiveTransportMeans.setTypeOfIdentification(30);
-		passiveTransportMeans.setTypeOfMeansOfTransport("150");
-		ptmList.add(passiveTransportMeans);
-		chl.setPassiveTransportMeans(ptmList);
+		if(StringUtils.isNotEmpty(sourceDto.getEhpmrk())) {
+			PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
+			passiveTransportMeans.setCountryCode(sourceDto.getEhplk());
+			passiveTransportMeans.setIdentificationNumber(sourceDto.getEhpmrk());
+			passiveTransportMeans.setTypeOfIdentification(Integer.valueOf(sourceDto.getEhptm())); //30 t.ex
+			passiveTransportMeans.setTypeOfMeansOfTransport("150");
+			ptmList.add(passiveTransportMeans);
+			chl.setPassiveTransportMeans(ptmList);
+		}
 		
-		
+		//(Mandatory) TransportCharges
 		TransportCharges transpCharges = new TransportCharges();
 		//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]"
 		transpCharges.setMethodOfPayment("A");
-
 		transpCharges.setCurrency("NOK");
 		transpCharges.setValue(0.0);
 		chl.setTransportCharges(transpCharges);
 		
-		
+		//(Mandatory Total Amount
 		TotalAmountInvoiced totalAmount = new TotalAmountInvoiced();
-		totalAmount.setValue(100.0);
-		totalAmount.setCurrency("NOK");
+		totalAmount.setValue(sourceDto.getEhtcbl());
+		totalAmount.setCurrency(sourceDto.getEhtcva());
 		chl.setTotalAmountInvoiced(totalAmount);
 		
 		return chl;
 		
+	}
+	private boolean isPrivatePerson(SadexhfDto sourceDto) {
+		boolean retval = true;
+		//Orgnr = 9-siffror
+		//Personnr = 11-siffor
+		
+		//1 - Natural person, 2 - Legal person, 3 - Association of persons
+		if(StringUtils.isNotEmpty(sourceDto.getEhrgm()) && sourceDto.getEhrgm().length()==11) {
+			retval = false;
+		}
+		
+		return retval;
 	}
 	/**
 	 * 
@@ -406,11 +428,21 @@ public class MapperHouseConsignment {
 	
 	private Address setAddress(String city, String country, String postCode, String street, String number) {
 		Address address = new Address();
-		address.setCity(city);
-		address.setCountry(country);
-		address.setPostcode(postCode);
-		address.setStreetLine(street);
-		address.setNumber(number);
+		if(StringUtils.isNotEmpty(city)) {
+			address.setCity(city);
+		}
+		if(StringUtils.isNotEmpty(country)) {
+			address.setCountry(country);
+		}
+		if(StringUtils.isNotEmpty(postCode)) {
+			address.setPostcode(postCode);
+		}
+		if(StringUtils.isNotEmpty(street)) {
+			address.setStreetLine(street);
+		}
+		if(StringUtils.isNotEmpty(number)) {
+			address.setNumber(number);
+		}
 		
 		return address;
 	}

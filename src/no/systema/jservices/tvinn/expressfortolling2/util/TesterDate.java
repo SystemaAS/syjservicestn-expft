@@ -11,6 +11,10 @@ public class TesterDate {
 		DateUtils dateUtil = new DateUtils();
 		String zulu = dateUtil.getZuluTimeWithoutMilliseconds(20220825, 100003);
 		System.out.println(zulu);
+		
+		DateUtils dUtil = new DateUtils("yyyyMMdd", "yyyy-MM-dd");
+		System.out.println(dUtil.getDate("20220820"));
+		
 	}
 
 }
