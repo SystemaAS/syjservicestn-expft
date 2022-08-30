@@ -32,11 +32,9 @@ public class SadexifService {
 	@Autowired
 	RestTemplate restTemplate;
 	
-	@Value("${http.syjservices.root.servlet}")
-	String serverRoot; 
 	
 	
-	public List<SadexifDto> getSadexif(String user, String avd, String pro, String tdn) {
+	public List<SadexifDto> getSadexif(String serverRoot, String user, String avd, String pro, String tdn) {
 		List<SadexifDto> result = new ArrayList<SadexifDto>();
 		
 		logger.warn("USER:" + user);

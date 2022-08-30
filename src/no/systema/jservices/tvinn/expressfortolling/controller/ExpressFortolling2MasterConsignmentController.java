@@ -52,6 +52,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
+import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Express fortolling Version 2 API.
@@ -151,6 +152,7 @@ public class ExpressFortolling2MasterConsignmentController {
 																				@RequestParam(value = "emavd", required = true) String emavd,
 																				@RequestParam(value = "empro", required = true) String empro) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setAvd(emavd);
@@ -162,7 +164,7 @@ public class ExpressFortolling2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexmfService.getSadexmf(user, emavd, empro);
+				List<SadexmfDto> list = sadexmfService.getSadexmf(serverRoot, user, emavd, empro);
 				if(list != null) {
 					logger.warn("list size:" + list.size());
 					
@@ -207,7 +209,7 @@ public class ExpressFortolling2MasterConsignmentController {
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
+									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
 											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
@@ -274,6 +276,7 @@ public class ExpressFortolling2MasterConsignmentController {
 																				@RequestParam(value = "empro", required = true) String empro,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setAvd(emavd);
@@ -286,7 +289,7 @@ public class ExpressFortolling2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(user, mrn);
+				List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(serverRoot, user, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -337,7 +340,7 @@ public class ExpressFortolling2MasterConsignmentController {
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
+									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
 											//logger.warn(rec.toString());
@@ -402,6 +405,7 @@ public class ExpressFortolling2MasterConsignmentController {
 																				@RequestParam(value = "empro", required = true) String empro,
 																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setAvd(emavd);
@@ -414,7 +418,7 @@ public class ExpressFortolling2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(user, mrn);
+				List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(serverRoot, user, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -451,7 +455,7 @@ public class ExpressFortolling2MasterConsignmentController {
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
+									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, Integer.valueOf(emavd), Integer.valueOf(empro), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexmfDto rec: xx) {
 											if(StringUtils.isEmpty(rec.getEmmid()) ){
@@ -517,6 +521,7 @@ public class ExpressFortolling2MasterConsignmentController {
 	public GenericDtoResponse getMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setLrn(lrn);

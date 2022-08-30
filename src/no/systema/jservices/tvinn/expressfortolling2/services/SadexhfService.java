@@ -5,6 +5,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +37,11 @@ public class SadexhfService {
 	@Autowired
 	RestTemplate restTemplate;
 	
-	@Value("${http.syjservices.root.servlet}")
-	String serverRoot; 
+
 	
-	
-	public List<SadexhfDto> getSadexhf(String user, String avd, String pro, String tdn) {
+	public List<SadexhfDto> getSadexhf(String serverRoot, String user, String avd, String pro, String tdn) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
+		
 		
 		logger.warn("USER:" + user);
 		logger.warn("AVD:" + avd);
@@ -79,7 +81,7 @@ public class SadexhfService {
 				for(Object o: dtoContainer.getList()){
 					SadexhfDto pojo = mapper.convertValue(o, SadexhfDto.class);
 					//get item lines
-					pojo.setGoodsItemList(this.getItemLines(user, avd, pro, tdn));
+					pojo.setGoodsItemList(this.getItemLines(serverRoot, user, avd, pro, tdn));
 					if(pojo!=null) {
 						result.add(pojo);
 					}
@@ -96,7 +98,7 @@ public class SadexhfService {
 	}
 	
 	
-	public List<SadexhfDto> getSadexhfForUpdate(String user, String mrn) {
+	public List<SadexhfDto> getSadexhfForUpdate(String serverRoot, String user, String mrn) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
@@ -156,7 +158,7 @@ public class SadexhfService {
 	 * @param pro
 	 * @return
 	 */
-	public List<SadexhfDto> getDocumentNumberListFromHouses(String user, String avd, String pro) {
+	public List<SadexhfDto> getDocumentNumberListFromHouses(String serverRoot, String user, String avd, String pro) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
@@ -208,7 +210,7 @@ public class SadexhfService {
 		return result; 
 	}
 
-	private List<SadexifDto> getItemLines(String user, String avd, String pro, String tdn) {
+	private List<SadexifDto> getItemLines(String serverRoot, String user, String avd, String pro, String tdn) {
 		List<SadexifDto> result = new ArrayList<SadexifDto>();
 		
 		logger.warn("USER:" + user);
@@ -262,7 +264,7 @@ public class SadexhfService {
 	}
 	
 	
-	public List<SadexhfDto> updateLrnMrnSadexhf(String user, Integer avd, Integer pro, Integer tdn, String lrn, String mrn, String sendDate, String mode) {
+	public List<SadexhfDto> updateLrnMrnSadexhf(String serverRoot, String user, Integer avd, Integer pro, Integer tdn, String lrn, String mrn, String sendDate, String mode) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);

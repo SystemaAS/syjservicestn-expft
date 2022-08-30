@@ -53,6 +53,7 @@ import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsign
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
+import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Express fortolling API.
@@ -102,6 +103,7 @@ public class ExpressFortolling2HouseConsignmentController {
 																				@RequestParam(value = "ehpro", required = true) String ehpro,
 																				@RequestParam(value = "ehtdn", required = true) String ehtdn) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setAvd(ehavd);
@@ -115,7 +117,8 @@ public class ExpressFortolling2HouseConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhf(user, ehavd, ehpro, ehtdn);
+				
+				List<SadexhfDto> list = sadexhfService.getSadexhf(serverRoot, user, ehavd, ehpro, ehtdn);
 				if(list != null) {
 					logger.warn("list size:" + list.size());
 					
@@ -162,7 +165,7 @@ public class ExpressFortolling2HouseConsignmentController {
 									String mode = "ULM";
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									//logger.warn("B");
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
 									//logger.warn("C");
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
@@ -233,6 +236,7 @@ public class ExpressFortolling2HouseConsignmentController {
 																				@RequestParam(value = "ehtdn", required = true) String ehtdn,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setAvd(ehavd);
@@ -242,16 +246,16 @@ public class ExpressFortolling2HouseConsignmentController {
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
-		logger.warn("Inside postHouseConsignment");
 		
 		
-		//create new - master consignment at toll.no
-		logger.warn("Inside putMasterConsignment - MRNnr: " + mrn);
+		logger.warn("Inside putHouseConsignment - MRNnr: " + mrn);
+		logger.warn("serverRoot:" + serverRoot);
+		
 		//create new - master consignment at toll.no
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(user, mrn);
+				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -302,7 +306,7 @@ public class ExpressFortolling2HouseConsignmentController {
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
 											//logger.warn(rec.toString());
@@ -372,7 +376,7 @@ public class ExpressFortolling2HouseConsignmentController {
 																									@RequestParam(value = "ehpro", required = true) String ehpro,
 																									@RequestParam(value = "ehtdn", required = true) String ehtdn,
 																									@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
-																								
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setAvd(ehavd);
@@ -386,7 +390,7 @@ public class ExpressFortolling2HouseConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(user, mrn);
+				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -425,7 +429,7 @@ public class ExpressFortolling2HouseConsignmentController {
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
 											if(StringUtils.isEmpty(rec.getEhmid()) ){
@@ -493,6 +497,7 @@ public class ExpressFortolling2HouseConsignmentController {
 	public GenericDtoResponse getHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
+		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setLrn(lrn);

@@ -35,10 +35,8 @@ public class SadexmfService {
 	@Autowired
 	SadexhfService sadexhfService;
 	
-	@Value("${http.syjservices.root.servlet}")
-	String serverRoot; 
 	
-	public List<SadexmfDto> getSadexmf(String user, String avd, String pro) {
+	public List<SadexmfDto> getSadexmf(String serverRoot, String user, String avd, String pro) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -75,7 +73,7 @@ public class SadexmfService {
 				for(Object o: dtoContainer.getList()){
 					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
 					//get houses' dto for documentNumbers later on
-					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(user, avd, pro));
+					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, avd, pro));
 					logger.info(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
@@ -92,7 +90,7 @@ public class SadexmfService {
 		return result; 
 	}
 	
-	public List<SadexmfDto> getSadexmfForUpdate(String user, String mrn) {
+	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String mrn) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -153,7 +151,7 @@ public class SadexmfService {
 	 * @param mode
 	 * @return
 	 */
-	public List<SadexmfDto> updateLrnMrnSadexmf(String user, Integer avd, Integer pro, String lrn, String mrn, String sendDate, String mode) {
+	public List<SadexmfDto> updateLrnMrnSadexmf(String serverRoot, String user, Integer avd, Integer pro, String lrn, String mrn, String sendDate, String mode) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
