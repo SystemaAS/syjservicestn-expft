@@ -62,19 +62,19 @@ public class MapperHouseConsignment {
 		//(Mandatory) Declarant
 		Declarant dec = new Declarant();
 		
-		dec.setName("Posten Norge AS");
+		dec.setName(sourceDto.getEhnad());
 		Address address = new Address();
-		address.setCity("Oslo");
-		address.setCountry("NO");
-		address.setStreetLine("Hausemanns gate");
-		address.setPostcode("0001");
-		address.setNumber("10B");
-		address.setPoBox("P.B 194");
+		address.setCity(sourceDto.getEhpsd());
+		address.setCountry(sourceDto.getEhlkd());
+		if(StringUtils.isNotEmpty(sourceDto.getEhad1d())) { address.setStreetLine(sourceDto.getEhad1d()); }
+		if(StringUtils.isNotEmpty(sourceDto.getEhpnd())) { address.setPostcode(sourceDto.getEhpnd()); }
+		if(StringUtils.isNotEmpty(sourceDto.getEhnrd())) { address.setNumber(sourceDto.getEhnrd()); }
+		if(StringUtils.isNotEmpty(sourceDto.getEhpbd())) { address.setPoBox(sourceDto.getEhpbd()); }
 		dec.setAddress(address);
 		//
 		List commList = new ArrayList();
-		commList.add(this.populateCommunication("xxx@gmail.com", "ME"));
-		commList.add(this.populateCommunication("0733794505", "TE"));
+		commList.add(this.populateCommunication(sourceDto.getEhemd(), sourceDto.getEhemdt()));
+		//commList.add(this.populateCommunication("0733794505", "TE"));
 		dec.setCommunication(commList);
 		
 		hc.setDeclarant(dec);
@@ -82,8 +82,8 @@ public class MapperHouseConsignment {
 		
 		//(Mandatory) Representative
 		Representative rep = new Representative();
-		rep.setName("Bring AS");
-		rep.setIdentificationNumber("951357482");
+		rep.setName(sourceDto.getEhnar());
+		rep.setIdentificationNumber(sourceDto.getEhrgr());
 		//status
 		if(StringUtils.isNotEmpty(sourceDto.getEhstr())){
 			rep.setStatus(sourceDto.getEhstr());
@@ -92,16 +92,17 @@ public class MapperHouseConsignment {
 		}
 		
 		Address raddress = new Address();
-		raddress.setCity("Oslo");
-		raddress.setCountry("NO");
-		//PROD-->raddress.setStreetLine(sourceDto.getEmnrr());
-		raddress.setStreetLine("Hausemanns gate");
-		//PROD-->raddress.setNumber(sourceDto.getEmnrr());
-		raddress.setNumber("52F");
+		raddress.setCity(sourceDto.getEhpsr());
+		raddress.setCountry(sourceDto.getEhlkr());
+		if(StringUtils.isNotEmpty(sourceDto.getEhad1r())) { raddress.setStreetLine(sourceDto.getEhad1r()); }
+		if(StringUtils.isNotEmpty(sourceDto.getEhpnr())) { raddress.setPostcode(sourceDto.getEhpnr()); }
+		if(StringUtils.isNotEmpty(sourceDto.getEhnrr())) { raddress.setNumber(sourceDto.getEhnrr()); }
+		if(StringUtils.isNotEmpty(sourceDto.getEhpbr())) { raddress.setPoBox(sourceDto.getEhpbr()); }
 		rep.setAddress(raddress);
+		
 		//
 		List rcommList = new ArrayList();
-		rcommList.add(this.populateCommunication("en-epost@mail.no", "ME"));
+		rcommList.add(this.populateCommunication(sourceDto.getEhemr(), sourceDto.getEhemrt()));
 		//rcommList.add(this.populateCommunication("0733794599", "TE"));
 		rep.setCommunication(rcommList);
 		hc.setRepresentative(rep);
