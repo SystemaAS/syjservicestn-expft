@@ -256,10 +256,13 @@ public class MapperHouseConsignment {
 		
 		//(Mandatory) TransportCharges
 		TransportCharges transpCharges = new TransportCharges();
-		//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]"
-		transpCharges.setMethodOfPayment("A");
+		//Expected codes are one of [A=Kontant, B=Kredikort, C, D=Annet, H=Elektronisk pengeöverf., Y, Z=not pre-paid]"
+		//Optional
+		/*if(sourceDto.get??) {
+			transpCharges.setMethodOfPayment(sourceDto.get??);
+		}*/
 		transpCharges.setCurrency("NOK");
-		transpCharges.setValue(0.0);
+		transpCharges.setValue(1.0);
 		chl.setTransportCharges(transpCharges);
 		
 		//(Mandatory Total Amount
