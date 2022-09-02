@@ -24,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexifDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
@@ -263,14 +264,22 @@ public class SadexhfService {
 		return result; 
 	}
 	
-	
-	public List<SadexhfDto> updateLrnMrnSadexhf(String serverRoot, String user, Integer avd, Integer pro, Integer tdn, String lrn, String mrn, String sendDate, String mode) {
+	/**
+	 * 
+	 * @param serverRoot
+	 * @param user
+	 * @param dtoResponse
+	 * @param sendDate
+	 * @param mode
+	 * @return
+	 */
+	public List<SadexhfDto> updateLrnMrnSadexhf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
-		logger.warn("AVD:" + avd);
-		logger.warn("PRO:" + pro);
-		logger.warn("TDN:" + tdn);
+		logger.warn("AVD:" + dtoResponse.getAvd());
+		logger.warn("PRO:" + dtoResponse.getPro());
+		logger.warn("TDN:" + dtoResponse.getTdn());
 		
 		
 		//example
@@ -280,11 +289,15 @@ public class SadexhfService {
 				.path("/syjservicestn/syjsSADEXHF_U.do")
 				.queryParam("user", user)
 				.queryParam("mode", mode)
-				.queryParam("ehavd", avd)
-				.queryParam("ehpro", pro)
-				.queryParam("ehtdn", tdn)
-				.queryParam("ehuuid", lrn)
-				.queryParam("ehmid", mrn)
+				.queryParam("ehavd", Integer.valueOf(dtoResponse.getAvd()))
+				.queryParam("ehpro", Integer.valueOf(dtoResponse.getPro()))
+				.queryParam("ehtdn", Integer.valueOf(dtoResponse.getTdn()))
+				.queryParam("ehuuid", dtoResponse.getLrn())
+				.queryParam("ehmid", dtoResponse.getMrn())
+				.queryParam("ehst", dtoResponse.getDb_st())
+				.queryParam("ehst2", dtoResponse.getDb_st2())
+				.queryParam("ehst3", dtoResponse.getDb_st3())
+				
 				//sendDate ?? field
 				.build()
 				.encode()
@@ -314,7 +327,7 @@ public class SadexhfService {
 					//nothing since it is DELETE;
 				}else {
 					//set it in order to have a valid response
-					pojo.setEhmid(mrn);
+					pojo.setEhmid(dtoResponse.getMrn());
 				}
 				result.add(pojo);
 				

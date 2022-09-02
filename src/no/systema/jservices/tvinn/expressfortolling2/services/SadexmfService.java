@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 
 
@@ -90,7 +91,7 @@ public class SadexmfService {
 		return result; 
 	}
 	
-	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String mrn) {
+	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String avd, String pro, String mrn) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -125,7 +126,9 @@ public class SadexmfService {
 				
 				for(Object o: dtoContainer.getList()){
 					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
-					//get item lines
+					//get houses' dto for documentNumbers later on
+					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, avd, pro));
+					logger.info(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
 					}
@@ -143,15 +146,14 @@ public class SadexmfService {
 	
 	/**
 	 * 
+	 * @param serverRoot
 	 * @param user
-	 * @param avd
-	 * @param pro
-	 * @param lrn
-	 * @param mrn
+	 * @param dtoResponse
+	 * @param sendDate
 	 * @param mode
 	 * @return
 	 */
-	public List<SadexmfDto> updateLrnMrnSadexmf(String serverRoot, String user, Integer avd, Integer pro, String lrn, String mrn, String sendDate, String mode) {
+	public List<SadexmfDto> updateLrnMrnSadexmf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("USER:" + user);
@@ -162,11 +164,14 @@ public class SadexmfService {
 				.path("/syjservicestn/syjsSADEXMF_U.do")
 				.queryParam("user", user)
 				.queryParam("mode", mode)
-				.queryParam("emavd", avd)
-				.queryParam("empro", pro)
-				.queryParam("emuuid", lrn)
-				.queryParam("emmid", mrn)
+				.queryParam("emavd", Integer.valueOf(dtoResponse.getAvd()))
+				.queryParam("empro", Integer.valueOf(dtoResponse.getPro()))
+				.queryParam("emuuid", dtoResponse.getLrn())
+				.queryParam("emmid", dtoResponse.getMrn())
 				.queryParam("emdtin", Integer.parseInt(sendDate))
+				.queryParam("ehst", dtoResponse.getDb_st())
+				.queryParam("ehst2", dtoResponse.getDb_st2())
+				.queryParam("ehst3", dtoResponse.getDb_st3())
 				.build()
 				.encode()
 				.toUri();
@@ -194,7 +199,7 @@ public class SadexmfService {
 					//nothing since it is DELETE;
 				}else {
 					//set it in order to have a valid response
-					pojo.setEmmid(mrn);
+					pojo.setEmmid(dtoResponse.getMrn());
 				}
 				result.add(pojo);
 				

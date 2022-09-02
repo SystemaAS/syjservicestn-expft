@@ -139,6 +139,7 @@ public class MapperHouseConsignment {
 		if(StringUtils.isNotEmpty(sourceDto.getEheid())) {
 			ExportFromEU exportFromEU = new ExportFromEU();
 			exportFromEU.setExportId(sourceDto.getEheid());
+			//exportFromEU.setExportId("22SEE1452362514521");
 			exportFromEU.setTypeOfExport(sourceDto.getEhetypt());
 			exportFromEUList.add(exportFromEU);
 			chl.setExportFromEU(exportFromEUList);

@@ -25,6 +25,10 @@ public class GenericDtoResponse {
 	private String lrn = "";
 	private String mrn = "";
 	private String status = "";
+	private String db_st = "";
+	private String db_st2 = "";
+	private String db_st3 = "";
+	
 	private String errMsg = "";
 	
 }

@@ -177,6 +177,7 @@ public class MapperMasterConsignment {
 		List list = new ArrayList();
 		for (SadexhfDto houseDto : sourceDto.getHouseDtoList()) {
 			if(StringUtils.isNotEmpty(houseDto.getEhdkh())) {
+				// TODO Maybe filter with -->only those with a certain status in ehst,ehst2 or ehst3 ???
 				list.add(this.populateConsignmentHouseLevel(houseDto.getEhdkh(), houseDto.getEhdkht()));
 			}
 		}

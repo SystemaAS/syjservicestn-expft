@@ -49,6 +49,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
@@ -163,9 +164,11 @@ public class ExpressFortolling2HouseConsignmentController {
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									dtoResponse.setMrn(mrn);
 									String mode = "ULM";
+									//TODO Status ??
+									//dtoResponse.setDb_st(EnumSadexhfStatus.O.toString());
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									//logger.warn("B");
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
 									//logger.warn("C");
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
@@ -301,12 +304,14 @@ public class ExpressFortolling2HouseConsignmentController {
 								
 								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-									dtoResponse.setMrn(mrn);
 									String mode = "UL";
+									dtoResponse.setMrn(mrn);
+									//TODO Status ??
+									//dtoResponse.setDb_st(EnumSadexhfStatus.O.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
 											//logger.warn(rec.toString());
@@ -429,7 +434,7 @@ public class ExpressFortolling2HouseConsignmentController {
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, Integer.valueOf(ehavd), Integer.valueOf(ehpro), Integer.valueOf(ehtdn), lrn, mrn, sendDate, mode);
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
 											if(StringUtils.isEmpty(rec.getEhmid()) ){
