@@ -11,6 +11,12 @@ public class Tester {
 		String day = value.substring(6,8);
 		
 		System.out.println(year + "-" + month + "-" + day);
+		
+		
+		String tariff = "62105000";
+		System.out.println(tariff.substring(0,6));
+		System.out.println(tariff.substring(6));
+		
 
 	}
 

@@ -99,7 +99,7 @@ public class SadexhfService {
 	}
 	
 	
-	public List<SadexhfDto> getSadexhfForUpdate(String serverRoot, String user, String mrn) {
+	public List<SadexhfDto> getSadexhfForUpdate(String serverRoot, String user, String mrn, String avd, String pro, String tdn) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
@@ -135,10 +135,12 @@ public class SadexhfService {
 				for(Object o: dtoContainer.getList()){
 					SadexhfDto pojo = mapper.convertValue(o, SadexhfDto.class);
 					//get item lines
+					pojo.setGoodsItemList(this.getItemLines(serverRoot, user, avd, pro, tdn));
 					if(pojo!=null) {
 						result.add(pojo);
 					}
 				}
+				
 				
 			}
 

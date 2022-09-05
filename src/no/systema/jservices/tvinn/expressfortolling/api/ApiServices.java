@@ -1075,7 +1075,16 @@ public class ApiServices {
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
-		
+		//Debug for JSON string
+		try {
+			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+			String json = ow.writeValueAsString(hc);
+			logger.warn(json);
+			
+		}catch(Exception e) {
+			e.toString();
+			
+		}
 		Object postBody = hc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth

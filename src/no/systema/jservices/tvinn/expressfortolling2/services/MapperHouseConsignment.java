@@ -46,6 +46,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseL
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.SadexifDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 public class MapperHouseConsignment {
@@ -226,7 +227,12 @@ public class MapperHouseConsignment {
 		transpDocHouseLevel.setType(sourceDto.getEhdkht());
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
-		List goodsItem = this.getGoodsItemList();
+		//TEST
+		//List goodsItem = this.getGoodsItemList();
+		//chl.setGoodsItem(goodsItem);
+		
+		logger.warn("GOODS-ITEM-LIST size:" + String.valueOf(sourceDto.getGoodsItemList().size()));
+		List goodsItem = this.getGoodsItemList(sourceDto.getGoodsItemList());
 		chl.setGoodsItem(goodsItem);
 		
 		//(Optional)Transport Equipment
@@ -291,7 +297,7 @@ public class MapperHouseConsignment {
 	 * 
 	 * @return
 	 */
-	private List<GoodsItem> getGoodsItemList() {
+	private List<GoodsItem> getGoodsItemListTest() {
 		List goodsItemList = new ArrayList();
 		
 		GoodsItem item = new GoodsItem();
@@ -370,6 +376,106 @@ public class MapperHouseConsignment {
 		
 		
 		return goodsItemList;
+		
+	}
+	
+	private List<GoodsItem> getGoodsItemList(List<SadexifDto> list) {
+		List returnList = new ArrayList();
+		
+		for (SadexifDto dto: list) {
+			GoodsItem item = new GoodsItem();
+			if(dto.getEilid()>0) {
+				item.setDeclarationGoodsItemNumber(String.valueOf(dto.getEilid()));
+			}
+			if(dto.getEilit()>0) {
+				item.setTransitGoodsItemNumber(String.valueOf(dto.getEilit()));
+			}
+			if(StringUtils.isNotEmpty(dto.getEigty())) {
+				item.setTypeOfGoods(dto.getEigty());
+			}
+			//Mandatory UCR
+			item.setReferenceNumberUCR(dto.getEiucr());
+			
+			ItemAmountInvoiced itemAmountInvoiced = new ItemAmountInvoiced();
+			itemAmountInvoiced.setCurrency(dto.getEival());
+			itemAmountInvoiced.setValue(dto.getEibl());
+			item.setItemAmountInvoiced(itemAmountInvoiced);
+			
+			Commodity commodity = new Commodity();
+			commodity.setDescriptionOfGoods(dto.getEivt());
+			
+			//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]"
+			//commodity.setCusCode("A");
+			
+			CommodityCode commodityCode = new CommodityCode();
+			String tariff = String.valueOf(dto.getEivnt());
+			logger.warn("TARIFFNR:" + tariff);
+			commodityCode.setHarmonizedSystemSubheadingCode(tariff.substring(0, 6));
+			commodityCode.setCombinedNomenclatureCode(tariff.substring(6));
+			commodity.setCommodityCode(commodityCode);
+			//(Optional)Dangerous goods
+			/*List dangGoodsList = new ArrayList();
+			DangerousGoods dangerousGoods = new DangerousGoods();
+			dangerousGoods.setUnNumber("1055");
+			dangGoodsList.add(dangerousGoods);
+			commodity.setDangerousGoods(dangGoodsList);
+			*/
+			//Goods measure
+			GoodsMeasure goodsMeasure = new GoodsMeasure();
+			logger.warn("BRUTTO:" + dto.getEicvkb());
+			logger.warn("NETTO:" + dto.getEicvkn());
+			goodsMeasure.setGrossMass(dto.getEicvkb());
+			goodsMeasure.setNetMass(dto.getEicvkn());
+			if(StringUtils.isNotEmpty(dto.getEiunit())) {
+				goodsMeasure.setSupplementaryUnits(dto.getEiunit());
+			}
+			commodity.setGoodsMeasure(goodsMeasure);
+			//
+			item.setCommodity(commodity);
+			
+			//(Mandatory) Country of Origin
+			CountryOfOrigin countryOfOrigin = new CountryOfOrigin();
+			countryOfOrigin.setCountry(dto.getEilk());
+			item.setCountryOfOrigin(countryOfOrigin);
+			
+			//(Mandatory) Packaging
+			List packagingList = new ArrayList();
+			Packaging packaging = new Packaging();
+			packaging.setNumberOfPackages(dto.getEint());
+			packaging.setTypeOfPackages(dto.getEinteh());
+			if(StringUtils.isNotEmpty(dto.getEipmrk())) {
+				packaging.setShippingMarks(dto.getEipmrk());
+			}
+			packagingList.add(packaging);
+			item.setPackaging(packagingList);
+			
+			//(Optional)Passive Transport Means
+			if(StringUtils.isNotEmpty(dto.getEiplk())) {
+				List ptmList = new ArrayList();
+				PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
+				passiveTransportMeans.setCountryCode(dto.getEiplk());
+				passiveTransportMeans.setIdentificationNumber("DK123456"); //TODO (db?)
+				passiveTransportMeans.setTypeOfIdentification(30); //TODO (db?)
+				passiveTransportMeans.setTypeOfMeansOfTransport("150"); //TODO (db?)
+				ptmList.add(passiveTransportMeans);
+				item.setPassiveTransportMeans(ptmList);
+			}
+			
+			//(Optional)Transport Equipment
+			/*List transpEquipmentList = new ArrayList();
+			TransportEquipment transportEquipment = new TransportEquipment();
+			transportEquipment.setContainerIdentificationNumber("12345678901234567");
+			transportEquipment.setContainerPackedStatus("0");
+			transpEquipmentList.add(transportEquipment);
+			item.setTransportEquipment(transpEquipmentList);
+			*/
+			
+			//add to goods item list
+			returnList.add(item);
+		}
+		
+		
+		return returnList;
 		
 	}
 	

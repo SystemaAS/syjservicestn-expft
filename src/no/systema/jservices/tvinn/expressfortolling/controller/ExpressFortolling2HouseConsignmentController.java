@@ -258,7 +258,7 @@ public class ExpressFortolling2HouseConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn);
+				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn, ehavd, ehpro, ehtdn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -395,7 +395,7 @@ public class ExpressFortolling2HouseConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn);
+				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn, ehavd, ehpro, ehtdn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
