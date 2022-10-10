@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 
@@ -24,7 +25,11 @@ public class ConsignmentMasterLevel {
 	//
 	private PlaceOfLoading placeOfLoading;
 	private PlaceOfUnloading placeOfUnloading;
+	
+	@JsonProperty("passiveBorderTransportMeans")
 	private PassiveBorderTransportMeans passiveBorderTransportMeans;
+	
+	@JsonProperty("tranportEquipment")
 	private List<TransportEquipment> tranportEquipment;
 
 }
