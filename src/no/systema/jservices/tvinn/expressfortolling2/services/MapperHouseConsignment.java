@@ -149,7 +149,7 @@ public class MapperHouseConsignment {
 		ImportProcedure importProcedure = new ImportProcedure();
 		importProcedure.setImportProcedure(sourceDto.getEhprt());
 		//TRA/EXP/TRE
-		importProcedure.setOutgoingProcedure("EXP");
+		importProcedure.setOutgoingProcedure(sourceDto.getEhupr());
 		chl.setImportProcedure(importProcedure);
 		
 		List prevDocsList = new ArrayList();
@@ -241,10 +241,11 @@ public class MapperHouseConsignment {
 			TransportEquipment transportEquipment = new TransportEquipment();
 			transportEquipment.setContainerIdentificationNumber(sourceDto.getEhcnr());
 	
-			//Expected codes are one of [A, B, C, D, T, t, H, Y, Z]
-			transportEquipment.setContainerPackedStatus("A");
+			//Expected codes are one of [A, B, C, D, T, t, H, Y, Z] .. KANSKE ??? OBSOLETE
+			/*transportEquipment.setContainerPackedStatus("A");
 			transportEquipment.setContainerSizeAndType("22");
 			transportEquipment.setContainerSupplierType("1");
+			*/
 			transpEquipmentList.add(transportEquipment);
 			chl.setTransportEquipment(transpEquipmentList);
 		}
@@ -255,8 +256,8 @@ public class MapperHouseConsignment {
 			PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
 			passiveTransportMeans.setCountryCode(sourceDto.getEhplk());
 			passiveTransportMeans.setIdentificationNumber(sourceDto.getEhpmrk());
-			passiveTransportMeans.setTypeOfIdentification(Integer.valueOf(sourceDto.getEhptm())); //30 t.ex
-			passiveTransportMeans.setTypeOfMeansOfTransport("150");
+			passiveTransportMeans.setTypeOfIdentification(Integer.valueOf(sourceDto.getEhptyp())); //30 t.ex
+			passiveTransportMeans.setTypeOfMeansOfTransport(sourceDto.getEhptm());
 			ptmList.add(passiveTransportMeans);
 			chl.setPassiveTransportMeans(ptmList);
 		}
@@ -268,8 +269,8 @@ public class MapperHouseConsignment {
 		/*if(sourceDto.get??) {
 			transpCharges.setMethodOfPayment(sourceDto.get??);
 		}*/
-		transpCharges.setCurrency("NOK");
-		transpCharges.setValue(1.0);
+		transpCharges.setCurrency(sourceDto.getEhtcva());
+		transpCharges.setValue(sourceDto.getEhtcbl());
 		chl.setTransportCharges(transpCharges);
 		
 		//(Mandatory Total Amount
@@ -384,8 +385,8 @@ public class MapperHouseConsignment {
 		
 		for (SadexifDto dto: list) {
 			GoodsItem item = new GoodsItem();
-			if(dto.getEilid()>0) {
-				item.setDeclarationGoodsItemNumber(String.valueOf(dto.getEilid()));
+			if(dto.getEili()>0) {
+				item.setDeclarationGoodsItemNumber(String.valueOf(dto.getEili()));
 			}
 			if(dto.getEilit()>0) {
 				item.setTransitGoodsItemNumber(String.valueOf(dto.getEilit()));
@@ -452,11 +453,18 @@ public class MapperHouseConsignment {
 			//(Optional)Passive Transport Means
 			if(StringUtils.isNotEmpty(dto.getEiplk())) {
 				List ptmList = new ArrayList();
-				PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
+				/*PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
 				passiveTransportMeans.setCountryCode(dto.getEiplk());
-				passiveTransportMeans.setIdentificationNumber("DK123456"); //TODO (db?)
+				passiveTransportMeans.setIdentificationNumber(); //TODO (db?)
 				passiveTransportMeans.setTypeOfIdentification(30); //TODO (db?)
 				passiveTransportMeans.setTypeOfMeansOfTransport("150"); //TODO (db?)
+				*/
+				PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
+				passiveTransportMeans.setCountryCode(dto.getEiplk());
+				passiveTransportMeans.setIdentificationNumber(dto.getEipmrk());
+				passiveTransportMeans.setTypeOfIdentification(Integer.valueOf(dto.getEiptyp())); //30 t.ex
+				passiveTransportMeans.setTypeOfMeansOfTransport(dto.getEiptm());
+				
 				ptmList.add(passiveTransportMeans);
 				item.setPassiveTransportMeans(ptmList);
 			}

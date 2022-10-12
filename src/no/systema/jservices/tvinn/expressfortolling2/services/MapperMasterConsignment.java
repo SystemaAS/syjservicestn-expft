@@ -55,13 +55,13 @@ public class MapperMasterConsignment {
 		raddress.setCity(sourceDto.getEmpsr());
 		raddress.setCountry(sourceDto.getEmlkr());
 		//PROD-->raddress.setStreetLine(sourceDto.getEmnrr());
-		raddress.setStreetLine("Hausemanns gate");
+		raddress.setStreetLine(sourceDto.getEmad1r());
 		//PROD-->raddress.setNumber(sourceDto.getEmnrr());
-		raddress.setNumber("52F");
+		raddress.setNumber(sourceDto.getEmnrr());
 		rep.setAddress(raddress);
 		//
 		List rcommList = new ArrayList();
-		rcommList.add(this.populateCommunication(sourceDto.getEmemr(), "ME"));
+		rcommList.add(this.populateCommunication(sourceDto.getEmemr(), sourceDto.getEmemrt()));
 		//rcommList.add(this.populateCommunication("0733794599", "TE"));
 		rep.setCommunication(rcommList);
 		mc.setRepresentative(rep);
@@ -74,7 +74,7 @@ public class MapperMasterConsignment {
 		mc.setConsignmentMasterLevel(this.populateConsignmentMasterLevel(sourceDto));
 		//CustomsOffice
 		CustomsOfficeOfFirstEntry cOffice = new CustomsOfficeOfFirstEntry();
-		cOffice.setReferenceNumber("NO344001");
+		cOffice.setReferenceNumber(sourceDto.getEmtsd());
 		mc.setCustomsOfficeOfFirstEntry(cOffice);
 		
 		
@@ -87,14 +87,14 @@ public class MapperMasterConsignment {
 		dec.setAddress(address);
 		//
 		List commList = new ArrayList();
-		commList.add(this.populateCommunication("xxx@gmail.com", "EM"));
-		commList.add(this.populateCommunication("0733794505", "TE"));
+		commList.add(this.populateCommunication(sourceDto.getEmemd(), sourceDto.getEmemdt()));
+		//commList.add(this.populateCommunication("0733794505", "TE"));
 		dec.setCommunication(commList);
 		mc.setDeclarant(dec);
 		
 		//ReleasedConfirmation
 		List relList = new ArrayList();
-		relList.add(this.populateReleasedConfirmation("yyy@doe.com"));
+		relList.add(this.populateReleasedConfirmation( sourceDto.getEmrcem() ));
 		mc.setReleasedConfirmation(relList);
 		
 		
@@ -130,8 +130,8 @@ public class MapperMasterConsignment {
 			dec.setAddress(address);
 			//Mandatory (communication)
 			List commList = new ArrayList();
-			commList.add(this.populateCommunication("xxx@gmail.com", "EM"));
-			commList.add(this.populateCommunication("0733794505", "TE"));
+			commList.add(this.populateCommunication(sourceDto.getEmemd(), sourceDto.getEmemdt()));
+			//commList.add(this.populateCommunication("0733794505", "TE"));
 			dec.setCommunication(commList);
 			//
 			mc.setDeclarant(dec);
@@ -191,10 +191,11 @@ public class MapperMasterConsignment {
 		Carrier carrier = new Carrier();
 		carrier.setName(sourceDto.getEmnat());
 		carrier.setIdentificationNumber(sourceDto.getEmrgt());
-		//PROD-->Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
-		Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
+		//PROD-->
+		Address cAddress = this.setAddress(sourceDto.getEmpst(), sourceDto.getEmlkt(), sourceDto.getEmpnt(), sourceDto.getEmad1t(), sourceDto.getEmnrt());
+		//Address cAddress = this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		carrier.setAddress(cAddress);
-		carrier.setCommunication(this.setCommunication(sourceDto.getEmemt(), "ME"));
+		carrier.setCommunication(this.setCommunication(sourceDto.getEmemt(), sourceDto.getEmemtt()));
 		
 		cml.setCarrier(carrier);
 		//
@@ -220,9 +221,10 @@ public class MapperMasterConsignment {
 		_l1.add(te);
 		cml.setTranportEquipment(_l1);
 		
+		//(Mandatory)TransportDocumentMasterLevel
 		TransportDocumentMasterLevel td = new TransportDocumentMasterLevel();
-		td.setDocumentNumber("1111112");
-		td.setType("N750");
+		td.setDocumentNumber(sourceDto.getEmdkm());
+		td.setType(sourceDto.getEmdkmt());
 		cml.setTransportDocumentMasterLevel(td);
 		
 		return cml;
@@ -239,27 +241,25 @@ public class MapperMasterConsignment {
 	
 	private ActiveBorderTransportMeans populateActiveBorderTransportMeans(SadexmfDto sourceDto) {
 		ActiveBorderTransportMeans ab = new ActiveBorderTransportMeans();
-		//ab.setIdentificationNumber("AA123456");
-		ab.setTypeOfIdentification("30");
-		ab.setTypeOfMeansOfTransport("150");
-		ab.setNationalityCode("SE");
-		ab.setModeOfTransportCode("3");
 		
 		ab.setIdentificationNumber(sourceDto.getEmkmrk());
-		/*ab.setTypeOfIdentification(sourceDto.getEmktm());
-		ab.setTypeOfMeansOfTransport(sourceDto.getEmptm());
-		ab.setNationalityCode(sourceDto.getEmplk());
+		ab.setTypeOfIdentification(sourceDto.getEmktyp());
+		ab.setTypeOfMeansOfTransport(sourceDto.getEmktm());
+		ab.setNationalityCode(sourceDto.getEmklk());
 		ab.setModeOfTransportCode(sourceDto.getEmktkd());
-		*/
+		
 		DateUtils dateUtils = new DateUtils();
-		ab.setActualDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
-		//PROD ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
+		//ab.setActualDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
+		//PROD 
+		ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
 		
-		ab.setEstimatedDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
-		//PROD ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
+		//ab.setEstimatedDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
+		//PROD 
+		ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
 		
-		ab.setEstimatedDateAndTimeOfArrival("2022-09-20T07:49:52Z");
-		//PROD ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetad(), sourceDto.getEmetat()));
+		//ab.setEstimatedDateAndTimeOfArrival("2022-09-20T07:49:52Z");
+		//PROD 
+		ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetad(), sourceDto.getEmetat()));
 		
 		
 		//
