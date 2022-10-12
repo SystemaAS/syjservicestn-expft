@@ -48,8 +48,12 @@ public class MapperMasterConsignment {
 		rep.setName(sourceDto.getEmnar());
 		rep.setIdentificationNumber(sourceDto.getEmrgr());
 		
-		//rep.setStatus(sourceDto.getEmstr());
-		rep.setStatus("2");
+		//Status
+		if(StringUtils.isNotEmpty(sourceDto.getEmstr())){
+			rep.setStatus(sourceDto.getEmstr());
+		}else {
+			rep.setStatus("2");
+		}
 		
 		Address raddress = new Address();
 		raddress.setCity(sourceDto.getEmpsr());
