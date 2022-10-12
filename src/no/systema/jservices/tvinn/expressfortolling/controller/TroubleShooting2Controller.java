@@ -40,7 +40,7 @@ public class TroubleShooting2Controller {
 	Authorization authorization;
 	
 	/**
-	 * @Example: http://localhost:8080/syjservicestn-expft/testAccessToken.do
+	 * @Example: http://localhost:8080/syjservicestn-expft/testAccessToken2.do
 	 * 
 	 * @param session
 	 * @return
