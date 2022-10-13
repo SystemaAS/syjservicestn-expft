@@ -247,8 +247,10 @@ public class SadexhfService {
 				result = null;
 			}else {
 				logger.warn("select-SADEXIF-REST-http-response:" + response.getStatusCodeValue());
-				
 				for(Object o: dtoContainer.getList()){
+					logger.warn("SADEXIF-item-list size:" + dtoContainer.getList().size());
+					logger.warn(" for " + "Avd:"+ avd + " PRO:" + pro + " TDN:" + tdn);
+					
 					SadexifDto pojo = mapper.convertValue(o, SadexifDto.class);
 					//get item lines
 					if(pojo!=null) {

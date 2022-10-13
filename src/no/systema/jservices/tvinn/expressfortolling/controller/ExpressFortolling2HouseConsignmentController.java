@@ -262,7 +262,7 @@ public class ExpressFortolling2HouseConsignmentController {
 				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn, ehavd, ehpro, ehtdn);
 				
 				if(list != null && list.size()>0) {
-					logger.warn("list size:" + list.size());
+					logger.warn("SADEXHF list size:" + list.size());
 					
 					for (SadexhfDto dto: list) {
 						logger.warn(dto.toString());
