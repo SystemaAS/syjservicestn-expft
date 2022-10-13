@@ -61,7 +61,11 @@ public class MapperMasterConsignment {
 		//PROD-->raddress.setStreetLine(sourceDto.getEmnrr());
 		raddress.setStreetLine(sourceDto.getEmad1r());
 		//PROD-->raddress.setNumber(sourceDto.getEmnrr());
-		raddress.setNumber(sourceDto.getEmnrr());
+		if(StringUtils.isNotEmpty(sourceDto.getEmnrr())) {
+			raddress.setNumber(sourceDto.getEmnrr());
+		}else {
+			raddress.setNumber(sourceDto.getEmad1r());
+		}
 		rep.setAddress(raddress);
 		//
 		List rcommList = new ArrayList();
@@ -255,15 +259,20 @@ public class MapperMasterConsignment {
 		DateUtils dateUtils = new DateUtils();
 		//ab.setActualDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
 		//PROD 
-		ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
+		if(sourceDto.getEmatdd()>0) {
+			ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
+		}
 		
 		//ab.setEstimatedDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
 		//PROD 
-		ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
-		
+		if(sourceDto.getEmetdd()>0) {
+			ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
+		}
 		//ab.setEstimatedDateAndTimeOfArrival("2022-09-20T07:49:52Z");
 		//PROD 
-		ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetad(), sourceDto.getEmetat()));
+		if(sourceDto.getEmetad()>0) {
+			ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetad(), sourceDto.getEmetat()));
+		}
 		
 		
 		//
@@ -310,7 +319,11 @@ public class MapperMasterConsignment {
 		address.setCountry(country);
 		address.setPostcode(postCode);
 		address.setStreetLine(street);
-		address.setNumber(number);
+		if(StringUtils.isNotEmpty(number)) {
+			address.setNumber(number);
+		}else {
+			address.setNumber(street);
+		}
 		
 		return address;
 	}

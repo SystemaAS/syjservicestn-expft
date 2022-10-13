@@ -250,10 +250,11 @@ public class ExpressFortolling2MasterConsignmentController {
 			
 		}catch(Exception e) {
 			e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
+			//Get out stackTrace to the response (errMsg) and logger
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
 		}
 		
 		return dtoResponse;
@@ -388,6 +389,7 @@ public class ExpressFortolling2MasterConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
 		}
 		
 		return dtoResponse;
@@ -506,6 +508,7 @@ public class ExpressFortolling2MasterConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
 		}
 		
 		return dtoResponse;
@@ -569,6 +572,7 @@ public class ExpressFortolling2MasterConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
 		}
 		
 		return dtoResponse;
