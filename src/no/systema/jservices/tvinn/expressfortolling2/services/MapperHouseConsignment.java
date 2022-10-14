@@ -170,10 +170,12 @@ public class MapperHouseConsignment {
 		}
 		
 		//(Optional) PlaceOfLoading
+		
 		if(StringUtils.isNotEmpty(sourceDto.getEhsdft())) {
 			PlaceOfLoading ploading = new PlaceOfLoading();
 			ploading.setLocation(sourceDto.getEhsdft());
-			if(StringUtils.isNotEmpty(sourceDto.getEhsdf())) { ploading.setUnloCode(sourceDto.getEhsdf()); }
+			//tillfälligt borta för TESTER. UNLOCODE är inte ok på grönskärm OBS!
+			//if(StringUtils.isNotEmpty(sourceDto.getEhsdf())) { ploading.setUnloCode(sourceDto.getEhsdf()); }
 			if(StringUtils.isNotEmpty(sourceDto.getEhlkf())) { 
 				AddressCountry ploadAddress = new AddressCountry();
 				ploadAddress.setCountry(sourceDto.getEhlkf());
@@ -186,7 +188,8 @@ public class MapperHouseConsignment {
 		if(StringUtils.isNotEmpty(sourceDto.getEhsdtt())) {
 			PlaceOfUnloading puloading = new PlaceOfUnloading();
 			puloading.setLocation(sourceDto.getEhsdtt());
-			if(StringUtils.isNotEmpty(sourceDto.getEhsdt())) { puloading.setUnloCode(sourceDto.getEhsdt()); }
+			//tillfällit borta för TESTER. UNLOCODE är inte ok på grönskärm OBS!
+			//if(StringUtils.isNotEmpty(sourceDto.getEhsdt())) { puloading.setUnloCode(sourceDto.getEhsdt()); }
 			if(StringUtils.isNotEmpty(sourceDto.getEhlkt())) {
 				AddressCountry ploadAddress = new AddressCountry();
 				ploadAddress.setCountry(sourceDto.getEhlkt());
