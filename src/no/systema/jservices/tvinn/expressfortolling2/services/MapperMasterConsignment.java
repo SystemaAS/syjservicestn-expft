@@ -91,9 +91,15 @@ public class MapperMasterConsignment {
 		mc.setDeclarant(dec);
 		
 		//(Optional) ReleasedConfirmation 
-		if(StringUtils.isNotEmpty(sourceDto.getEmrcem())) {
+		if(StringUtils.isNotEmpty(sourceDto.getEmrcem1())) {
 			List relList = new ArrayList();
-			relList.add(this.populateReleasedConfirmation( sourceDto.getEmrcem() ));
+			relList.add(this.populateReleasedConfirmation( sourceDto.getEmrcem1() ));
+			if(StringUtils.isNotEmpty(sourceDto.getEmrcem2())) {
+				relList.add(this.populateReleasedConfirmation( sourceDto.getEmrcem2() ));
+				if(StringUtils.isNotEmpty(sourceDto.getEmrcem3())) {
+					relList.add(this.populateReleasedConfirmation( sourceDto.getEmrcem3() ));
+				}	
+			}
 			mc.setReleasedConfirmation(relList);
 		}
 		

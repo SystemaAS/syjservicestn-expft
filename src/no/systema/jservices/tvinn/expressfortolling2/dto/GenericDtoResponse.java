@@ -31,4 +31,6 @@ public class GenericDtoResponse {
 	
 	private String errMsg = "";
 	
+	private List<Object> list = new ArrayList<Object>();
+	
 }

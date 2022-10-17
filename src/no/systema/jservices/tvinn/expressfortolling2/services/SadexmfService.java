@@ -73,9 +73,9 @@ public class SadexmfService {
 				
 				for(Object o: dtoContainer.getList()){
 					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
-					//get houses' dto for documentNumbers later on
-					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, avd, pro));
-					logger.info(pojo.getHouseDtoList().toString());
+					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
+					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					logger.warn(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
 					}
@@ -126,9 +126,9 @@ public class SadexmfService {
 				
 				for(Object o: dtoContainer.getList()){
 					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
-					//get houses' dto for documentNumbers later on
-					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, avd, pro));
-					logger.info(pojo.getHouseDtoList().toString());
+					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
+					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					logger.warn(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
 					}

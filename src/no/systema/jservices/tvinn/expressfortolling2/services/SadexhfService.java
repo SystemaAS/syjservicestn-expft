@@ -157,11 +157,10 @@ public class SadexhfService {
 	/**
 	 * The method is called from a Master service. It is use to fill the master documentNumber-house-list from this list
 	 * @param user
-	 * @param avd
 	 * @param pro
 	 * @return
 	 */
-	public List<SadexhfDto> getDocumentNumberListFromHouses(String serverRoot, String user, String avd, String pro) {
+	public List<SadexhfDto> getDocumentNumberListFromHouses(String serverRoot, String user, String pro) {
 		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
 		
 		logger.warn("USER:" + user);
@@ -170,7 +169,7 @@ public class SadexhfService {
 				.fromUriString(serverRoot)
 				.path("/syjservicestn/syjsSADEXHF.do")
 				.queryParam("user", user)
-				.queryParam("ehavd", avd)
+				//.queryParam("ehavd", avd)
 				.queryParam("ehpro", pro) 
 				.build()
 				.encode()
@@ -197,8 +196,7 @@ public class SadexhfService {
 				
 				for(Object o: dtoContainer.getList()){
 					SadexhfDto pojo = mapper.convertValue(o, SadexhfDto.class);
-					
-					if(pojo!=null) {
+					if(pojo!=null && StringUtils.isNotEmpty(pojo.getEhdkh())) {
 						result.add(pojo);
 					}
 				}

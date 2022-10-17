@@ -3,6 +3,7 @@ package no.systema.jservices.tvinn.expressfortolling.controller;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -47,6 +48,9 @@ import no.systema.jservices.tvinn.expressfortolling.api.TesterLrn;
 import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
@@ -578,6 +582,70 @@ public class ExpressFortolling2MasterConsignmentController {
 		return dtoResponse;
 	}
 	
+	/**
+	 * Gets Master Consignment status through the API - GET - without having to check our db 
+	 * @Example http://localhost:8080/syjservicestn-expft/getStatusMasterConsignment.do?user=SYSTEMA&mrn=22NOM6O19GRP8UQBT6
+	 * @param request
+	 * @param user
+	 * @param mrn
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="getStatusMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse getStatusMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setAvd(""); //dummy
+		dtoResponse.setPro(""); //dummy
+		dtoResponse.setMrn(mrn);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		logger.warn("Inside getStatusMasterConsignment - MRNnr: " + mrn);
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServices.getMrnStatusMasterConsignmentExpressMovementRoad(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnStatusRecordDto[] obj = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
+					if(obj!=null) {
+						List list = Arrays.asList(obj);
+						logger.warn("List = " + list);
+						
+						//In case there was an error at end-point and the LRN was not returned
+						if(list!=null && !list.isEmpty()){
+							dtoResponse.setList(list);
+						}else {
+							errMsg.append("MRN not existent ?? <json raw>: " + json);
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+					}
+				}else {
+					errMsg.append("JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(" invalid user ");
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
+		}
+		
+		return dtoResponse;
+	}
 	
 	
 	
