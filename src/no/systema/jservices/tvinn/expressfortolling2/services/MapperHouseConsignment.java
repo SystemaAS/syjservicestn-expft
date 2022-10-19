@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import no.systema.jservices.tvinn.expressfortolling2.dao.ActiveBorderTransportMeans;
+import no.systema.jservices.tvinn.expressfortolling2.dao.AdditionalFiscalReferences;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Address;
 import no.systema.jservices.tvinn.expressfortolling2.dao.AddressCountry;
 import no.systema.jservices.tvinn.expressfortolling2.dao.Carrier;
@@ -168,9 +169,16 @@ public class MapperHouseConsignment {
 			chl.setPreviousDocuments(prevDocsList);
 			*/
 		}
+
+		//AdditionalFiscalReferences
+		if(StringUtils.isNotEmpty(sourceDto.getEhrga())) {
+			AdditionalFiscalReferences additionalFiscalReferences = new AdditionalFiscalReferences();
+			additionalFiscalReferences.setVatIdentificationNumber(sourceDto.getEhrga());
+			additionalFiscalReferences.setRole(sourceDto.getEhrgro());
+			chl.setAdditionalFiscalReferences(additionalFiscalReferences);
+		}
 		
 		//(Optional) PlaceOfLoading
-		
 		if(StringUtils.isNotEmpty(sourceDto.getEhsdft())) {
 			PlaceOfLoading ploading = new PlaceOfLoading();
 			ploading.setLocation(sourceDto.getEhsdft());
@@ -398,6 +406,10 @@ public class MapperHouseConsignment {
 			//commodity.setCusCode("A");
 			CommodityCode commodityCode = new CommodityCode();
 			String tariff = String.valueOf(dto.getEivnt());
+			//adjust tariff if necessary in order to always have 8-chars. We must fill with zeros in case the string is < 8
+			if(StringUtils.isNotEmpty(tariff) && tariff.length()<8) {
+				tariff = new no.systema.jservices.common.util.StringUtils().leadingStringWithNumericFiller(tariff, 8, "0");
+			}
 			logger.warn("TARIFFNR:" + tariff);
 			commodityCode.setHarmonizedSystemSubheadingCode(tariff.substring(0, 6));
 			commodityCode.setCombinedNomenclatureCode(tariff.substring(6));
