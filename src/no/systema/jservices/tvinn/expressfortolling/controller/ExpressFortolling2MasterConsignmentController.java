@@ -313,17 +313,6 @@ public class ExpressFortolling2MasterConsignmentController {
 							logger.warn("JSON = " + json);
 							logger.warn("LRN = " + obj.getLrn());
 							
-							//TEST
-							/*ApiLrnDto obj = new ApiLrnDto();
-							Integer x = new Random().ints(1, 100)
-						      .findFirst()
-						      .getAsInt();
-							
-							obj.setLrn("b-666-777-888" + x);
-							String json = "";
-							*/
-							
-							
 							//put in response
 							dtoResponse.setLrn(obj.getLrn());
 							dtoResponse.setAvd(String.valueOf(dto.getEmavd()));

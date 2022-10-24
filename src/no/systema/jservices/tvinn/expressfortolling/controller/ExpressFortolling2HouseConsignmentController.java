@@ -276,17 +276,6 @@ public class ExpressFortolling2HouseConsignmentController {
 							logger.warn("JSON = " + json);
 							logger.warn("LRN = " + obj.getLrn());
 							
-							//TEST
-							/*ApiLrnDto obj = new ApiLrnDto();
-							Integer x = new Random().ints(1, 100)
-						      .findFirst()
-						      .getAsInt();
-							
-							obj.setLrn("b-666-777-888" + x);
-							String json = "";
-							*/
-							
-							
 							//put in response
 							dtoResponse.setLrn(obj.getLrn());
 							dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
@@ -303,7 +292,7 @@ public class ExpressFortolling2HouseConsignmentController {
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
 								
-								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXHF-update-lrn at house consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "UL";
 									dtoResponse.setMrn(mrn);
