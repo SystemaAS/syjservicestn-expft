@@ -313,6 +313,15 @@ public class ExpressFortolling2HouseConsignmentController {
 											}
 										}
 									}
+									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
+									//first received the LRN in the first PUT House
+									String mrnPhantom = this.getMrnHouseFromApi(dtoResponse, lrn);
+									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
+										break;
+									}else {
+										//OK
+										logger.warn("LRN status is OK ... (no errors)");
+									}
 									
 								}else {
 									errMsg.append("LRN empty after PUT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXHF): " + mrn);

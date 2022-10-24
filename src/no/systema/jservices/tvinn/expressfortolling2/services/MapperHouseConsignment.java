@@ -149,27 +149,29 @@ public class MapperHouseConsignment {
 		}
 		
 		List prevDocsList = new ArrayList();
-		if(StringUtils.isNotEmpty(sourceDto.getEhtrnr())) {
-			PreviousDocuments prevDocs = new PreviousDocuments();
-			prevDocs.setReferenceNumber(sourceDto.getEhtrnr());
-			prevDocs.setTypeOfReference(sourceDto.getEhtrty());
-			prevDocs.setDeclarantNumber(sourceDto.getEhrg());
-			prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(sourceDto.getEh0068a())));
-			prevDocs.setSequenceNumber(String.valueOf(sourceDto.getEh0068b()));
-			prevDocsList.add(prevDocs);
-			chl.setPreviousDocuments(prevDocsList);
-		}else {
-			/*PreviousDocuments prevDocs = new PreviousDocuments();
-			prevDocs.setReferenceNumber("22NO12345678987654");
-			prevDocs.setTypeOfReference("CUDE");
-			prevDocs.setDeclarantNumber("123456789");
-			prevDocs.setDeclarationDate("2022-08-10");
-			prevDocs.setSequenceNumber("1");
-			prevDocsList.add(prevDocs);
-			chl.setPreviousDocuments(prevDocsList);
-			*/
-		}
+		if(StringUtils.isNotEmpty(sourceDto.getEhtrnr()) || 
+				(StringUtils.isNotEmpty(sourceDto.getEhrg()) && sourceDto.getEh0068b()>0 )) {
+			//(1)
+			if(StringUtils.isNotEmpty(sourceDto.getEhtrnr())){
+				PreviousDocuments prevDocs = new PreviousDocuments();
+				prevDocs.setTypeOfReference(sourceDto.getEhtrty());
+				prevDocs.setReferenceNumber(sourceDto.getEhtrnr());
+				prevDocsList.add(prevDocs);
 
+			}
+			//(2)
+			if(StringUtils.isNotEmpty(sourceDto.getEhrg()) && sourceDto.getEh0068b()>0) {
+				PreviousDocuments prevDocs = new PreviousDocuments();
+				prevDocs.setTypeOfReference("CUDE");
+				prevDocs.setDeclarantNumber(sourceDto.getEhrg());
+				prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(sourceDto.getEh0068a())));
+				prevDocs.setSequenceNumber(String.valueOf(sourceDto.getEh0068b()));
+				prevDocsList.add(prevDocs);
+			}
+			
+			chl.setPreviousDocuments(prevDocsList);
+		}
+		
 		//AdditionalFiscalReferences
 		if(StringUtils.isNotEmpty(sourceDto.getEhrga())) {
 			AdditionalFiscalReferences additionalFiscalReferences = new AdditionalFiscalReferences();

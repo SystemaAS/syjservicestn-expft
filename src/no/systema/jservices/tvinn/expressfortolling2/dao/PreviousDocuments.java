@@ -12,8 +12,8 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PreviousDocuments {
 	
-	private String referenceNumber;
 	private String typeOfReference;
+	private String referenceNumber;
 	private String declarantNumber;
 	private String declarationDate;
 	private String sequenceNumber;
