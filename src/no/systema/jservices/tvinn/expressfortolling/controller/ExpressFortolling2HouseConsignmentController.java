@@ -496,7 +496,7 @@ public class ExpressFortolling2HouseConsignmentController {
 	}
 	
 	/**
-	 * 
+	 * Gets House Consignment status through the API - GET - without having to check our db 
 	 * @param request
 	 * @param user
 	 * @param lrn
@@ -660,7 +660,6 @@ public class ExpressFortolling2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
 			
 		}
 		
