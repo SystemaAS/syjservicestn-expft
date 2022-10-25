@@ -2,60 +2,37 @@ package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpRequest;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
-import no.systema.jservices.common.dto.expressfortolling.ManifestActiveMeansOfTransportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesImportDeclarationDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestPlaceOfEntryDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestStatusDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
-import no.systema.jservices.tvinn.expressfortolling.api.TestMasterConsignmentDao;
-import no.systema.jservices.tvinn.expressfortolling.api.TesterLrn;
 import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
+import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
-import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Express fortolling API.
  * 
@@ -77,9 +54,11 @@ public class ExpressFortolling2HouseConsignmentController {
 	@Autowired
 	private SadexhfService sadexhfService;	
 	
-	
 	@Autowired
 	private ApiServices apiServices; 
+	
+	@Autowired
+	private SadexlogLogger sadexlogLogger;	
 	
 	
 	
@@ -113,7 +92,12 @@ public class ExpressFortolling2HouseConsignmentController {
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
-		logger.warn("Inside postHouseConsignment");
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName );
 		//create new - master consignment at toll.no
 		try {
 			if(checkUser(user)) {
@@ -213,9 +197,14 @@ public class ExpressFortolling2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
 		}
 		
+		//log in db before std-output
+		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
 		return dtoResponse;
 	}
 	
@@ -250,9 +239,13 @@ public class ExpressFortolling2HouseConsignmentController {
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
 		
 		
-		logger.warn("Inside putHouseConsignment - MRNnr: " + mrn);
+		logger.warn("Inside " + methodName + " - MRNnr: " + mrn);
 		logger.warn("serverRoot:" + serverRoot);
 		
 		//create new - master consignment at toll.no
@@ -284,6 +277,7 @@ public class ExpressFortolling2HouseConsignmentController {
 							//In case there was an error at end-point and the LRN was not returned
 							if(StringUtils.isEmpty(obj.getLrn())){
 								errMsg.append("LRN empty ?? <json raw>: " + json);
+								errMsg.append("-->" + methodName);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
 								
@@ -308,23 +302,23 @@ public class ExpressFortolling2HouseConsignmentController {
 											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
 											}else {
-												errMsg.append("MRN empty after SADEXHF-update:" + mrn);
+												errMsg.append("MRN empty after SADEXHF-update:" + mrn + " " + methodName);
 												dtoResponse.setErrMsg(errMsg.toString());
 											}
 										}
 									}
 									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
 									//first received the LRN in the first PUT House
-									String mrnPhantom = this.getMrnHouseFromApi(dtoResponse, lrn);
+									this.checkLrnValidationStatus(dtoResponse, lrn);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
-										break;
+										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
 									}else {
 										//OK
 										logger.warn("LRN status is OK ... (no errors)");
 									}
 									
 								}else {
-									errMsg.append("LRN empty after PUT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXHF): " + mrn);
+									errMsg.append("LRN empty after PUT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXHF): " + mrn + " "  + methodName);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
@@ -333,19 +327,20 @@ public class ExpressFortolling2HouseConsignmentController {
 							break; //only first in list
 							
 						}else {
-							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any PUT ");
+							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any PUT " + methodName);
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
 					}
 				}else {
-					errMsg.append(" no records to fetch from SADEXHF ");
+					errMsg.append(" no records to fetch from SADEXHF " + methodName);
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				
 			}else {
-				errMsg.append(" invalid user ");
+				errMsg.append(" invalid user:" + user + " " + methodName);
 				dtoResponse.setErrMsg(errMsg.toString());
+				user = null;
 			}
 			
 		}catch(Exception e) {
@@ -354,9 +349,15 @@ public class ExpressFortolling2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
 		}
 		
+		
+		//log in db before std-output
+		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
 		return dtoResponse;
 	}
 	
@@ -390,7 +391,12 @@ public class ExpressFortolling2HouseConsignmentController {
 		dtoResponse.setMrn(mrn);
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
-		logger.warn("Inside deleteHouseConsignment - MRNnr: " + mrn);
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName +  " - MRNnr: " + mrn );
 		//create new - master consignment at toll.no
 		try {
 			if(checkUser(user)) {
@@ -446,6 +452,7 @@ public class ExpressFortolling2HouseConsignmentController {
 										}
 									}
 									
+									
 								}else {
 									errMsg.append("LRN empty after DELETE-LIGHT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXHF): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
@@ -453,9 +460,6 @@ public class ExpressFortolling2HouseConsignmentController {
 								}
 							
 							}
-							
-							
-							
 							
 							break; //only first in list
 							
@@ -471,7 +475,7 @@ public class ExpressFortolling2HouseConsignmentController {
 				}
 				
 			}else {
-				errMsg.append(" invalid user ");
+				errMsg.append(" invalid user " + user + " " + methodName);
 				dtoResponse.setErrMsg(errMsg.toString());
 			}
 			
@@ -481,8 +485,12 @@ public class ExpressFortolling2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
 		}
+		
+		//log in db before std-output
+		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
 		
 		return dtoResponse;
 	}
@@ -509,7 +517,12 @@ public class ExpressFortolling2HouseConsignmentController {
 		dtoResponse.setLrn(lrn);
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
-		logger.warn("Inside getHouseConsignment - LRNnr: " + lrn);
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + " - LRNnr: " + lrn);
 		//create new - master consignment at toll.no
 		try {
 			if(checkUser(user)) {
@@ -537,7 +550,7 @@ public class ExpressFortolling2HouseConsignmentController {
 					}
 											
 			}else {
-				errMsg.append(" invalid user ");
+				errMsg.append(" invalid user " + user + " " + methodName);
 				dtoResponse.setErrMsg(errMsg.toString());
 			}
 			
@@ -547,18 +560,24 @@ public class ExpressFortolling2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
 		}
+		
+		//log in db before std-output
+		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
 		
 		return dtoResponse;
 	}
 	
 	
 	private boolean checkUser(String user) {
+		boolean retval = true;
 		if (!bridfDaoService.userNameExist(user)) {
-			throw new RuntimeException("ERROR: parameter, user, is not valid!");
+			retval = false;
+			//throw new RuntimeException("ERROR: parameter, user, is not valid!");
 		}
-		return true;
+		return retval;
 	}	
 	
 	/**
@@ -596,6 +615,56 @@ public class ExpressFortolling2HouseConsignmentController {
 		}
 		
 		return retval;
+	}
+	
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 */
+	private void checkLrnValidationStatus(GenericDtoResponse dtoResponse, String lrn) {
+		
+		try{
+			
+			String json = apiServices.getValidationStatusHouseConsignmentExpressMovementRoad(lrn);
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("Status = " + obj.getStatus());
+			logger.warn("localRefNumber = " + obj.getLocalReferenceNumber());
+			logger.warn("notificationDate = " + obj.getNotificationDate());
+			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
+			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			//
+			dtoResponse.setStatus(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
+			
+			//check if any error to deserialize
+			if(obj.getValidationErrorList()!=null && obj.getValidationErrorList().length > 0) {
+				//logger.warn("AA");
+				StringBuilder sbError = new StringBuilder();
+				for( int i = 0; i < obj.getValidationErrorList().length; i++) {
+					//logger.warn("BB");
+					Map map = (Map)obj.getValidationErrorList()[i];
+					logger.warn("Description:" + (String)map.get("description"));
+					//error txt
+					String errorTxt = obj.getValidationErrorList()[i].toString();
+					logger.warn("###:" + errorTxt);
+					sbError.append(errorTxt);
+					dtoResponse.setErrMsg(sbError.toString());
+				}
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			logger.error(dtoResponse.getErrMsg());
+			
+		}
+		
+		
 	}
 	
 	

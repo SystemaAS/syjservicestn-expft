@@ -28,7 +28,7 @@ public class GenericDtoResponse {
 	private String db_st = "";
 	private String db_st2 = "";
 	private String db_st3 = "";
-	
+	private String timestamp = "";
 	private String errMsg = "";
 	
 	private List<Object> list = new ArrayList<Object>();

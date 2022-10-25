@@ -13,6 +13,6 @@ public class ApiMrnDto {
 	private String localReferenceNumber;
 	private String masterReferenceNumber;
 	private String notificationDate;
-	private List<ApiValidationListDto> validationErrorList;
+	private Object[] validationErrorList;
 	
 }
