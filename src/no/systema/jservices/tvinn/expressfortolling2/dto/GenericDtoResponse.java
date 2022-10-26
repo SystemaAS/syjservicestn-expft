@@ -24,7 +24,9 @@ public class GenericDtoResponse {
 	private String tdn = "";
 	private String lrn = "";
 	private String mrn = "";
-	private String status = "";
+	private String statusApi = "";
+	private String requestMethodApi = "";
+	//
 	private String db_st = "";
 	private String db_st2 = "";
 	private String db_st3 = "";

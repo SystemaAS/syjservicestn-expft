@@ -34,11 +34,11 @@ public class SadexlogLogger {
 			dto.setEltdn(Integer.valueOf(dtoResponse.getTdn()));
 			dto.setEldate(getLogDate(dtoResponse.getTimestamp()));
 			dto.setEltime(getLogTime(dtoResponse.getTimestamp()));
-			dto.setEltyp(getLogTyp(dtoResponse.getStatus()));
+			dto.setEltyp(getLogTyp(dtoResponse.getErrMsg()));
 			if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
 				dto.setElltxt(getLogText(dtoResponse.getErrMsg()));
 			}else {
-				dto.setElltxt(dtoResponse.getStatus());
+				dto.setElltxt(dtoResponse.getStatusApi() + " " + dtoResponse.getRequestMethodApi());
 			}
 			//create error record
 			logger.warn("Record to log:" + dto.toString());
@@ -63,12 +63,10 @@ public class SadexlogLogger {
 	 * @param value
 	 * @return
 	 */
-	private String getLogTyp(String value) throws Exception {
-		String retval = "ERROR";
-		if(StringUtils.isNotEmpty(value)) {
-			if(value.contains("SUCCESS")) {
-				retval = "INFO";
-			}
+	private String getLogTyp(String errMsg) throws Exception {
+		String retval = "INFO";
+		if(StringUtils.isNotEmpty(errMsg)) {
+			retval = "ERROR";
 		}
 		return retval;
 	}
@@ -98,10 +96,9 @@ public class SadexlogLogger {
 	private Integer getLogTime(String value) throws Exception {
 		Integer retval = 0;
 		//valid: 2022-10-25T07:34:49Z
-		if(StringUtils.isNotEmpty(value) && value.contains("T")) {
-			String tmpDate = value.substring(11);
+		if(StringUtils.isNotEmpty(value) && value.contains("T") && value.length()>=19) {
+			String tmpDate = value.substring(11, 19);
 			tmpDate = tmpDate.replaceAll(":", "");
-			tmpDate = tmpDate.replaceAll("Z", "");
 			
 			retval = Integer.valueOf(tmpDate);
 			

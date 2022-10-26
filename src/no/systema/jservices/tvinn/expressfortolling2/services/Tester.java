@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.expressfortolling2.services;
 
+import org.apache.commons.lang3.StringUtils;
+
 public class Tester {
 
 	public static void main(String[] args) {
@@ -11,7 +13,7 @@ public class Tester {
 		String day = value.substring(6,8);
 		System.out.println(year + "-" + month + "-" + day);
 		*/
-		
+		/*
 		String tariff = "105000";
 		if(tariff.length()<8) {
 			tariff = new no.systema.jservices.common.util.StringUtils().leadingStringWithNumericFiller(tariff, 8, "0");
@@ -19,7 +21,10 @@ public class Tester {
 		}
 		System.out.println(tariff.substring(0,6));
 		System.out.println(tariff.substring(6));
+		*/
 		
+		String x = "2022-10-25T07:34:49Z";
+		System.out.println(x.substring(11, 19));
 		
 
 	}

@@ -54,6 +54,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -166,6 +167,8 @@ public class ExpressFortolling2MasterConsignmentController {
 		dtoResponse.setAvd(emavd);
 		dtoResponse.setPro(empro);
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
+		dtoResponse.setRequestMethodApi("POST");
+		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -214,14 +217,15 @@ public class ExpressFortolling2MasterConsignmentController {
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
+									dtoResponse.setDb_st2(EnumSadexmfStatus2.M.toString());
+								}else {
+									dtoResponse.setDb_st2(EnumSadexmfStatus2.C.toString());
 								}
 								
 								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "ULM";
 									dtoResponse.setMrn(mrn);
-									//TODO Status ??
-									//dtoResponse.setDb_st(EnumSadexmfStatus.O.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
@@ -306,6 +310,8 @@ public class ExpressFortolling2MasterConsignmentController {
 		dtoResponse.setPro(empro);
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("PUT");
+		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		String methodName = new Object() {}
 	      .getClass()
@@ -355,8 +361,6 @@ public class ExpressFortolling2MasterConsignmentController {
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "UL";
 									dtoResponse.setMrn(mrn);
-									//TODO Status ??
-									//dtoResponse.setStatus(EnumSadexmfStatus.O.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
@@ -373,13 +377,18 @@ public class ExpressFortolling2MasterConsignmentController {
 										}
 									}
 									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
-									//first received the LRN in the first PUT House
+									//first received the LRN in the first PUT Master
 									this.checkLrnValidationStatus(dtoResponse, lrn);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
+										//Update ehst2(SADEXMF) with ERROR = M
+										dtoResponse.setDb_st2(EnumSadexmfStatus2.M.toString());
+										List<SadexmfDto> tmp = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
 									}else {
 										//OK
 										logger.warn("LRN status is OK ... (no errors)");
+										dtoResponse.setDb_st2(EnumSadexmfStatus2.C.toString());
+										List<SadexmfDto> tmp = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
 									}
 									
 								}else {
@@ -447,6 +456,8 @@ public class ExpressFortolling2MasterConsignmentController {
 		dtoResponse.setPro(empro);
 		dtoResponse.setTdn("0");
 		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("DELETE");
+		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		String methodName = new Object() {}
 	      .getClass()
@@ -490,8 +501,9 @@ public class ExpressFortolling2MasterConsignmentController {
 								
 								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-									dtoResponse.setMrn(mrn);
 									String mode = "DL";
+									dtoResponse.setMrn(mrn);
+									dtoResponse.setDb_st2(EnumSadexmfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
@@ -568,6 +580,7 @@ public class ExpressFortolling2MasterConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setLrn(lrn);
+		dtoResponse.setRequestMethodApi("GET");
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		String methodName = new Object() {}
 	      .getClass()
@@ -643,6 +656,7 @@ public class ExpressFortolling2MasterConsignmentController {
 		dtoResponse.setAvd(""); //dummy
 		dtoResponse.setPro(""); //dummy
 		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("GET");
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -730,7 +744,8 @@ public class ExpressFortolling2MasterConsignmentController {
 			logger.warn("JSON = " + json);
 			logger.warn("status:" + obj.getStatus());
 			logger.warn("MRN = " + obj.getMasterReferenceNumber());
-			dtoResponse.setStatus(obj.getStatus());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
 			
 			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
 				retval = obj.getMasterReferenceNumber();
@@ -764,7 +779,7 @@ private String checkLrnValidationStatus(GenericDtoResponse dtoResponse, String l
 			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
 			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
 			//
-			dtoResponse.setStatus(obj.getStatus());
+			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());
 			
 			//check if any error to deserialize
@@ -782,12 +797,7 @@ private String checkLrnValidationStatus(GenericDtoResponse dtoResponse, String l
 					dtoResponse.setErrMsg(sbError.toString());
 				}
 			}
-			/*
-			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
-				retval = obj.getMasterReferenceNumber();
-			}else {
-				dtoResponse.setErrMsg(json);
-			}*/
+			
 		}catch(Exception e) {
 			//e.printStackTrace();
 			//Get out stackTrace to the response (errMsg)

@@ -282,6 +282,9 @@ public class SadexhfService {
 		logger.warn("AVD:" + dtoResponse.getAvd());
 		logger.warn("PRO:" + dtoResponse.getPro());
 		logger.warn("TDN:" + dtoResponse.getTdn());
+		logger.warn("EHST:" + dtoResponse.getDb_st());
+		logger.warn("EHST2:" + dtoResponse.getDb_st2());
+		logger.warn("EHST3:" + dtoResponse.getDb_st3());
 		
 		
 		//example

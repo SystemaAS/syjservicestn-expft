@@ -29,6 +29,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
@@ -89,6 +90,7 @@ public class ExpressFortolling2HouseConsignmentController {
 		dtoResponse.setAvd(ehavd);
 		dtoResponse.setPro(ehpro);
 		dtoResponse.setTdn(ehtdn);
+		dtoResponse.setRequestMethodApi("POST");
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -139,17 +141,17 @@ public class ExpressFortolling2HouseConsignmentController {
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
+									//Update ehst2(SADEXHF) with ERROR = M
+									dtoResponse.setDb_st2(EnumSadexhfStatus2.M.toString());
+								}else {
+									//Update ehst2(SADEXHF) with OK = C
+									dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
 								}
-								//logger.warn("A");
-								//TEST-->
-								//String mrn = "22NO4TU2HUD59UCBT2";
 								
 								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-									dtoResponse.setMrn(mrn);
 									String mode = "ULM";
-									//TODO Status ??
-									//dtoResponse.setDb_st(EnumSadexhfStatus.O.toString());
+									dtoResponse.setMrn(mrn);
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									//logger.warn("B");
 									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
@@ -236,6 +238,7 @@ public class ExpressFortolling2HouseConsignmentController {
 		dtoResponse.setPro(ehpro);
 		dtoResponse.setTdn(ehtdn);
 		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("PUT");
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -298,7 +301,6 @@ public class ExpressFortolling2HouseConsignmentController {
 									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadexhfDto rec: xx) {
-											//logger.warn(rec.toString());
 											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
 											}else {
@@ -312,9 +314,15 @@ public class ExpressFortolling2HouseConsignmentController {
 									this.checkLrnValidationStatus(dtoResponse, lrn);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
+										//Udate ehst2(SADEXHF) with ERROR = M
+										dtoResponse.setDb_st2(EnumSadexhfStatus2.M.toString());
+										List<SadexhfDto> tmp = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
 									}else {
 										//OK
 										logger.warn("LRN status is OK ... (no errors)");
+										//Update ehst2 (SADEXHF) with OK = C
+										dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
+										List<SadexhfDto> tmp = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
 									}
 									
 								}else {
@@ -389,6 +397,8 @@ public class ExpressFortolling2HouseConsignmentController {
 		dtoResponse.setPro(ehpro);
 		dtoResponse.setTdn(ehtdn);
 		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("DELETE");
+		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -435,8 +445,9 @@ public class ExpressFortolling2HouseConsignmentController {
 								
 								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
 								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-									dtoResponse.setMrn(mrn);
 									String mode = "DL";
+									dtoResponse.setMrn(mrn);
+									dtoResponse.setDb_st2(EnumSadexhfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
@@ -515,6 +526,7 @@ public class ExpressFortolling2HouseConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setLrn(lrn);
+		dtoResponse.setRequestMethodApi("GET");
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -562,8 +574,8 @@ public class ExpressFortolling2HouseConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//NA - log in db before std-output
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
 		
@@ -596,7 +608,8 @@ public class ExpressFortolling2HouseConsignmentController {
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("MRN = " + obj.getMasterReferenceNumber());
-			dtoResponse.setStatus(obj.getStatus());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
 			
 			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
 				retval = obj.getMasterReferenceNumber();
@@ -610,7 +623,6 @@ public class ExpressFortolling2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
-			logger.error(dtoResponse.getErrMsg());
 			
 		}
 		
@@ -635,7 +647,7 @@ public class ExpressFortolling2HouseConsignmentController {
 			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
 			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
 			//
-			dtoResponse.setStatus(obj.getStatus());
+			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());
 			
 			//check if any error to deserialize
