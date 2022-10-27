@@ -54,8 +54,10 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus3;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
+import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
 import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
@@ -118,6 +120,8 @@ public class ExpressFortolling2MasterConsignmentController {
 	@Autowired
 	private SadexmfService sadexmfService;	
 	
+	@Autowired
+	private SadexhfService sadexhfService;	
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -638,7 +642,9 @@ public class ExpressFortolling2MasterConsignmentController {
 	
 	/**
 	 * Gets Master Consignment status through the API - GET - without having to check our db 
-	 * @Example http://localhost:8080/syjservicestn-expft/getStatusMasterConsignment.do?user=SYSTEMA&mrn=22NOM6O19GRP8UQBT6
+	 * This method returns all documenNumbers that Toll.no has after having sent these HOUSES
+	 * 
+	 * @Example http://localhost:8080/syjservicestn-expft/getStatusMasterConsignment.do?user=NN&emavd=1&empro=500086&mrn=22NOM6O19GRP8UQBT6
 	 * @param request
 	 * @param user
 	 * @param mrn
@@ -648,15 +654,18 @@ public class ExpressFortolling2MasterConsignmentController {
 	@RequestMapping(value="getStatusMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getStatusMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "emavd", required = true) String emavd,
+																				@RequestParam(value = "empro", required = true) String empro,	
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(""); //dummy
-		dtoResponse.setPro(""); //dummy
+		dtoResponse.setAvd(emavd); 
+		dtoResponse.setPro(empro);
+		dtoResponse.setTdn("0"); //dummy
 		dtoResponse.setMrn(mrn);
-		dtoResponse.setRequestMethodApi("GET");
+		dtoResponse.setRequestMethodApi("GET all documentNumbers in MASTER-level at toll.no");
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -675,24 +684,41 @@ public class ExpressFortolling2MasterConsignmentController {
 				if(StringUtils.isNotEmpty(json)) {
 					ApiMrnStatusRecordDto[] obj = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
 					if(obj!=null) {
-						List list = Arrays.asList(obj);
+						List<Object> list = Arrays.asList(obj);
 						logger.warn("List = " + list);
 						
-						//In case there was an error at end-point and the LRN was not returned
+						//Check for OK or Error in order to proceed
 						if(list!=null && !list.isEmpty()){
 							dtoResponse.setList(list);
+							
+							//(1)Proceed with every documentNumber and match with its respective house
+							//This stage is necessary only to change a house status3 on wether it exist in Master at toll.no or not
+							for (Object record: list) {
+								//(2)Update now the status-3 (SADEXHF.ehst3) on the valid house-documentNumber (SADEXHF.ehdkh)
+								ApiMrnStatusRecordDto apiDto = (ApiMrnStatusRecordDto)record;
+								String MODE_STATUS3 = "US3";
+								if(apiDto.getReceived()) {
+									dtoResponse.setDb_st3(EnumSadexhfStatus3.T.toString());
+								}else {
+									dtoResponse.setDb_st3(EnumSadexhfStatus3.F.toString());
+								}
+								logger.warn("documentNumber:" + apiDto.getDocumentNumber());
+								logger.warn("status3:" + dtoResponse.getDb_st3());
+								sadexhfService.updateStatus3Sadexhf(serverRoot, user, apiDto.getDocumentNumber(), dtoResponse.getDb_st3(), MODE_STATUS3);
+								
+							}
 						}else {
-							errMsg.append("MRN not existent ?? <json raw>: " + json);
+							errMsg.append(methodName + " -->MRN not existent ?? <json raw>: " + json);
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 					}
 				}else {
-					errMsg.append("JSON toll.no EMPTY. The MRN does not exists ...? ");
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				
 			}else {
-				errMsg.append(" invalid user " + user + " " + methodName);
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
 				dtoResponse.setErrMsg(errMsg.toString());
 			}
 			

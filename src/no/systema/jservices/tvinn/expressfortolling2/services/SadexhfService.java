@@ -345,5 +345,71 @@ public class SadexhfService {
 		logger.warn(result.toString());
 		return result; 
 	}
+	
+	/**
+	 * 
+	 * @param serverRoot
+	 * @param user
+	 * @param documentNumber
+	 * @param mode
+	 * @return
+	 */
+	public List<SadexhfDto> updateStatus3Sadexhf(String serverRoot, String user, String documentNumber, String status3, String mode) {
+		List<SadexhfDto> result = new ArrayList<SadexhfDto>();
+		
+		logger.warn("USER:" + user);
+		logger.warn("documentNumber:" + documentNumber);
+		logger.warn("ehst3:" + status3);
+		logger.warn("mode:" + mode);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADEXHF_U.do")
+				.queryParam("user", user)
+				.queryParam("mode", mode)
+				.queryParam("ehdkh", documentNumber)
+				.queryParam("ehst3", status3)
+				
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADEXHF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADEXHF-REST-http-response:" + response.getStatusCodeValue());
+				
+				SadexhfDto pojo = new SadexhfDto();
+				if(mode.startsWith("D")){
+					//nothing since it is DELETE;
+				}else {
+					//set it in order to have a valid response
+					pojo.setEhmid("dummy");
+				}
+				result.add(pojo);
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		logger.info("Result after REST:" + result.toString());
+		return result; 
+	}
 
 }

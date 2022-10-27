@@ -144,6 +144,7 @@ public class SadexmfService {
 		return result; 
 	}
 	
+	
 	/**
 	 * 
 	 * @param serverRoot
@@ -156,7 +157,9 @@ public class SadexmfService {
 	public List<SadexmfDto> updateLrnMrnSadexmf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
-		logger.warn("USER:" + user);
+		logger.warn("user:" + user);
+		logger.warn("emst2:" + dtoResponse.getDb_st2());
+		
 		//example
 		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
 		URI uri = UriComponentsBuilder
@@ -169,9 +172,9 @@ public class SadexmfService {
 				.queryParam("emuuid", dtoResponse.getLrn())
 				.queryParam("emmid", dtoResponse.getMrn())
 				.queryParam("emdtin", Integer.parseInt(sendDate))
-				.queryParam("ehst", dtoResponse.getDb_st())
-				.queryParam("ehst2", dtoResponse.getDb_st2())
-				.queryParam("ehst3", dtoResponse.getDb_st3())
+				.queryParam("emst", dtoResponse.getDb_st())
+				.queryParam("emst2", dtoResponse.getDb_st2())
+				.queryParam("emst3", dtoResponse.getDb_st3())
 				.build()
 				.encode()
 				.toUri();
