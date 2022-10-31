@@ -111,8 +111,8 @@ public class ExpressFortolling2HouseConsignmentController {
 					
 					for (SadexhfDto dto: list) {
 						//DEBUG logger.warn(dto.toString());
-						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
-						if(StringUtils.isEmpty(dto.getEhmid()) && StringUtils.isEmpty(dto.getEhuuid() )) {
+						//Only valid when mrn(emmid) are empty
+						if(StringUtils.isEmpty(dto.getEhmid()) ) {
 						
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("Representative:" + hc.getRepresentative().getName());
@@ -138,40 +138,35 @@ public class ExpressFortolling2HouseConsignmentController {
 								//(2) get mrn from API
 								//PROD-->
 								String mrn = this.getMrnHouseFromApi(dtoResponse, lrn);
+								dtoResponse.setMrn(mrn);
+								String mode = "ULM";
+								String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+								//
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
 									//Update ehst2(SADEXHF) with ERROR = M
+									logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
 									dtoResponse.setDb_st2(EnumSadexhfStatus2.M.toString());
 								}else {
 									//Update ehst2(SADEXHF) with OK = C
 									dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
 								}
 								
-								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
-								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
-									String mode = "ULM";
-									dtoResponse.setMrn(mrn);
-									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
-									//logger.warn("B");
-									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
-									//logger.warn("C");
-									if(xx!=null && xx.size()>0) {
-										for (SadexhfDto rec: xx) {
-											//logger.warn("D:" + rec.toString());
-											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
-												//OK
-											}else {
-												errMsg.append("MRN empty after SADEXHF-update:" + mrn);
-												dtoResponse.setErrMsg(errMsg.toString());
-											}
+								//(3)now we have lrn and mrn and proceed with the SADEXHF-update at house consignment
+								logger.warn("About to updateLrnMrnSadexh ...");
+								List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
+								//logger.warn("C");
+								if(xx!=null && xx.size()>0) {
+									for (SadexhfDto rec: xx) {
+										//logger.warn("D:" + rec.toString());
+										if(StringUtils.isNotEmpty(rec.getEhmid()) ){
+											//OK
+										}else {
+											errMsg.append("MRN empty after SADEXHF-update:" + mrn);
+											dtoResponse.setErrMsg(errMsg.toString());
 										}
 									}
-									
-								}else {
-									errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
-									dtoResponse.setErrMsg(errMsg.toString());
-									break;
 								}
 								
 							}
@@ -179,6 +174,7 @@ public class ExpressFortolling2HouseConsignmentController {
 							
 						}else {
 							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
+							logger.error(errMsg.toString());
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
