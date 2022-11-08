@@ -84,7 +84,7 @@ private static final Logger logger = LoggerFactory.getLogger(SadexlogService.cla
 			logger.error(e.toString());
 			result = null;
 		}
-		logger.warn(result.toString());
+		logger.debug(result.toString());
 		return result; 
 	}
 	
