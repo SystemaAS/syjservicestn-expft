@@ -42,7 +42,7 @@ public class MapperMasterConsignment {
 		MasterConsignment mc = new MasterConsignment();
 		//(Mandatory) IssueDate
 		//mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
-		mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
+		mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		logger.warn(mc.getDocumentIssueDate());
 		
 		//(Optional) Representative
@@ -124,7 +124,7 @@ public class MapperMasterConsignment {
 			MasterConsignment mc = new MasterConsignment();
 			//IssueDate
 			//mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
-			mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
+			mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 			logger.warn(mc.getDocumentIssueDate());
 			//Declarant
 			Declarant dec = new Declarant();
@@ -302,13 +302,13 @@ public class MapperMasterConsignment {
 		DateUtils dateUtils = new DateUtils();
 		//PROD 
 		if(sourceDto.getEmatdd()>0) {
-			ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
+			ab.setActualDateAndTimeOfDeparture( dateUtils.getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmatdd(), sourceDto.getEmatdt()) );
 		}
 		if(sourceDto.getEmetdd()>0) {
-			ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
+			ab.setEstimatedDateAndTimeOfDeparture(dateUtils.getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetdd(), sourceDto.getEmetdt()));
 		}
 		//Mandatory ETA
-		ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMilliseconds(sourceDto.getEmetad(), sourceDto.getEmetat()));
+		ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad(), sourceDto.getEmetat()));
 		
 		
 		//Mandatory

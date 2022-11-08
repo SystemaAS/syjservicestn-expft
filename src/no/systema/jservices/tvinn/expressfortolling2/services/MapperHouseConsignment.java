@@ -60,7 +60,7 @@ public class MapperHouseConsignment {
 		HouseConsignment hc = new HouseConsignment();
 		//(Mandatory) IssueDate
 		//hc.setDocumentIssueDate("2022-08-16T11:49:52Z");
-		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMilliseconds());
+		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		
 		//(Mandatory) Declarant
 		Declarant dec = new Declarant();
