@@ -2,6 +2,7 @@ package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -134,6 +135,11 @@ public class ExpressFortolling2HouseConsignmentController {
 								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
+								
+								 //Delay 2-seconds
+								logger.warn("Start of delay: "+ new Date());
+								Thread.sleep(2000); 
+								logger.warn("End of delay: "+ new Date());
 								
 								//(2) get mrn from API
 								//PROD-->
