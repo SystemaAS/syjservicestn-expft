@@ -586,7 +586,7 @@ public class ExpressFortolling2HouseConsignmentController {
 	
 	/**
 	 * Gets House Consignment status through the API - GET - in order to get an MRN
-	 * This method is used for the update of an MRN in SADEXMF. The need for doing so is based upon the fact that toll.no
+	 * This method is used for the update of an MRN in SADEXHF. The need for doing so is based upon the fact that toll.no
 	 * has an asynchronous routine with every POST that returns sometimes an empty MRN as soon as the LRN has been produced.
 	 * This will trigger a defect post in our db since the LRN without an MRN will be wrong if the POST was OK.
 	 * To correct the above this method will be used at some point in the GUI in order to prevent a user-POST and instead prompt a PUT (update at toll.no instead of a create new)
@@ -602,7 +602,7 @@ public class ExpressFortolling2HouseConsignmentController {
 	 */
 	@RequestMapping(value="setMrnHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse updateHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+	public GenericDtoResponse setMrnHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);

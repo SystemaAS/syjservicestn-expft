@@ -55,6 +55,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus3;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.services.MapperMasterConsignment;
@@ -737,6 +738,112 @@ public class ExpressFortolling2MasterConsignmentController {
 		}
 		
 		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	/**
+	 * Gets Master Consignment status through the API - GET - in order to get an MRN
+	 * This method is used for the update of an MRN in SADEXMF. The need for doing so is based upon the fact that toll.no
+	 * has an asynchronous routine with every POST that returns sometimes an empty MRN as soon as the LRN has been produced.
+	 * This will trigger a defect post in our db since the LRN without an MRN will be wrong if the POST was OK.
+	 * To correct the above this method will be used at some point in the GUI in order to prevent a user-POST and instead prompt a PUT (update at toll.no instead of a create new)
+	 * 
+	 * @param request
+	 * @param user
+	 * @param lrn
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="setMrnMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse setMrnMasterConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setLrn(lrn);
+		dtoResponse.setRequestMethodApi("GET");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- LRNnr: " + lrn );
+		
+		try {
+			if(checkUser(user)) {
+					//(1)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+					if(StringUtils.isNotEmpty(lrn)) {
+						dtoResponse.setLrn(lrn);
+						
+						String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
+							errMsg.append(dtoResponse.getErrMsg());
+							
+							if(StringUtils.isNotEmpty(mrn)) {
+								dtoResponse.setErrMsg("");
+							}else {
+								dtoResponse.setErrMsg(errMsg.toString());
+							}
+						}else {
+							dtoResponse.setMrn(mrn);
+							//(2) get the record to update
+							List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(serverRoot, user, lrn);
+							if(list != null) {
+								logger.warn("list size:" + list.size());
+								
+								for (SadexmfDto dto: list) {
+									String mode = "ULM";
+									logger.info("empro:" + dto.getEmpro());
+									//Update emst2(SADEXMF) with OK = C
+									dtoResponse.setAvd(String.valueOf(dto.getEmavd()));
+									dtoResponse.setPro(String.valueOf(dto.getEmpro()));
+									dtoResponse.setDb_st(dto.getEmst());
+									dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
+									dtoResponse.setDb_st3(dto.getEmst3());
+									String sendDate = String.valueOf(dto.getEmdtin());
+									//(3)now we have lrn and mrn. Proceed with the SADEXMF-update at master consignment
+									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
+									if(xx!=null && xx.size()>0) {
+										for (SadexmfDto rec: xx) {
+											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
+												//OK
+											}else {
+												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+												dtoResponse.setErrMsg(errMsg.toString());
+											}
+										}
+									}
+								}
+							}
+						}
+						
+					}else {
+						errMsg.append("LRN empty ?" + "-->LRN:" + lrn);
+						dtoResponse.setErrMsg(errMsg.toString());
+						
+					}
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output -- since this is a help method to be executed from the browser only ...
 		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }

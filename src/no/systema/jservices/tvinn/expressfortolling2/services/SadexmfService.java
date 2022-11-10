@@ -144,6 +144,59 @@ public class SadexmfService {
 		return result; 
 	}
 	
+	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String lrn) {
+		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADEXMF.do")
+				.queryParam("user", user)
+				.queryParam("emuuid", lrn)
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
+					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
+					//N/A -->pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					//logger.warn(pojo.getHouseDtoList().toString());
+					if(pojo!=null) {
+						result.add(pojo);
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	
 	
 	/**
 	 * 
@@ -158,7 +211,15 @@ public class SadexmfService {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
 		logger.warn("user:" + user);
+		logger.warn("mode:" + mode);
+		logger.warn("emavd:" + dtoResponse.getAvd());
+		logger.warn("empro:" + dtoResponse.getPro());
+		logger.warn("emuuid:" + dtoResponse.getLrn());
+		logger.warn("emmid:" + dtoResponse.getMrn());
+		logger.warn("emdtin:" + sendDate);
+		logger.warn("emst:" + dtoResponse.getDb_st());
 		logger.warn("emst2:" + dtoResponse.getDb_st2());
+		logger.warn("emst3:" + dtoResponse.getDb_st3());
 		
 		//example
 		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
