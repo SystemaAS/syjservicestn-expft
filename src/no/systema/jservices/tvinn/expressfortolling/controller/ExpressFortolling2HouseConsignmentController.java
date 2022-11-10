@@ -114,7 +114,7 @@ public class ExpressFortolling2HouseConsignmentController {
 						//DEBUG logger.warn(dto.toString());
 						//Only valid when mrn(emmid) are empty
 						if(StringUtils.isEmpty(dto.getEhmid()) ) {
-						
+							
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("Representative:" + hc.getRepresentative().getName());
 							logger.warn("House documentNumber:" + hc.getHouseConsignmentConsignmentHouseLevel().getTransportDocumentHouseLevel().getDocumentNumber());
@@ -555,6 +555,119 @@ public class ExpressFortolling2HouseConsignmentController {
 							}
 						}else {
 							dtoResponse.setMrn(mrn);
+						}
+						
+					}else {
+						errMsg.append("LRN empty ?" + "-->LRN:" + lrn);
+						dtoResponse.setErrMsg(errMsg.toString());
+						
+					}
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA - log in db before std-output
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		return dtoResponse;
+	}
+	
+	/**
+	 * Gets House Consignment status through the API - GET - in order to get an MRN
+	 * This method is used for the update of an MRN in SADEXMF. The need for doing so is based upon the fact that toll.no
+	 * has an asynchronous routine with every POST that returns sometimes an empty MRN as soon as the LRN has been produced.
+	 * This will trigger a defect post in our db since the LRN without an MRN will be wrong if the POST was OK.
+	 * To correct the above this method will be used at some point in the GUI in order to prevent a user-POST and instead prompt a PUT (update at toll.no instead of a create new)
+	 * 
+	 * @param request
+	 * @param user
+	 * @param lrn
+	 * @return
+	 * @throws Exception
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/setMrnHouseConsignment?user=NN&lrn=XXX
+	 * 
+	 */
+	@RequestMapping(value="setMrnHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse updateHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setLrn(lrn);
+		dtoResponse.setRequestMethodApi("GET");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + " - LRNnr: " + lrn);
+		//create new - master consignment at toll.no
+		try {
+			if(checkUser(user)) {
+					//(1)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+					if(StringUtils.isNotEmpty(lrn)) {
+						dtoResponse.setLrn(lrn);
+						
+						String mrn = this.getMrnHouseFromApi(dtoResponse, lrn);
+						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
+							errMsg.append(dtoResponse.getErrMsg());
+							
+							if(StringUtils.isNotEmpty(mrn)) {
+								dtoResponse.setErrMsg("");
+							}else {
+								dtoResponse.setErrMsg(errMsg.toString());
+							}
+						}else {
+							dtoResponse.setMrn(mrn);
+							//(2) get the record to update
+							List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, lrn);
+							
+							if(list != null && list.size()>0) {
+								logger.warn("list size:" + list.size());
+								for (SadexhfDto dto: list) {	
+									String mode = "ULM";
+									//Update ehst2(SADEXHF) with OK = C
+									dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
+									dtoResponse.setPro(String.valueOf(dto.getEhpro()));
+									dtoResponse.setTdn(String.valueOf(dto.getEhtdn()));
+									dtoResponse.setDb_st(dto.getEhst());
+									dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
+									dtoResponse.setDb_st3(dto.getEhst3());
+									
+									//(3)now we have lrn and mrn. Proceed with the SADEXHF-update at house consignment
+									logger.warn("About to updateLrnMrnSadexh ...");
+									List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, null, mode);
+									//logger.warn("C");
+									if(xx!=null && xx.size()>0) {
+										for (SadexhfDto rec: xx) {
+											//logger.warn("D:" + rec.toString());
+											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
+												//OK
+											}else {
+												errMsg.append("MRN empty after SADEXHF-update ??:" + mrn);
+												dtoResponse.setErrMsg(errMsg.toString());
+											}
+										}
+									}
+								}
+							}
 						}
 						
 					}else {
