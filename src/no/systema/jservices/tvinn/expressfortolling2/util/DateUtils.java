@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import lombok.Data;
+import no.systema.jservices.common.util.StringUtils;
 
 @Data
 public class DateUtils {
@@ -80,10 +81,13 @@ public class DateUtils {
 	public String getZuluTimeWithoutMilliseconds(Integer date, Integer time) {
 		String zoneDateString = "";
 		try {
-			
+			String timeStr = String.valueOf(time);
+			if (timeStr!=null && timeStr.length()<6) {
+				timeStr = new StringUtils().leadingStringWithNumericFiller(timeStr, 6, "0");
+			}
 			DateTimeFormatter formatterIn = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 			DateTimeFormatter formatterOut = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
-			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + String.valueOf(time) , formatterIn.withZone(ZoneId.systemDefault()));
+			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + timeStr , formatterIn.withZone(ZoneId.systemDefault()));
 			ZonedDateTime zdtInLocalTimeline = zdtWithZoneOffset.withZoneSameInstant(ZoneId.systemDefault());
 			
 			zoneDateString = formatterOut.format(zdtInLocalTimeline);
@@ -98,11 +102,15 @@ public class DateUtils {
 	public String getZuluTimeWithoutMillisecondsUTC(Integer date, Integer time) {
 		String zoneDateString = "";
 		try {
+			String timeStr = String.valueOf(time);
+			if (timeStr!=null && timeStr.length()<6) {
+				timeStr = new StringUtils().leadingStringWithNumericFiller(timeStr, 6, "0");
+			}
 			
 			DateTimeFormatter formatterIn = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
 			DateTimeFormatter formatterOut = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			//the local time to convert into UTC
-			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + String.valueOf(time) , formatterIn.withZone(ZoneId.systemDefault()));
+			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + timeStr , formatterIn.withZone(ZoneId.systemDefault()));
 			//the final converted UTC time
 			ZonedDateTime zdtInLocalTimeline = zdtWithZoneOffset.withZoneSameInstant(ZoneId.of("UTC"));
 			zoneDateString = formatterOut.format(zdtInLocalTimeline);
