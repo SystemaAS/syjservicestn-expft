@@ -48,10 +48,22 @@ public class TroubleShootingController {
 	 */
 	@RequestMapping(value = "testAccessToken.do", method = { RequestMethod.GET })
 	public String testAccessToken(HttpSession session) throws Exception {
-		TokenResponseDto responseDto  = authorization.accessTokenRequestPost();
+		TokenResponseDto responseDto  = authorization.accessTokenRequestPostMovementRoad();
 		
 		logger.warn("responseDto = "+responseDto);
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder("OK");
+		
+		session.invalidate();
+		return sb.toString();
+	}
+	
+	@RequestMapping(value = "testAccessTokenV2.do", method = { RequestMethod.GET })
+	public String testAccessTokenV2(HttpSession session) throws Exception {
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		logger.warn("maskinport-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
+		StringBuilder sb = new StringBuilder("OK...maskinportToken expires in:" + maskinPortenResponseDto.getExpires_in() + " tollToken expires in:" + tollResponseDto.getExpires_in());
 		
 		session.invalidate();
 		return sb.toString();

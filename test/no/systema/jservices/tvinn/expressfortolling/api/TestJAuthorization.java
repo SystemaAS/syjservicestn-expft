@@ -31,6 +31,28 @@ public class TestJAuthorization extends TestJBase {
 		
 	}
 	
+	
+	@Test
+	public void testAccessTokenMaskiAndToll() throws Exception {
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		logger.warn("maskinporten token OK");
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		
+	}
+	
+	@Test
+	public void testAccessTokenMaskiAndTollForDocsApi() throws Exception {
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenForDocsRequestPost();
+		System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		logger.warn("maskinporten token OK");
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		
+	}
+	
+	
 	/*@Test
 	public void accessTokenForKurer() throws Exception {
 		String urlUploadImmutable = "test";
@@ -43,7 +65,7 @@ public class TestJAuthorization extends TestJBase {
 	@Test
 	public void accessTokenForDocs() throws Exception {
 		TokenResponseDto responseDto  = authorization.accessTokenForDocsRequestPost();
-		
+		System.out.println("responseDto = "+responseDto);
 		logger.info("responseDto = "+responseDto);
 		
 	}

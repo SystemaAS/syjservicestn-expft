@@ -276,7 +276,7 @@ public class TestJApiServices extends TestJBase {
 	@Test //OK
 	public void testAuthExpressMovementRoad() throws Exception {
 		String json = apiServices.testAuthExpressMovementRoad();
-		//System.out.println("JSON = " + json);
+		System.out.println("JSON = " + json);
 	}
 	
 	@Test //OK - 

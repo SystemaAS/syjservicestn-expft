@@ -43,6 +43,9 @@ public class ExpressFortollingManifestController {
 	@Value("${expft.upload.docs.url}")
 	private String uploadDocsUrl;
 	
+	@Value("${expft.upload.docs.url.v2}")
+	private String uploadDocsUrlV2;
+	
 	@Autowired
 	ApiUploadClient apiUploadClient;
 
@@ -116,6 +119,40 @@ public class ExpressFortollingManifestController {
 		logger.warn("starting ...");
 		logger.warn(declId + "XXX" + docType + "XXX" + docPath);
 		String result = apiUploadClient.uploadDocumentsByUser(declId, docType, docPath);
+		logger.warn(result);
+		session.invalidate();
+		return result;
+	}
+	
+	/**
+	 * Entry point for the Document API to toll.no when the end-user uploads a document manually
+	 * This is version 2 with maskinport token + toll token according to the new double authentication as in Express fortollning V2 Movment road
+	 * https://toll.github.io/api/document-api.html
+	 * 
+	 * @param session
+	 * @param user
+	 * @param declarationId
+	 * @param documentType
+	 * @param fileName
+	 * @return
+	 * @throws Exception
+	 * 
+	 * PRODUCTION: http://localhost:8080/syjservicestn-expft/uploadFileByUserV2.do
+	 */
+	@RequestMapping(value="uploadFileByUserV2.do", method={RequestMethod.GET, RequestMethod.POST}, produces = {MediaType.ALL_VALUE})
+	public String uploadFileByUserV2(HttpSession session,
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "declId", required = true) String declId, 
+			@RequestParam(value = "docType", required = true) String docType, 
+			@RequestParam(value = "docPath", required = true) String docPath) throws Exception {
+
+		checkUser(user);
+		//now process
+		
+		apiUploadClient.setUploadUrlImmutable(uploadDocsUrlV2);
+		logger.warn("starting ...");
+		logger.warn(declId + "XXX" + docType + "XXX" + docPath);
+		String result = apiUploadClient.uploadDocumentsByUserV2(declId, docType, docPath);
 		logger.warn(result);
 		session.invalidate();
 		return result;
