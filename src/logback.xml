@@ -1,4 +1,4 @@
-<configuration scan="true" debug="false">
+<configuration scan="true" scanPeriod="10 seconds" debug="true">
   <property name="LOG_DIR" value="${catalina.home}/logs" />
   <property name="LOG_FILE" value="${LOG_DIR}/logsg_syjservicestn-expft.log" />
   <property name="OWN_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%p] %c:%L - %m%n" />
@@ -24,7 +24,7 @@
 </appender>  
 
 
-  <logger name="no.systema" level="WARN" additivity="false"> 
+  <logger name="no.systema" level="DEBUG" additivity="false"> 
         <appender-ref ref="FILE" /> 
   </logger> 
     

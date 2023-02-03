@@ -111,7 +111,7 @@ public class ExpressFortolling2HouseConsignmentController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadexhfDto dto: list) {
-						//DEBUG logger.warn(dto.toString());
+						logger.info(dto.toString());
 						//Only valid when mrn(emmid) are empty
 						if(StringUtils.isEmpty(dto.getEhmid()) ) {
 							
@@ -263,7 +263,7 @@ public class ExpressFortolling2HouseConsignmentController {
 					logger.warn("SADEXHF list size:" + list.size());
 					
 					for (SadexhfDto dto: list) {
-						logger.warn(dto.toString());
+						logger.info(dto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
 						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
