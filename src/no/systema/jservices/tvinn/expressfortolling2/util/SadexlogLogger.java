@@ -41,7 +41,7 @@ public class SadexlogLogger {
 				dto.setElltxt(dtoResponse.getStatusApi() + " " + dtoResponse.getRequestMethodApi());
 			}
 			//create error record
-			logger.warn("Record to log:" + dto.toString());
+			logger.trace("Record to log:" + dto.toString());
 			if(StringUtils.isNotEmpty(serverRoot) && StringUtils.isNotEmpty(user)) {
 				sadexlogService.insertLogRecord(serverRoot, user, dto, MODE_ADD);
 			}else {
