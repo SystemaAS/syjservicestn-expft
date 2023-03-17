@@ -41,7 +41,7 @@ public class JwtUtils {
 			logger.warn("Atomic internet time - issuedAt:" + Date.from(instant));
 			
 		}catch(Exception e){
-			logger.warn(e.toString());
+			logger.warn("Atomic internet time ERROR: " + e.toString());
 		}
 		
 		return instant;
@@ -62,7 +62,7 @@ public class JwtUtils {
 		    logger.warn("Atomic internet time - expiration:" + Date.from(instant));
 		    
 		}catch(Exception e){
-			logger.warn(e.toString());
+			logger.warn("Atomic internet time ERROR: " + e.toString());
 		}
 		
 		return instant;
