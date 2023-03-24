@@ -142,10 +142,16 @@ public class MapperHouseConsignment {
 		//(Mandatory) ImportProcedure
 		ImportProcedure importProcedure = new ImportProcedure();
 		importProcedure.setImportProcedure(sourceDto.getEhprt());
-		//(Optional)TRA/EXP/TRE
+		//(Optional)TRA/EXP/TRE/FALSE
 		if(StringUtils.isNotEmpty(sourceDto.getEhupr())) {
-			importProcedure.setOutgoingProcedure(sourceDto.getEhupr());
-			chl.setImportProcedure(importProcedure);
+			if(sourceDto.getEhupr().equalsIgnoreCase("FALSE")){
+				importProcedure.setHasOutgoingProcedure(sourceDto.getEhupr());
+			}else {
+				//TRA/EXP/TRE
+				importProcedure.setOutgoingProcedure(sourceDto.getEhupr());
+				chl.setImportProcedure(importProcedure);
+			}
+			
 		}
 		
 		List prevDocsList = new ArrayList();

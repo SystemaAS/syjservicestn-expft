@@ -12,8 +12,9 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ImportProcedure {
 	
-	private String importProcedure;
 	private String outgoingProcedure;
+	private String hasOutgoingProcedure;
+	private String importProcedure;
 	
 
 }
