@@ -148,11 +148,12 @@ public class MapperHouseConsignment {
 				importProcedure.setHasOutgoingProcedure(sourceDto.getEhupr());
 			}else {
 				//TRA/EXP/TRE
-				importProcedure.setOutgoingProcedure(sourceDto.getEhupr());
-				chl.setImportProcedure(importProcedure);
-			}
-			
+				importProcedure.setOutgoingProcedure(sourceDto.getEhupr());	
+			}	
 		}
+		chl.setImportProcedure(importProcedure);
+		
+		
 		
 		List prevDocsList = new ArrayList();
 		if(StringUtils.isNotEmpty(sourceDto.getEhtrnr()) || 
