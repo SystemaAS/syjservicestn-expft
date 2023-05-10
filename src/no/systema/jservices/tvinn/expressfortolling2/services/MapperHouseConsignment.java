@@ -1,7 +1,12 @@
 package no.systema.jservices.tvinn.expressfortolling2.services;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -49,6 +54,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentMaster
 import no.systema.jservices.tvinn.expressfortolling2.dao.TransportEquipment;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.SadexifDto;
+import no.systema.jservices.tvinn.expressfortolling2.util.BigDecimalFormatter;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 public class MapperHouseConsignment {
@@ -235,7 +241,6 @@ public class MapperHouseConsignment {
 		chl.setConsignee(consignee);
 		
 		
-		
 		//(Mandatory) Consignor
 		Consignor consignor = new Consignor();
 		consignor.setName(sourceDto.getEhnas());
@@ -267,8 +272,11 @@ public class MapperHouseConsignment {
 		
 		
 		logger.warn("GOODS-ITEM-LIST size:" + String.valueOf(sourceDto.getGoodsItemList().size()));
+		Map<String, Double> mapTotalAmountInvoiced = new HashMap<String, Double>(); //must be filled out as the sum of all amounts per item line)
+		StringBuilder currencyCodeTotalAmountInvoiced = new StringBuilder(); //this is the currency for the totalAmountInvoiced
+		
 		if(sourceDto.getGoodsItemList()!=null && sourceDto.getGoodsItemList().size()>0) {
-			List goodsItem = this.getGoodsItemList(sourceDto.getGoodsItemList());
+			List goodsItem = this.getGoodsItemList(sourceDto.getGoodsItemList(), mapTotalAmountInvoiced, currencyCodeTotalAmountInvoiced);
 			chl.setGoodsItem(goodsItem);
 		}else {
 			logger.error("###ERROR-ERROR-ERROR --> GOODS-ITEM-LIST on SADEXIF is 0 ??? - not valid for API...");
@@ -327,8 +335,10 @@ public class MapperHouseConsignment {
 		
 		//(Mandatory)Total Amount Invoiced
 		TotalAmountInvoiced totalAmount = new TotalAmountInvoiced();
-		totalAmount.setValue(sourceDto.getEhtcbl());
-		totalAmount.setCurrency(sourceDto.getEhtcva());
+		if(mapTotalAmountInvoiced!=null && currencyCodeTotalAmountInvoiced!=null) {
+			totalAmount.setValue(mapTotalAmountInvoiced.get("totalAmount"));
+			totalAmount.setCurrency(currencyCodeTotalAmountInvoiced.toString());
+		}
 		chl.setTotalAmountInvoiced(totalAmount);
 		
 		return chl;
@@ -387,14 +397,19 @@ public class MapperHouseConsignment {
 		return retval;
 	}
 	/**
-	 * 	
+	 * 
 	 * @param list
+	 * @param totalAmountInvoiced
+	 * @param totalAmountInvoicedCurrencyCode
 	 * @return
 	 */
-	private List<GoodsItem> getGoodsItemList(List<SadexifDto> list) {
+	private List<GoodsItem> getGoodsItemList(List<SadexifDto> list, Map<String, Double> totalAmountInvoiced, StringBuilder totalAmountInvoicedCurrencyCode) {
 		List<GoodsItem> returnList = new ArrayList<GoodsItem>();
+		Double totalAmount = 0.00D;
+		int counter = 0;
 		
 		for (SadexifDto dto: list) {
+			counter++;
 			GoodsItem item = new GoodsItem();
 			//(Optionals)
 			if(dto.getEili()>0) { item.setDeclarationGoodsItemNumber(String.valueOf(dto.getEili())); }
@@ -405,8 +420,14 @@ public class MapperHouseConsignment {
 			//(Mandatories)
 			ItemAmountInvoiced itemAmountInvoiced = new ItemAmountInvoiced();
 			itemAmountInvoiced.setCurrency(dto.getEival());
+			if(counter==1) {
+				//take the currency from the first item line. It will be valid as return currency for totalAmountInvoiced
+				totalAmountInvoicedCurrencyCode.append(itemAmountInvoiced.getCurrency());
+			}
 			itemAmountInvoiced.setValue(dto.getEibl());
 			item.setItemAmountInvoiced(itemAmountInvoiced);
+			//accumulate totalAmount
+			totalAmount += itemAmountInvoiced.getValue();
 			
 			//(Mandatory) Commodity
 			Commodity commodity = new Commodity();
@@ -499,7 +520,9 @@ public class MapperHouseConsignment {
 			//add to goods item list
 			returnList.add(item);
 		}
-		
+		//send totalAmount for further use outside this method...
+		BigDecimal bd = new BigDecimal(totalAmount).setScale(2, RoundingMode.HALF_UP);
+		totalAmountInvoiced.put("totalAmount", bd.doubleValue());
 		
 		return returnList;
 		

@@ -311,11 +311,16 @@ public class MapperMasterConsignment {
 		ab.setEstimatedDateAndTimeOfArrival(dateUtils.getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad(), sourceDto.getEmetat()));
 		
 		
-		//Mandatory
+		//Mandatory only name
 		Operator operator = new Operator();
 		operator.setName(sourceDto.getEmsjaf());
-		operator.setCitizenship(sourceDto.getEmsjalk());
-		operator.setDateOfBirth(formatDateOfBirth(String.valueOf(sourceDto.getEmsjadt()) ));
+		//(Optional)
+		if(StringUtils.isNotEmpty(sourceDto.getEmsjalk())){
+			operator.setCitizenship(sourceDto.getEmsjalk());
+		}
+		if(sourceDto.getEmsjadt()>0){
+			operator.setDateOfBirth(formatDateOfBirth(String.valueOf(sourceDto.getEmsjadt()) ));
+		}
 		//
 		ab.setOperator(operator);
 
