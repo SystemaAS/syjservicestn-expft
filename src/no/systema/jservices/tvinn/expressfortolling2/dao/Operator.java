@@ -14,7 +14,7 @@ import lombok.Data;
 public class Operator {
 
 	private String name;
-	private String citizenship;
-	private String dateOfBirth;
+	//private String citizenship;
+	//private String dateOfBirth;
 	
 }

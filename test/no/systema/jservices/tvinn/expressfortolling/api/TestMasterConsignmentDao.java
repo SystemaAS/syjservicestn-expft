@@ -189,8 +189,8 @@ public class TestMasterConsignmentDao {
 		//
 		Operator operator = new Operator();
 		operator.setName("Kari Nordman");
-		operator.setCitizenship("NO");
-		operator.setDateOfBirth("1982-06-22");
+		//operator.setCitizenship("NO");
+		//operator.setDateOfBirth("1982-06-22");
 		//
 		ab.setOperator(operator);
 		//Crew

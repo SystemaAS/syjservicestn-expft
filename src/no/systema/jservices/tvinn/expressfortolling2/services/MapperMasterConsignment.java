@@ -314,13 +314,14 @@ public class MapperMasterConsignment {
 		//Mandatory only name
 		Operator operator = new Operator();
 		operator.setName(sourceDto.getEmsjaf());
-		//(Optional)
+		//(OBSOLETE)
+		/*
 		if(StringUtils.isNotEmpty(sourceDto.getEmsjalk())){
 			operator.setCitizenship(sourceDto.getEmsjalk());
 		}
 		if(sourceDto.getEmsjadt()>0){
 			operator.setDateOfBirth(formatDateOfBirth(String.valueOf(sourceDto.getEmsjadt()) ));
-		}
+		}*/
 		//
 		ab.setOperator(operator);
 

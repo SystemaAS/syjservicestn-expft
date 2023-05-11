@@ -135,8 +135,8 @@ public class Tester {
 		//
 		Operator operator = new Operator();
 		operator.setName("Kari Nordman");
-		operator.setCitizenship("UK");
-		operator.setDateOfBirth("1982-06-22");
+		//operator.setCitizenship("UK");
+		//operator.setDateOfBirth("1982-06-22");
 		//
 		ab.setOperator(operator);
 		//Crew
