@@ -217,7 +217,7 @@ public class ExpressFortolling2MasterConsignmentController {
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
 								
-								 //Delay 10-seconds
+								//Delay 10-seconds
 								logger.warn("Start of delay: "+ new Date());
 								Thread.sleep(10000); 
 								logger.warn("End of delay: "+ new Date());
@@ -389,6 +389,12 @@ public class ExpressFortolling2MasterConsignmentController {
 									}
 									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
 									//first received the LRN in the first PUT Master
+									
+									//Delay 10-seconds (as in POST) needed to avoid ERROR 404 on client ...
+									logger.warn("Start of delay: "+ new Date());
+									Thread.sleep(10000); 
+									logger.warn("End of delay: "+ new Date());
+									
 									this.checkLrnValidationStatus(dtoResponse, lrn);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
