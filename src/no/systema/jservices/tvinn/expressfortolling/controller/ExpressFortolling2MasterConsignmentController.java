@@ -217,9 +217,9 @@ public class ExpressFortolling2MasterConsignmentController {
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
 								
-								 //Delay 2-seconds
+								 //Delay 10-seconds
 								logger.warn("Start of delay: "+ new Date());
-								Thread.sleep(2000); 
+								Thread.sleep(10000); 
 								logger.warn("End of delay: "+ new Date());
 								
 								//(2) get mrn from API
@@ -576,7 +576,7 @@ public class ExpressFortolling2MasterConsignmentController {
 	
 	/**
 	 * Gets Master Consignment status through the API - GET - without having to check our db 
-	 * @Example http://localhost:8080/syjservicestn-expft/getManifest.do?user=SYSTEMA&id=f2bfbb94-afae-4af3-a4ff-437f787d322f
+	 * @Example http://localhost:8080/syjservicestn-expft/getMasterConsignment.do?user=SYSTEMA&lrn=f2bfbb94-afae-4af3-a4ff-437f787d322f
 	 * @param session
 	 * @param user
 	 * @param id
@@ -711,7 +711,8 @@ public class ExpressFortolling2MasterConsignmentController {
 								}
 								logger.warn("documentNumber:" + apiDto.getDocumentNumber());
 								logger.warn("status3:" + dtoResponse.getDb_st3());
-								sadexhfService.updateStatus3Sadexhf(serverRoot, user, apiDto.getDocumentNumber(), dtoResponse.getDb_st3(), MODE_STATUS3);
+								//TODO or OBSOLETE talk with CHANG regarding status3 ...
+								//sadexhfService.updateStatus3Sadexhf(serverRoot, user, apiDto.getDocumentNumber(), dtoResponse.getDb_st3(), MODE_STATUS3);
 								
 							}
 						}else {

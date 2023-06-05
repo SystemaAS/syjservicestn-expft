@@ -136,9 +136,9 @@ public class ExpressFortolling2HouseConsignmentController {
 								String lrn = obj.getLrn();
 								dtoResponse.setLrn(lrn);
 								
-								 //Delay 2-seconds
+								 //Delay 10-seconds
 								logger.warn("Start of delay: "+ new Date());
-								Thread.sleep(2000); 
+								Thread.sleep(10000); 
 								logger.warn("End of delay: "+ new Date());
 								
 								//(2) get mrn from API

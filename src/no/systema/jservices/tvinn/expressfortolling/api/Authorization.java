@@ -76,8 +76,7 @@ public class Authorization {
 
         ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
         
-        //TODO refactor outside
-        apiClient.setBasePath(difiTokenAudienceUrl);
+        apiClient.setBasePath(difiTokenAudienceUrl); 
         
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
     }	
@@ -114,8 +113,8 @@ public class Authorization {
 
         ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
         
-        //TODO refactor outside
-        apiClient.setBasePath(difiTokenAudienceUrl);
+        
+        apiClient.setBasePath(difiTokenAudienceUrl); 
         
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
     }	

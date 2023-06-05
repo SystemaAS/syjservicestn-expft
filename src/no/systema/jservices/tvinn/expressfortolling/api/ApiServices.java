@@ -972,8 +972,8 @@ public class ApiServices {
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
-		System.out.println("toll-token:" + tollResponseDto.getAccess_token());
-		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
+		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		
 		Object postBody = null; //Not in use
@@ -1026,8 +1026,8 @@ public class ApiServices {
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
-		System.out.println("toll-token:" + tollResponseDto.getAccess_token());
-		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
+		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		
 		Object postBody = null; //Not in use
