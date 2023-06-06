@@ -49,6 +49,7 @@ public class ExpressFortolling2HouseConsignmentController {
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
+	private int THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS = 6000;
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -138,7 +139,7 @@ public class ExpressFortolling2HouseConsignmentController {
 								
 								 //Delay 10-seconds
 								logger.warn("Start of delay: "+ new Date());
-								Thread.sleep(10000); 
+								Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
 								logger.warn("End of delay: "+ new Date());
 								
 								//(2) get mrn from API
@@ -313,6 +314,11 @@ public class ExpressFortolling2HouseConsignmentController {
 									}
 									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
 									//first received the LRN in the first PUT House
+									 //Delay 10-seconds
+									logger.warn("Start of delay: "+ new Date());
+									Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
+									logger.warn("End of delay: "+ new Date());
+									
 									this.checkLrnValidationStatus(dtoResponse, lrn);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
