@@ -115,6 +115,7 @@ public class ExpressFortolling2MasterConsignmentController {
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
+	private int THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS = 6000;
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -219,7 +220,7 @@ public class ExpressFortolling2MasterConsignmentController {
 								
 								//Delay 10-seconds
 								logger.warn("Start of delay: "+ new Date());
-								Thread.sleep(10000); 
+								Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
 								logger.warn("End of delay: "+ new Date());
 								
 								//(2) get mrn from API
@@ -392,7 +393,7 @@ public class ExpressFortolling2MasterConsignmentController {
 									
 									//Delay 10-seconds (as in POST) needed to avoid ERROR 404 on client ...
 									logger.warn("Start of delay: "+ new Date());
-									Thread.sleep(10000); 
+									Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
 									logger.warn("End of delay: "+ new Date());
 									
 									this.checkLrnValidationStatus(dtoResponse, lrn);
