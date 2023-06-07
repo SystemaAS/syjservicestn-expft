@@ -16,6 +16,11 @@ public class HouseConsignmentConsignmentHouseLevel {
 	private Integer containerIndicator = 0;
 	//Mandatory*
 	private Double totalGrossMass = 0.00;
+	//Mandatory (v2)
+	private Integer numberOfPackages = 0;
+	//Mandatory (v2)
+	private String goodsDescription;
+		
 	//Mandatory*
 	private String referenceNumberUCR;
 	//Optional

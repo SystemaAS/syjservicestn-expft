@@ -57,10 +57,17 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.SadexifDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.BigDecimalFormatter;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
+
+/**
+ * 
+ * @author oscardelatorre
+ * June 2023
+ * 
+ * refer SWAGGER spec on--> https://api-test.toll.no/api/movement/road/v2/swagger-ui/... for all JSON specifics
+ */
 public class MapperHouseConsignmentV2 {
 	private static final Logger logger = LoggerFactory.getLogger(MapperHouseConsignmentV2.class);
 	
-	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
 	public HouseConsignment mapHouseConsignment(SadexhfDto sourceDto) {
 		
 		HouseConsignment hc = new HouseConsignment();
@@ -68,30 +75,11 @@ public class MapperHouseConsignmentV2 {
 		//hc.setDocumentIssueDate("2022-08-16T11:49:52Z");
 		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		
-		//(Mandatory) Declarant
-		Declarant dec = new Declarant();
-		
-		dec.setName(sourceDto.getEhnad());
-		dec.setAddress(this.setAddress(sourceDto.getEhpsd(), sourceDto.getEhlkd(), sourceDto.getEhpnd(), sourceDto.getEhad1d(), sourceDto.getEhnrd()));
-		//
-		List commList = new ArrayList();
-		commList.add(this.populateCommunication(sourceDto.getEhemd(), sourceDto.getEhemdt()));
-		//commList.add(this.populateCommunication("0733794505", "TE"));
-		dec.setCommunication(commList);
-		
-		hc.setDeclarant(dec);
-		
 		
 		//(Mandatory) Representative
 		Representative rep = new Representative();
 		rep.setName(sourceDto.getEhnar());
 		rep.setIdentificationNumber(sourceDto.getEhrgr());
-		//status
-		if(StringUtils.isNotEmpty(sourceDto.getEhstr())){
-			rep.setStatus(sourceDto.getEhstr());
-		}else {
-			rep.setStatus("2");
-		}
 		rep.setAddress(this.setAddress(sourceDto.getEhpsr(), sourceDto.getEhlkr(), sourceDto.getEhpnr(), sourceDto.getEhad1r(), sourceDto.getEhnrr()));
 		//
 		List rcommList = new ArrayList();
@@ -122,6 +110,7 @@ public class MapperHouseConsignmentV2 {
 	 * 
 	 * @param sourceDto
 	 * @return
+	 * refer to https://api-test.toll.no/api/movement/road/v2/swagger-ui/... for all specifics
 	 */
 	private HouseConsignmentConsignmentHouseLevel populateHouseConsignmentConsignmentHouseLevel(SadexhfDto sourceDto) {
 		DateUtils dateUtils = new DateUtils("yyyyMMdd", "yyyy-MM-dd");
@@ -131,20 +120,30 @@ public class MapperHouseConsignmentV2 {
 		chl.setContainerIndicator(sourceDto.getEhcnin());
 		//(Mandatory) TotalGrossMass
 		chl.setTotalGrossMass(sourceDto.getEhvkb());
-		//(Optional) UCR
-		if(StringUtils.isNotEmpty(sourceDto.getEhucr())) {
-			chl.setReferenceNumberUCR(sourceDto.getEhucr());
+		
+		
+		if(sourceDto.getGoodsItemList()!=null && sourceDto.getGoodsItemList().size()>0) {
+			//(Mandatory) numberOfPackages (sum of those in Item Lines)
+			chl.setNumberOfPackages(this.getTotalNumberOfPackages(sourceDto.getGoodsItemList())); 
+			//(Mandatory) goodsDescription (concatenated description of all item lines
+			chl.setGoodsDescription(this.getGoodsDescription(sourceDto.getGoodsItemList())); 
 		}
-		//(Optional) ExportFromEU
-		List exportFromEUList = new ArrayList();
-		if(StringUtils.isNotEmpty(sourceDto.getEheid())) {
-			ExportFromEU exportFromEU = new ExportFromEU();
-			exportFromEU.setExportId(sourceDto.getEheid());
-			//exportFromEU.setExportId("22SEE1452362514521");
-			exportFromEU.setTypeOfExport(sourceDto.getEhetypt());
-			exportFromEUList.add(exportFromEU);
-			chl.setExportFromEU(exportFromEUList);
-		}
+		
+		//(Mandatory) TransportDocumentHouseLevel
+		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
+		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
+		transpDocHouseLevel.setType(sourceDto.getEhdkht());
+		//(Mandatory) DocumentNumber
+		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
+		//(Mandatory) Type
+		transpDocHouseLevel.setType(sourceDto.getEhdkht());
+		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
+		
+
+		//TODO (Optional) consignmentMasterLevel
+		
+		
+		
 		//(Mandatory) ImportProcedure
 		ImportProcedure importProcedure = new ImportProcedure();
 		importProcedure.setImportProcedure(sourceDto.getEhprt());
@@ -159,8 +158,7 @@ public class MapperHouseConsignmentV2 {
 		}
 		chl.setImportProcedure(importProcedure);
 		
-		
-		
+		//(Optional) Previous Documents
 		List prevDocsList = new ArrayList();
 		if(StringUtils.isNotEmpty(sourceDto.getEhtrnr()) || 
 				(StringUtils.isNotEmpty(sourceDto.getEhrg()) && sourceDto.getEh0068b()>0 )) {
@@ -185,60 +183,16 @@ public class MapperHouseConsignmentV2 {
 			chl.setPreviousDocuments(prevDocsList);
 		}
 		
-		//AdditionalFiscalReferences
-		if(StringUtils.isNotEmpty(sourceDto.getEhrga())) {
-			AdditionalFiscalReferences additionalFiscalReferences = new AdditionalFiscalReferences();
-			additionalFiscalReferences.setVatIdentificationNumber(sourceDto.getEhrga());
-			additionalFiscalReferences.setRole(sourceDto.getEhrgro());
-			chl.setAdditionalFiscalReferences(additionalFiscalReferences);
+		//(Optional) ExportFromEU
+		List exportFromEUList = new ArrayList();
+		if(StringUtils.isNotEmpty(sourceDto.getEheid())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(sourceDto.getEheid());
+			//exportFromEU.setExportId("22SEE1452362514521");
+			exportFromEU.setTypeOfExport(sourceDto.getEhetypt());
+			exportFromEUList.add(exportFromEU);
+			chl.setExportFromEU(exportFromEUList);
 		}
-		
-		//(Optional) PlaceOfLoading
-		if(StringUtils.isNotEmpty(sourceDto.getEhsdft())) {
-			PlaceOfLoading ploading = new PlaceOfLoading();
-			ploading.setLocation(sourceDto.getEhsdft());
-			//tillfälligt borta för TESTER. UNLOCODE är inte ok på grönskärm OBS!
-			//if(StringUtils.isNotEmpty(sourceDto.getEhsdf())) { ploading.setUnloCode(sourceDto.getEhsdf()); }
-			if(StringUtils.isNotEmpty(sourceDto.getEhlkf())) { 
-				AddressCountry ploadAddress = new AddressCountry();
-				ploadAddress.setCountry(sourceDto.getEhlkf());
-				ploading.setAddress(ploadAddress);
-			}
-	 		chl.setPlaceOfLoading(ploading);
-		}
-		
-		//(Optional) PlaceOfUnloading
-		if(StringUtils.isNotEmpty(sourceDto.getEhsdtt())) {
-			PlaceOfUnloading puloading = new PlaceOfUnloading();
-			puloading.setLocation(sourceDto.getEhsdtt());
-			//tillfällit borta för TESTER. UNLOCODE är inte ok på grönskärm OBS!
-			//if(StringUtils.isNotEmpty(sourceDto.getEhsdt())) { puloading.setUnloCode(sourceDto.getEhsdt()); }
-			if(StringUtils.isNotEmpty(sourceDto.getEhlkt())) {
-				AddressCountry ploadAddress = new AddressCountry();
-				ploadAddress.setCountry(sourceDto.getEhlkt());
-				puloading.setAddress(ploadAddress);
-			}
-	 		chl.setPlaceOfUnloading(puloading);
-		}
-		
-		//(Mandatory) Consignee
-		Consignee consignee = new Consignee();
-		consignee.setName(sourceDto.getEhnam());
-		consignee.setIdentificationNumber(sourceDto.getEhrgm());
-		if(this.isPrivatePerson(sourceDto)) {
-			consignee.setTypeOfPerson(1); //personnumer = 11 siffror
-		}else {
-			consignee.setTypeOfPerson(2); //orgnr = 9 siffror
-		}
-		//(Optional) Address
-		if(StringUtils.isNotEmpty(sourceDto.getEhpsm())) { 
-			consignee.setAddress(this.setAddress(sourceDto.getEhpsm(), sourceDto.getEhlkm(), sourceDto.getEhpnm(), sourceDto.getEhad1m(), sourceDto.getEhnrm()));
-		}	
-		//(Optional) Communication
-		if(StringUtils.isNotEmpty(sourceDto.getEhemm())) { 
-			consignee.setCommunication(this.setCommunication(sourceDto.getEhemm(), sourceDto.getEhemmt())); 
-		}
-		chl.setConsignee(consignee);
 		
 		
 		//(Mandatory) Consignor
@@ -259,18 +213,32 @@ public class MapperHouseConsignmentV2 {
 			consignor.setCommunication(this.setCommunication(sourceDto.getEhems(), sourceDto.getEhemst()));
 		}
 		chl.setConsignor(consignor);
+				
 		
-		//(Mandatory) TransportDocumentHouseLevel
-		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
-		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
-		transpDocHouseLevel.setType(sourceDto.getEhdkht());
-		//(Mandatory) DocumentNumber
-		transpDocHouseLevel.setDocumentNumber(sourceDto.getEhdkh());
-		//(Mandatory) Type
-		transpDocHouseLevel.setType(sourceDto.getEhdkht());
-		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
+		//(Mandatory) Consignee
+		Consignee consignee = new Consignee();
+		consignee.setName(sourceDto.getEhnam());
+		consignee.setIdentificationNumber(sourceDto.getEhrgm());
+		if(this.isPrivatePerson(sourceDto)) {
+			consignee.setTypeOfPerson(1); //personnumer = 11 siffror
+		}else {
+			consignee.setTypeOfPerson(2); //orgnr = 9 siffror
+		}
+		//(Optional) Address
+		if(StringUtils.isNotEmpty(sourceDto.getEhpsm())) { 
+			consignee.setAddress(this.setAddress(sourceDto.getEhpsm(), sourceDto.getEhlkm(), sourceDto.getEhpnm(), sourceDto.getEhad1m(), sourceDto.getEhnrm()));
+		}	
+		//(Optional) Communication
+		if(StringUtils.isNotEmpty(sourceDto.getEhemm())) { 
+			consignee.setCommunication(this.setCommunication(sourceDto.getEhemm(), sourceDto.getEhemmt())); 
+		}
+		chl.setConsignee(consignee);
 		
+		//TODO (Optional) placeOfAcceptance
+		//TODO (Optional) placeOfDelivery
+		//TODO (Optional) goodsItem
 		
+	
 		logger.warn("GOODS-ITEM-LIST size:" + String.valueOf(sourceDto.getGoodsItemList().size()));
 		Map<String, Double> mapTotalAmountInvoiced = new HashMap<String, Double>(); //must be filled out as the sum of all amounts per item line)
 		StringBuilder currencyCodeTotalAmountInvoiced = new StringBuilder(); //this is the currency for the totalAmountInvoiced
@@ -282,35 +250,16 @@ public class MapperHouseConsignmentV2 {
 			logger.error("###ERROR-ERROR-ERROR --> GOODS-ITEM-LIST on SADEXIF is 0 ??? - not valid for API...");
 		}
 		
-		//(Mandatory) TransportCharges
-		TransportCharges transpCharges = new TransportCharges();
-		//Expected codes are one of [A=Kontant, B=Kredikort, C, D=Annet, H=Elektronisk pengeöverf., Y, Z=not pre-paid]"
-		//(Optional) MethosOfPayment db-field?
-		/*if(sourceDto.get??) {
-			transpCharges.setMethodOfPayment(sourceDto.get??);
-		}*/
-		transpCharges.setCurrency(sourceDto.getEhtcva());
-		transpCharges.setValue(sourceDto.getEhtcbl());
-		chl.setTransportCharges(transpCharges);
-		
-		//(Optional) CountriesOfRoutingOfConsignments
-		if(StringUtils.isNotEmpty(sourceDto.getEhlkr1())) {
-			List<CountriesOfRoutingOfConsignments> tmp = new ArrayList<CountriesOfRoutingOfConsignments>();
-			CountriesOfRoutingOfConsignments route = new CountriesOfRoutingOfConsignments();
-			route.setSequenceNumber(1);
-			route.setCountry(sourceDto.getEhlkr1());
-			tmp.add(route);
-			//check for route 2 to 8 if any ...
-			List<CountriesOfRoutingOfConsignments> allRoutes = this.getExtraRoutes(sourceDto, tmp);
-			chl.setCountriesOfRoutingOfConsignments(allRoutes);
-		}
 		
 		//(Optional)Transport Equipment
 		if(StringUtils.isNotEmpty(sourceDto.getEhcnr())) {
 			List transpEquipmentList = new ArrayList();
 			TransportEquipment transportEquipment = new TransportEquipment();
+			//all below (Mandatory)
 			transportEquipment.setContainerIdentificationNumber(sourceDto.getEhcnr());
-	
+			transportEquipment.setContainerSizeAndType("todo");
+			transportEquipment.setContainerPackedStatus("todo");
+			transportEquipment.setContainerSupplierType("todo");
 			//Expected codes are one of [A, B, C, D, T, t, H, Y, Z] .. KANSKE ??? OBSOLETE
 			/*transportEquipment.setContainerPackedStatus("A");
 			transportEquipment.setContainerSizeAndType("22");
@@ -320,26 +269,6 @@ public class MapperHouseConsignmentV2 {
 			chl.setTransportEquipment(transpEquipmentList);
 		}
 		
-		//(Optional)Passive Transport Means
-		List ptmList = new ArrayList();
-		if(StringUtils.isNotEmpty(sourceDto.getEhpmrk())) {
-			PassiveTransportMeans passiveTransportMeans = new PassiveTransportMeans();
-			passiveTransportMeans.setCountryCode(sourceDto.getEhplk());
-			passiveTransportMeans.setIdentificationNumber(sourceDto.getEhpmrk());
-			passiveTransportMeans.setTypeOfIdentification(Integer.valueOf(sourceDto.getEhptyp())); //30 t.ex
-			passiveTransportMeans.setTypeOfMeansOfTransport(sourceDto.getEhptm());
-			ptmList.add(passiveTransportMeans);
-			chl.setPassiveTransportMeans(ptmList);
-		}
-		
-		
-		//(Mandatory)Total Amount Invoiced
-		TotalAmountInvoiced totalAmount = new TotalAmountInvoiced();
-		if(mapTotalAmountInvoiced!=null && currencyCodeTotalAmountInvoiced!=null) {
-			totalAmount.setValue(mapTotalAmountInvoiced.get("totalAmount"));
-			totalAmount.setCurrency(currencyCodeTotalAmountInvoiced.toString());
-		}
-		chl.setTotalAmountInvoiced(totalAmount);
 		
 		return chl;
 		
@@ -527,6 +456,44 @@ public class MapperHouseConsignmentV2 {
 		return returnList;
 		
 	}
+	
+	private int getTotalNumberOfPackages(List<SadexifDto> list) {
+		List<GoodsItem> returnList = new ArrayList<GoodsItem>();
+		int totalAmounNumberOfPackages = 0;
+		
+		for (SadexifDto dto: list) {
+			
+			//(Mandatory) Packaging
+			if(dto.getEint()>0) {
+				totalAmounNumberOfPackages += dto.getEint();
+			}
+		}
+		
+		return totalAmounNumberOfPackages;
+		
+	}
+	
+	private String getGoodsDescription(List<SadexifDto> list) {
+		String FIELD_SEPARATOR = " ,";
+		StringBuilder strBuilder = new StringBuilder();
+		int counter = 0;
+		for (SadexifDto dto: list) {
+			counter++;
+			//(Mandatory) Packaging
+			if(StringUtils.isNotEmpty(dto.getEivt())) {
+				if(counter==1) {
+					strBuilder.append(dto.getEivt());
+				}else {
+					strBuilder.append(FIELD_SEPARATOR + dto.getEivt());
+				}
+			}
+		}
+		
+		
+		return strBuilder.toString();
+		
+	}
+	
 	
 	private List<Communication> setCommunication(String id, String type) {
 		Communication communication = new Communication();
