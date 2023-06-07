@@ -18,5 +18,6 @@ public class Representative {
 	private String status;
 	private Address address;
 	private List<Communication> communication;
+	private List<ReleasedConfirmation> releasedConfirmation;//V2
 	
 }
