@@ -1,0 +1,42 @@
+package no.systema.jservices.tvinn.digitoll.v2.dao;
+
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Data;
+
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ConsignmentMasterLevel {
+	
+	
+	//Mandatory
+	private String containerIndicator;
+	//Mandatory
+	private String grossMass;
+	//Mandatory
+	private Carrier carrier;
+	private Consignee consignee;
+	private Consignor consignor;
+	//Mandatory
+	private TransportDocumentMasterLevel transportDocumentMasterLevel;
+	
+	@JsonProperty("tranportEquipment")
+	private List<TransportEquipment> tranportEquipment;
+	
+	//Optional
+	//Liste over hvilke postsekker som denne forsendelsene består av. Skal kun benyttes for hovedforsendelser som inneholder post
+	private ConsignmentHouseLevel consignmentHouseLevel;
+	
+	//Optional
+	private PlaceOfLoading placeOfLoading;
+	private PlaceOfUnloading placeOfUnloading;
+	private PlaceOfDelivery placeOfDelivery;
+	
+	
+
+}
