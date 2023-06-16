@@ -39,7 +39,7 @@ public class Transport {
 	private String scheduledDateAndTimeOfArrival;
 	
 	//Mandatory*
-	//TODO --> private List<ConsignmentMasterLevel> consignmentMasterLevel;
+	private List<ConsignmentMasterLevel> consignmentMasterLevel;
 	
 	
 	
