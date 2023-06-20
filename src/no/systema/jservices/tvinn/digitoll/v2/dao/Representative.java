@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Data;
+import no.systema.jservices.tvinn.digitoll.v2.dao.ReleasedConfirmation;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -17,6 +18,6 @@ public class Representative {
 	private String identificationNumber;
 	private Address address;
 	private List<Communication> communication;
-	
+	private List<ReleasedConfirmation> releasedConfirmation;
 	
 }

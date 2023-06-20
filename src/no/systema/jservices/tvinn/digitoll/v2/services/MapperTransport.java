@@ -8,19 +8,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
-import no.systema.jservices.tvinn.expressfortolling2.dao.ConsignmentHouseLevel;
-import no.systema.jservices.tvinn.expressfortolling2.dao.TransportDocumentHouseLevel;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
+/**
+ * SPEC. SWAGGER
+ * https://api-test.toll.no/api/movement/road/v2/swagger-ui/index.html
+ * 
+ * @author oscardelatorre
+ * Jun 2023
+ */
 public class MapperTransport {
 	private static final Logger logger = LoggerFactory.getLogger(MapperTransport.class);
 	
-	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
-	public Transport mapTransport(Object todoDto) {
+	
+	public Transport mapTransport(Object sourceDto) {
 		
 		Transport transport = new Transport();
 		//(Mandatory) IssueDate
-		//mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
 		transport.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		logger.warn(transport.getDocumentIssueDate());
 		
@@ -41,7 +45,7 @@ public class MapperTransport {
 		//}
 		
 		//(Mandatory) ActiveBorderTransMeans
-		transport.setActiveBorderTransportMeansTransport(this.populateActiveBorderTransportMeans(todoDto));
+		transport.setActiveBorderTransportMeansTransport(this.populateActiveBorderTransportMeans(sourceDto));
 		
 		//(Mandatory) Carrier
 		Carrier carrier = new Carrier();
@@ -58,46 +62,25 @@ public class MapperTransport {
 		cOffice.setReferenceNumber("refNr");
 		transport.setCustomsOfficeOfFirstEntry(cOffice);
 
-		//Mandatory ETA
-		//PROD->transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad(), sourceDto.getEmetat()));
-		//	  ->transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad(), sourceDto.getEmetat()));
-		//TEST
-		transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
-		transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		
-		/*
-		List list1 = new ArrayList();
-		//Ref. to the Master Fraktbrev
-		list1.add(this.populateTransportDocumentMasterLevel("fraktbrev to Master", "N730"));
-		list1.add(this.populateTransportDocumentMasterLevel("second fraktbrev to Master", "N730"));
-		//
-		ConsignmentMasterLevelTransport ml = new ConsignmentMasterLevelTransport();
-		ml.setTransportDocumentMasterLevel(list1);
-		//We must map to a list of consignments (0-9999)
-		//More consignTra in the list ... TODO
-		//TODO
+		//Optional
+		//if(sourceDto.getEmetad()>0) {
+			//PROD transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad(), sourceDto.getEmetat()));
+			transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+		//}
+		//if(sourceDto.getEmetad()>0) {
+			//PROD transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad??(), sourceDto.getEmetat??()));
+			transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+		//}
 		
-		transport.setConsignmentMasterLevelTransport(ml);
-		*/
-		
-		List list = new ArrayList();
-		/*ConsignmentMasterLevelTransport ml = new ConsignmentMasterLevelTransport();
-		TransportDocumentMasterLevel trDocMasterLevel = new TransportDocumentMasterLevel();
-		trDocMasterLevel.setDocumentNumber("one");
-		trDocMasterLevel.setType("N730");
-		ml.setTransportDocumentMasterLevel(trDocMasterLevel);
-		*/
-		list.add(this.populateConsignmentMasterLevelTransport("one", "N730"));
-		list.add(this.populateConsignmentMasterLevelTransport("two", "N730"));
-		/*ConsignmentMasterLevelTransport ml_2 = new ConsignmentMasterLevelTransport();
-		TransportDocumentMasterLevel trDocMasterLevel2 = new TransportDocumentMasterLevel();
-		trDocMasterLevel2.setDocumentNumber("two");
-		trDocMasterLevel2.setType("N730");
-		ml_2.setTransportDocumentMasterLevel(trDocMasterLevel);
-		list.add(ml_2);
-		*/
-		//
-		transport.setConsignmentMasterLevelTransport(list);
+		//Optional
+		//if(refsExists) {
+			List list = new ArrayList();
+			list.add(this.populateConsignmentMasterLevelTransport("one", "N730"));
+			list.add(this.populateConsignmentMasterLevelTransport("two", "N730"));
+			//
+			transport.setConsignmentMasterLevelTransport(list);
+		//}
 		
 		return transport;
 	}
@@ -155,17 +138,6 @@ public class MapperTransport {
 		return ab;
 		
 	}
-	
-	private String formatDateOfBirth(String value) {
-		
-		String year = value.substring(0,4);
-		String month = value.substring(4,6);
-		String day = value.substring(6,8);
-		
-		return year + "-" + month + "-" + day;
-		
-	}
-	
 	
 	
 	private Address setAddress(String city, String country, String postCode, String street, String number) {

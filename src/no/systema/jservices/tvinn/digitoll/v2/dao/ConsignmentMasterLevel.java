@@ -5,19 +5,22 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+//we need this line in order to follow the order as in the properties. 
+@JsonPropertyOrder({"containerIndicator", "grossMass", "carrier", "consignee", "consignor", "transportDocumentMasterLevel", "tranportEquipment"})
 public class ConsignmentMasterLevel {
 	
 	
 	//Mandatory
-	private String containerIndicator;
+	private Integer containerIndicator;
 	//Mandatory
-	private String grossMass;
+	private Double grossMass;
 	//Mandatory
 	private Carrier carrier;
 	private Consignee consignee;

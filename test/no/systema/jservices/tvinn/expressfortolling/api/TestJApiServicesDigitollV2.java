@@ -1,52 +1,24 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.io.*;
+import java.util.*;
 
 import org.slf4j.*;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.PagedResources;
-import org.springframework.hateoas.Resource;
-import org.springframework.hateoas.hal.Jackson2HalModule;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
-import no.systema.jservices.common.dao.services.BridfDaoService;
-import no.systema.jservices.common.dto.*;
-import no.systema.jservices.common.dto.expressfortolling.ManifestActiveMeansOfTransportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestCargoLinesDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestCountryDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestModeOfTransportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestPlaceOfEntryDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfExportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestTypesOfMeansOfTransportDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestTransportationCompanyDto;
-import no.systema.jservices.common.dto.expressfortolling.ManifestUserDto;
-import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
-import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
+
+import no.systema.jservices.tvinn.digitoll.v2.dao.*;
+import no.systema.jservices.tvinn.digitoll.v2.services.*;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
-import no.systema.jservices.tvinn.expressfortolling2.dao.HouseConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.dao.MasterConsignment;
-import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
-import no.systema.jservices.tvinn.expressfortolling2.services.MapperHouseConsignment;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
-import no.systema.main.util.ObjectMapperHalJson;
+
 
 @RunWith(SpringJUnit4ClassRunner.class)
 //@ExtendWith(SpringExtension.class)
@@ -80,16 +52,31 @@ public class TestJApiServicesDigitollV2 extends TestJBase {
 	}
 	
 	@Test //for validating the raw json swagger spec
-	public void createTransport() throws Exception {
-		//this will be populated by the SADEXMF Dto in real-world. We can not test it here unfortunately ...
-		Transport transport = new MapperTransport().mapTransport(new Object()); 
+	public void writeJsonTransport() throws Exception {
+		//this will be populated by the SADxxx Dto in real-world. We can not test it here unfortunately ...
+		Transport entity = new MapperTransport().mapTransport(new Object()); 
 		//Debug
-		System.out.println(GenericJsonStringPrinter.debug(transport));
+		System.out.println(GenericJsonStringPrinter.debug(entity));
 		
 	}
 	
+	@Test //for validating the raw json swagger spec
+	public void writeJsonMasterConsignment() throws Exception {
+		//this will be populated by the SADxxx Dto in real-world. We can not test it here unfortunately ...
+		MasterConsignment entity = new MapperMasterConsignment().mapMasterConsignment(new Object()); 
+		//Debug
+		System.out.println(GenericJsonStringPrinter.debug(entity));
+		
+	}
 	
-	
+	@Test //for validating the raw json swagger spec
+	public void writeJsonHouseConsignment() throws Exception {
+		//this will be populated by the SADxxx Dto in real-world. We can not test it here unfortunately ...
+		HouseConsignment entity = new MapperHouseConsignment().mapHouseConsignment(new Object()); 
+		//Debug
+		System.out.println(GenericJsonStringPrinter.debug(entity));
+		
+	}
 	
 	
 	
