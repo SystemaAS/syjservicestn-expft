@@ -81,26 +81,13 @@ public class MapperMasterConsignment {
 	 * @param sourceDto
 	 * @return
 	 */
-	/*
-	public MasterConsignment mapMasterConsignmentForDelete(SadexmfDto sourceDto) {
+	
+	public MasterConsignment mapMasterConsignmentForDelete() {
 			
 			MasterConsignment mc = new MasterConsignment();
 			//IssueDate
-			//mc.setDocumentIssueDate("2022-08-04T07:49:52Z");
 			mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 			logger.warn(mc.getDocumentIssueDate());
-			//Declarant
-			Declarant dec = new Declarant();
-			dec.setName(sourceDto.getEmnad());
-			dec.setAddress(this.setAddress(sourceDto.getEmpsd(), sourceDto.getEmlkd(), sourceDto.getEmpnd(), sourceDto.getEmad1d(), sourceDto.getEmnrd()));
-			
-			//Mandatory (communication)
-			List commList = new ArrayList();
-			commList.add(this.populateCommunication(sourceDto.getEmemd(), sourceDto.getEmemdt()));
-			dec.setCommunication(commList);
-			//
-			mc.setDeclarant(dec);
-			
 			
 			try {
 				//System.out.println(obj.writerWithDefaultPrettyPrinter().writeValueAsString(mc));
@@ -110,7 +97,7 @@ public class MapperMasterConsignment {
 			
 			return mc;
 		}
-	*/	
+		
 	
 	
 	
