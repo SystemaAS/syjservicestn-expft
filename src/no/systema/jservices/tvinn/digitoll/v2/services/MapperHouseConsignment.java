@@ -55,8 +55,21 @@ public class MapperHouseConsignment {
 		return hc;
 	}
 	
-	
-	
+	/**
+	 * Only issueDate for delete
+	 * @param sourceDto
+	 * @return
+	 * 
+	 */
+	public HouseConsignment mapHouseConsignmentForDelete(Object sourceDto) {
+		
+		HouseConsignment hc = new HouseConsignment();
+		//(Mandatory) IssueDate
+		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+		
+		
+		return hc;
+	}
 	
 	private Communication populateCommunication(String id, String type) {
 		
@@ -520,55 +533,6 @@ public class MapperHouseConsignment {
 		tmp.add(communication);
 		return tmp;
 	}
-	/*
-	private ActiveBorderTransportMeans populateActiveBorderTransportMeans(SadexmfDto sourceDto) {
-		ActiveBorderTransportMeans ab = new ActiveBorderTransportMeans();
-		ab.setIdentificationNumber("DK 123654");
-		ab.setTypeOfIdentification("30");
-		ab.setTypeOfMeansOfTransport("150");
-		ab.setNationalityCode("SE");
-		ab.setModeOfTransportCode("3");
-		ab.setActualDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
-		ab.setEstimatedDateAndTimeOfDeparture("2022-09-20T07:49:52Z");
-		ab.setEstimatedDateAndTimeOfArrival("2022-09-20T07:49:52Z");
-		//
-		Operator operator = new Operator();
-		operator.setName(sourceDto.getEmsjaf());
-		operator.setCitizenship(sourceDto.getEmsjalk());
-		//operator.setDateOfBirth("1982-06-22");
-		operator.setDateOfBirth(formatDateOfBirth(String.valueOf(sourceDto.getEmsjadt()) ));
-		//
-		ab.setOperator(operator);
-		//Crew
-		Crew crew = new Crew();
-		crew.setName(sourceDto.getEmsj2f());
-		crew.setCitizenship(sourceDto.getEmsj2lk());
-		//crew.setDateOfBirth("1982-06-22");
-		crew.setDateOfBirth(formatDateOfBirth(String.valueOf(sourceDto.getEmsj2dt()) ));
-		List tmp = new ArrayList();
-		tmp.add(crew);
-		ab.setCrew(tmp);
-		
-		return ab;
-		
-	}
-	
-	private String formatDateOfBirth(String value) {
-		
-		String year = value.substring(0,4);
-		String month = value.substring(4,6);
-		String day = value.substring(6,8);
-		
-		return year + "-" + month + "-" + day;
-		
-	}
-	
-	private ReleasedConfirmation populateReleasedConfirmation(String email) {
-		ReleasedConfirmation releasedConfirmation = new ReleasedConfirmation();
-		releasedConfirmation.setEmailAddress(email);
-		return releasedConfirmation;
-	}
-	*/
 	
 	private Address setAddress(String city, String country, String postCode, String street, String number) {
 		Address address = new Address();

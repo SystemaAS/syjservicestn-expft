@@ -75,9 +75,9 @@ public class MapperMasterConsignment {
 	}
 	
 	
-	//JSON spec: https://api-test.toll.no/api/movement/road/v1/swagger-ui/index.html
+	
 	/**
-	 * Only issueDate and declarant for delete
+	 * Only issueDate for delete
 	 * @param sourceDto
 	 * @return
 	 */

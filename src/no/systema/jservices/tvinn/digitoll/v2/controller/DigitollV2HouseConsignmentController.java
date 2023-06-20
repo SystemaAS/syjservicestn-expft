@@ -428,7 +428,7 @@ public class DigitollV2HouseConsignmentController {
 					for (SadexhfDto dto: list) {
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
 						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
-							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
+							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignmentForDelete(dto);
 							logger.warn("documentIssueDate:" + hc.getDocumentIssueDate());
 							//API
 							/*
