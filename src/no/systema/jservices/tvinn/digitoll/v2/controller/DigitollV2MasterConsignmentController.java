@@ -27,6 +27,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
+import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusDto;
@@ -184,20 +185,20 @@ public class DigitollV2MasterConsignmentController {
 							logger.debug(GenericJsonStringPrinter.debug(mc));
 							//API
 							
-							/* TODO
-							String json = apiServices.postMasterConsignmentExpressMovementRoad(mc);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							/*
+							String json = apiServices.postMasterConsignmentDigitollV2(mc);
+							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
-							logger.warn("LRN = " + obj.getLrn());
-							//In case there was an error at end-point and the LRN was not returned
-							if(StringUtils.isEmpty(obj.getLrn())){
-								errMsg.append("LRN empty ?? <json raw>: " + json);
+							logger.warn("requestId = " + obj.getRequestId());
+							//In case there was an error at end-point and the requestId was not returned
+							if(StringUtils.isEmpty(obj.getRequestId())){
+								errMsg.append("requestId empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
 							}else {
-								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
-								String lrn = obj.getLrn();
-								dtoResponse.setLrn(lrn);
+								//(1) we have the requestId at this point. We must go an API-round trip again to get the MRN
+								String requestId = obj.getRequestId();
+								dtoResponse.setRequestId(requestId);
 								
 								//Delay 10-seconds
 								logger.warn("Start of delay: "+ new Date());
@@ -206,7 +207,7 @@ public class DigitollV2MasterConsignmentController {
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+								String mrn = this.getMrnMasterFromApi(dtoResponse, requestId);
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
@@ -216,7 +217,7 @@ public class DigitollV2MasterConsignmentController {
 								}
 								
 								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
-								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "ULM";
 									dtoResponse.setMrn(mrn);
 									//we must update the send date as well. Only 8-numbers
@@ -235,7 +236,7 @@ public class DigitollV2MasterConsignmentController {
 									}
 									
 								}else {
-									errMsg.append("LRN and/or MRN empty ??: " + "-->LRN:" + lrn + " -->MRN from API (look at logback-logs): " + mrn);
+									errMsg.append("LRN and/or MRN empty ??: " + "-->requestId:" + requestId + " -->MRN from API (look at logback-logs): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
@@ -243,10 +244,11 @@ public class DigitollV2MasterConsignmentController {
 							}
 							break; //only first in list
 							
-							*/ 
+							*/
+							
 							
 						}else {
-							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
+							errMsg.append(" requestId/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
