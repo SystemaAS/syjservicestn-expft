@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 /**
@@ -21,7 +22,7 @@ public class MapperTransport {
 	private static final Logger logger = LoggerFactory.getLogger(MapperTransport.class);
 	
 	
-	public Transport mapTransport(Object sourceDto) {
+	public Transport mapTransport(SadmotfDto sourceDto) {
 		
 		Transport transport = new Transport();
 		//(Mandatory) IssueDate
@@ -31,14 +32,14 @@ public class MapperTransport {
 		//(Optional) Representative
 		//if(StringUtils.isNotEmpty(sourceDto.getEmnar())){
 			Representative rep = new Representative();
-			rep.setName("todo");
-			rep.setIdentificationNumber("todo");
+			rep.setName(sourceDto.getEtnar());
+			rep.setIdentificationNumber(sourceDto.getEtrgr());
 			
 			//(Mandatory) this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
-			rep.setAddress(this.setAddress("city", "land code", "postnr", "address", "house nr"));
+			rep.setAddress(this.setAddress(sourceDto.getEtpsr(), sourceDto.getEtlkr(), sourceDto.getEtpnr(), sourceDto.getEtad1r(), sourceDto.getEtnrr()));
 			//
 			List rcommList = new ArrayList();
-			rcommList.add(this.populateCommunication("id", "type"));
+			rcommList.add(this.populateCommunication(sourceDto.getEtemr(), sourceDto.getEtemrt()));
 			rep.setCommunication(rcommList);
 			transport.setRepresentative(rep);
 
@@ -49,38 +50,37 @@ public class MapperTransport {
 		
 		//(Mandatory) Carrier
 		Carrier carrier = new Carrier();
-		carrier.setName("name");
-		carrier.setIdentificationNumber("todo");
-		carrier.setAddress(this.setAddress("city", "landcode", "postnr", "address", "housenr"));
-		//if(StringUtils.isNotEmpty(sourceDto.getEmemt())) {
-			carrier.setCommunication(this.setCommunication("id", "type"));
-		//}
+		carrier.setName(sourceDto.getEtnat());
+		carrier.setIdentificationNumber(sourceDto.getEtrgt());
+		carrier.setAddress(this.setAddress(sourceDto.getEtpst(), sourceDto.getEtlkt(), sourceDto.getEtpnt(), sourceDto.getEtad1t(), sourceDto.getEtnrt()));
+		if(StringUtils.isNotEmpty(sourceDto.getEtemt())) {
+			carrier.setCommunication(this.setCommunication(sourceDto.getEtemt() , sourceDto.getEtemtt()));
+		}
 		transport.setCarrier(carrier);
 		
 		//(Mandatory) CustomsOffice
 		CustomsOfficeOfFirstEntry cOffice = new CustomsOfficeOfFirstEntry();
-		cOffice.setReferenceNumber("refNr");
+		cOffice.setReferenceNumber(sourceDto.getEttsd());
 		transport.setCustomsOfficeOfFirstEntry(cOffice);
 
 		
 		//Optional
-		//if(sourceDto.getEmetad()>0) {
-			//PROD transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad(), sourceDto.getEmetat()));
-			transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
-		//}
-		//if(sourceDto.getEmetad()>0) {
-			//PROD transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEmetad??(), sourceDto.getEmetat??()));
-			transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
-		//}
+		if(sourceDto.getEtetad()>0) {
+			transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEtetad(), sourceDto.getEtetat()));
+			//TEST transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+		}
+		if(sourceDto.getEtshed()>0) {
+			transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEtshed(), sourceDto.getEtshet()));
+			//TEST transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+		}
 		
-		//Optional
-		//if(refsExists) {
-			List list = new ArrayList();
-			list.add(this.populateConsignmentMasterLevelTransport("one", "N730"));
-			list.add(this.populateConsignmentMasterLevelTransport("two", "N730"));
-			//
-			transport.setConsignmentMasterLevelTransport(list);
-		//}
+		//Mandatory ref to MasterConsignment
+		List list = new ArrayList();
+		list.add(this.populateConsignmentMasterLevelTransport(sourceDto.getEtdkm(), sourceDto.getEtdkmt()));
+		// if needed in the future-->list.add(this.populateConsignmentMasterLevelTransport("two", "N730"));
+		//
+		transport.setConsignmentMasterLevelTransport(list);
+		
 		
 		return transport;
 	}

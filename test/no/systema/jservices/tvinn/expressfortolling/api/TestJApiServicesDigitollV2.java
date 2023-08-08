@@ -54,9 +54,9 @@ public class TestJApiServicesDigitollV2 extends TestJBase {
 	@Test //for validating the raw json swagger spec
 	public void writeJsonTransport() throws Exception {
 		//this will be populated by the SADxxx Dto in real-world. We can not test it here unfortunately ...
-		Transport entity = new MapperTransport().mapTransport(new Object()); 
+		//Transport entity = new MapperTransport().mapTransport(new Object()); 
 		//Debug
-		System.out.println(GenericJsonStringPrinter.debug(entity));
+		//System.out.println(GenericJsonStringPrinter.debug(entity));
 		
 	}
 	
