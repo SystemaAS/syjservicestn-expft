@@ -28,6 +28,7 @@ import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusDto;
@@ -39,6 +40,7 @@ import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus3;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -49,7 +51,7 @@ import no.systema.main.util.ObjectMapperHalJson;
  * Main entrance for accessing Digitoll Version 2 API.
  * 
  * ===================================================================
- * Flow description with respect to the API and the SADXXX db table
+ * Flow description with respect to the API and the SADMOMF db table
  * ===================================================================
  * 	===============================
  * 	(A) Get MRN Digitoll - POST (API)
@@ -62,13 +64,13 @@ import no.systema.main.util.ObjectMapperHalJson;
  *	requestId (old LRN) = 1bdf0f33-f42e-48e2-b334-3944722e3fe5
 	
  *	(2) GET /master-consignment/validation-status/{requestId}
- *	Mrn and status on response. Update SADXXX with requestId=emuuid and mrn=emmid  
+ *	Mrn and status on response. Update SADMOMF with requestId=emuuid and mrn=emmid  
 	
  *	===========================
  * 	(B) Update Mrn - PUT (API)
  *	===========================
  *	(1) PUT /master-consignment/{masterReferenceNumber}
- *	Response returns new requestId which must be updated in SADXXX. Only requestId update 
+ *	Response returns new requestId which must be updated in SADMOMF. Only requestId update 
  *	IMPORTANT! -->Last requestId received is the one valid for GET validation-status 
  *	
  * 	
@@ -77,14 +79,14 @@ import no.systema.main.util.ObjectMapperHalJson;
  *	=============================
  *	(1) DELETE /master-consignment/{masterReferenceNumber}
  *	Response returns new requestId which we dont save.
- *	(2) Emuuid and Emmid (SADXXX) are blanked. The record is not deleted in db but is ready for new POST
+ *	(2) Emuuid and Emmid (SADMOMF) are blanked. The record is not deleted in db but is ready for new POST
  *	This item (2) could change by deleting the record totally ...
  *
  *  NOTE! 
  *	(D) To see the status of a given MRN att any given moment use the end-point --> getMasterConsignment.do in this Controller
  * 
  * @author oscardelatorre
- * @date Jun 2023
+ * @date Aug 2023
  * 
  *
  */
@@ -102,10 +104,10 @@ public class DigitollV2MasterConsignmentController {
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
-	private SadexmfService sadexmfService;	
+	private SadmomfService sadmomfService;	
 	
 	@Autowired
-	private SadexhfService sadexhfService;	
+	private SadexmfService sadexmfService;	
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -169,11 +171,11 @@ public class DigitollV2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexmfService.getSadexmf(serverRoot, user, emavd, empro);
+				List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emavd, empro);
 				if(list != null) {
 					logger.warn("list size:" + list.size());
 					
-					for (SadexmfDto dto: list) {
+					for (SadmomfDto dto: list) {
 						//DEBUG
 						logger.info(dto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
