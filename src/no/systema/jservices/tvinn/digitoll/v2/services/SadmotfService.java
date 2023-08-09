@@ -143,17 +143,17 @@ public class SadmotfService {
 		
 		return result; 
 	}
-	/*
-	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String lrn) {
-		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+	
+	public List<SadmotfDto> getSadmotfForUpdate(String serverRoot, String user, String lrn) {
+		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
 		
 		logger.warn("USER:" + user);
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADEXMF.do")
+				.path("/syjservicestn/syjsSADMOTF.do")
 				.queryParam("user", user)
-				.queryParam("emuuid", lrn)
+				.queryParam("etuuid", lrn)
 				.build()
 				.encode()
 				.toUri();
@@ -178,7 +178,7 @@ public class SadmotfService {
 				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
 				
 				for(Object o: dtoContainer.getList()){
-					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
+					SadmotfDto pojo = mapper.convertValue(o, SadmotfDto.class);
 					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
 					//N/A -->pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
 					//logger.warn(pojo.getHouseDtoList().toString());
@@ -196,7 +196,7 @@ public class SadmotfService {
 		
 		return result; 
 	}
-	*/
+	
 	
 	/**
 	 * 
