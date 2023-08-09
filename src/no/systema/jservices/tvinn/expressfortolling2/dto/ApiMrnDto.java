@@ -14,5 +14,7 @@ public class ApiMrnDto {
 	private String masterReferenceNumber;
 	private String notificationDate;
 	private Object[] validationErrorList;
+	private String mrn;
+	private String requestId;
 	
 }

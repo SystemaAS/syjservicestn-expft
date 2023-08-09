@@ -454,8 +454,9 @@ public class ApiClient {
         	if (returnType == null) {
         		return null;
             }
-        	
-            logger.warn("getBody():" + responseEntity.getBody());
+        	if(responseEntity.getBody()!=null) {
+        		logger.warn("getBody():" + responseEntity.getBody());
+        	}
             return responseEntity.getBody();
         } else {
         	logger.warn("C");

@@ -26,6 +26,7 @@ import com.google.gson.JsonParser;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
+import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
@@ -177,13 +178,19 @@ public class DigitollV2TransportController {
 							logger.debug(GenericJsonStringPrinter.debug(transport));
 							//API
 							
-							/*
-							String json = apiServices.postMasterConsignmentDigitollV2(mc);
+							
+							String json = apiServices.postTransportDigitollV2(transport);
+							//at this point we have a valid token for 2 minutes (120 sec). we use it for the MRN fetch via .../validation-status/...
+							//otherwise we have been experienced problems with the maskinport-token per call. Could be hiccups ...
+							if(this.apiServices.tokenLightDto != null) {
+								logger.warn("######### DEBUG for tokenLightDto to use in GET--validation-status...:" + this.apiServices.tokenLightDto.getExpires_in());
+							}
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("requestId = " + obj.getRequestId());
+							break;
 							//In case there was an error at end-point and the requestId was not returned
-							if(StringUtils.isEmpty(obj.getRequestId())){
+							/*if(StringUtils.isEmpty(obj.getRequestId())){
 								errMsg.append("requestId empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
@@ -263,12 +270,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		
+		*/
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -576,7 +583,7 @@ public class DigitollV2TransportController {
 	 */
 	@RequestMapping(value="/digitollv2/getTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+	public GenericDtoResponse getTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
@@ -598,7 +605,7 @@ public class DigitollV2TransportController {
 					if(StringUtils.isNotEmpty(lrn)) {
 						dtoResponse.setLrn(lrn);
 						
-						String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+						String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, lrn);
 						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 							errMsg.append(dtoResponse.getErrMsg());
 							
@@ -857,7 +864,85 @@ public class DigitollV2TransportController {
 			//throw new RuntimeException("ERROR: parameter, user, is not valid!");
 		}
 		return retval;
-	}	
+	}
+	
+	/**
+	 *  
+	 * @param tokenLightDto
+	 * @param dtoResponse
+	 * @param lrn
+	 * @return
+	 */
+	private String getMrnTransportFromApi( TokenResponseDto tokenLightDto, GenericDtoResponse dtoResponse, String lrn) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusTransportDigitollV2(tokenLightDto, lrn);
+			
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("status:" + obj.getStatus());
+			logger.warn("MRN = " + obj.getMasterReferenceNumber());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
+			
+			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
+				retval = obj.getMasterReferenceNumber();
+			}else {
+				dtoResponse.setErrMsg(json);
+			}
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
+	
+	
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 * @return
+	 */
+	private String getMrnTransportDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusTransportDigitollV2(lrn);
+			
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("status:" + obj.getStatus());
+			logger.warn("MRN = " + obj.getMrn());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
+			
+			if(StringUtils.isNotEmpty(obj.getMrn())) {
+				retval = obj.getMrn();
+			}else {
+				dtoResponse.setErrMsg(json);
+			}
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
 	
 	/**
 	 * 
