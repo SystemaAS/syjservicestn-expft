@@ -8,4 +8,5 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ApiLrnDto {
 	private String lrn;
+	private String requestId;
 }

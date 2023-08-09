@@ -90,24 +90,24 @@ public class SadmotfService {
 		
 		return result; 
 	}
-	/*
-	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String avd, String pro, String mrn) {
-		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+	
+	public List<SadmotfDto> getSadmotfForUpdate(String serverRoot, String user, String avd, String pro, String mrn) {
+		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
 		
 		logger.warn("USER:" + user);
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADEXMF.do")
+				.path("/syjservicestn/syjsSADMOTF.do")
 				.queryParam("user", user)
-				.queryParam("emmid", mrn)
+				.queryParam("etmid", mrn)
 				.build()
 				.encode()
 				.toUri();
 		
 		try {
 			HttpHeaders headerParams = new HttpHeaders();
-			headerParams.add("Accept", "*");
+			headerParams.add("Accept", "*/*");
 			HttpEntity<?> entity = new HttpEntity<>(headerParams);
 		
 			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
@@ -119,16 +119,16 @@ public class SadmotfService {
 			
 			//at this point the dtoContainer has an error or not
 			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
-				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				logger.error("select-SADMOTF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
 				result = null;
 			}else {
-				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
+				logger.warn("select-SADMOTF-REST-http-response:" + response.getStatusCodeValue());
 				
 				for(Object o: dtoContainer.getList()){
-					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
+					SadmotfDto pojo = mapper.convertValue(o, SadmotfDto.class);
 					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
-					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
-					logger.warn(pojo.getHouseDtoList().toString());
+					//pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					//logger.warn(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
 					}
@@ -143,7 +143,7 @@ public class SadmotfService {
 		
 		return result; 
 	}
-	
+	/*
 	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String lrn) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
@@ -196,7 +196,7 @@ public class SadmotfService {
 		
 		return result; 
 	}
-	
+	*/
 	
 	/**
 	 * 
@@ -206,43 +206,43 @@ public class SadmotfService {
 	 * @param sendDate
 	 * @param mode
 	 * @return
-	 
-	public List<SadexmfDto> updateLrnMrnSadexmf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
-		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+	 */
+	public List<SadmotfDto> updateLrnMrnSadmotf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
+		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
 		
 		logger.warn("user:" + user);
 		logger.warn("mode:" + mode);
-		logger.warn("emavd:" + dtoResponse.getAvd());
-		logger.warn("empro:" + dtoResponse.getPro());
-		logger.warn("emuuid:" + dtoResponse.getLrn());
-		logger.warn("emmid:" + dtoResponse.getMrn());
-		logger.warn("emdtin:" + sendDate);
-		logger.warn("emst:" + dtoResponse.getDb_st());
-		logger.warn("emst2:" + dtoResponse.getDb_st2());
-		logger.warn("emst3:" + dtoResponse.getDb_st3());
+		logger.warn("etavd:" + dtoResponse.getAvd());
+		logger.warn("etpro:" + dtoResponse.getPro());
+		logger.warn("etuuid:" + dtoResponse.getRequestId());
+		logger.warn("etmid:" + dtoResponse.getMrn());
+		logger.warn("etdtin:" + sendDate);
+		logger.warn("etst:" + dtoResponse.getDb_st());
+		logger.warn("etst2:" + dtoResponse.getDb_st2());
+		logger.warn("etst3:" + dtoResponse.getDb_st3());
 		
 		//example
 		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADEXMF_U.do")
+				.path("/syjservicestn/syjsSADMOTF_U.do")
 				.queryParam("user", user)
 				.queryParam("mode", mode)
-				.queryParam("emavd", Integer.valueOf(dtoResponse.getAvd()))
-				.queryParam("empro", Integer.valueOf(dtoResponse.getPro()))
-				.queryParam("emuuid", dtoResponse.getLrn())
-				.queryParam("emmid", dtoResponse.getMrn())
-				.queryParam("emdtin", Integer.parseInt(sendDate))
-				.queryParam("emst", dtoResponse.getDb_st())
-				.queryParam("emst2", dtoResponse.getDb_st2())
-				.queryParam("emst3", dtoResponse.getDb_st3())
+				.queryParam("etavd", Integer.valueOf(dtoResponse.getAvd()))
+				.queryParam("etpro", Integer.valueOf(dtoResponse.getPro()))
+				.queryParam("etuuid", dtoResponse.getRequestId())
+				.queryParam("etmid", dtoResponse.getMrn())
+				.queryParam("etdtin", Integer.parseInt(sendDate))
+				.queryParam("etst", dtoResponse.getDb_st())
+				.queryParam("etst2", dtoResponse.getDb_st2())
+				.queryParam("etst3", dtoResponse.getDb_st3())
 				.build()
 				.encode()
 				.toUri();
 		
 		try {
 			HttpHeaders headerParams = new HttpHeaders();
-			headerParams.add("Accept", "*");
+			headerParams.add("Accept", "*/*");
 			HttpEntity<?> entity = new HttpEntity<>(headerParams);
 		
 			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
@@ -254,16 +254,16 @@ public class SadmotfService {
 			
 			//at this point the dtoContainer has an error or not
 			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
-				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				logger.error("select-SADMOTF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
 				result = null;
 			}else {
-				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
-				SadexmfDto pojo = new SadexmfDto();
+				logger.warn("select-SADMOTF-REST-http-response:" + response.getStatusCodeValue());
+				SadmotfDto pojo = new SadmotfDto();
 				if(mode.startsWith("D")){
 					//nothing since it is DELETE;
 				}else {
 					//set it in order to have a valid response
-					pojo.setEmmid(dtoResponse.getMrn());
+					pojo.setEtmid(dtoResponse.getMrn());
 				}
 				result.add(pojo);
 				
@@ -277,7 +277,7 @@ public class SadmotfService {
 		return result; 
 	}
 	
-	*/
+	
 	
 	
 

@@ -225,11 +225,6 @@ public class ExpressFortolling2MasterConsignmentController {
 								
 								//(2) get mrn from API
 								//PROD-->
-								if(this.apiServices.tokenLightDto != null) {
-									logger.warn("#########DEBUG for tokenLightDto:" + this.apiServices.tokenLightDto.getAccess_token());
-								}else {
-									logger.warn("#########DEBUG for tokenLightDto SHOWs null ??");
-								}
 								String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());

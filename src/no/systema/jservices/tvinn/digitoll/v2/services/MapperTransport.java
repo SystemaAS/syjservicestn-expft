@@ -96,6 +96,23 @@ public class MapperTransport {
 		   
 	}
 	
+	public Transport mapTransportForDelete() {
+		
+		Transport transport = new Transport();
+		//IssueDate
+		transport.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+		logger.warn(transport.getDocumentIssueDate());
+		
+		try {
+			//System.out.println(obj.writerWithDefaultPrettyPrinter().writeValueAsString(mc));
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return transport;
+	}
+	
+	
 	private Communication populateCommunication(String id, String type) {
 		
 		Communication communication = new Communication();

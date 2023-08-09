@@ -61,7 +61,6 @@ import no.systema.jservices.tvinn.kurermanifest.util.Utils;
 public class ApiServices {
 	private static Logger logger = LoggerFactory.getLogger(ApiServices.class.getName());
 	private RestTemplate restTemplate;
-	public TokenResponseDto tokenLightDto = null;
 	
 	@Autowired
     private ApiClient apiClient;
@@ -839,7 +838,7 @@ public class ApiServices {
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
-		this.tokenLightDto = tollResponseDto;
+		
 		//Debug for JSON string
 		try {
 			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -878,6 +877,48 @@ public class ApiServices {
         		
 	}
 	
+	/**
+	 * 
+	 * @param transport
+	 * @param mrn
+	 * @return
+	 */
+	public String deleteTransportDigitollV2(Transport transport, String mrn) {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		
+		
+		Object postBody = transport;
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/transport/" + mrn).build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        
+        return apiClient.invokeAPI(path, HttpMethod.DELETE, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+
 	
 	/**
 	 * This method is used when no round-trip for getting a new token is needed.
@@ -998,7 +1039,7 @@ public class ApiServices {
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
-		this.tokenLightDto = tollResponseDto;
+		
 		//Debug for JSON string
 		try {
 			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
@@ -1052,7 +1093,7 @@ public class ApiServices {
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
-		this.tokenLightDto = tollResponseDto;
+		
 		//Debug for JSON string
 		try {
 			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
