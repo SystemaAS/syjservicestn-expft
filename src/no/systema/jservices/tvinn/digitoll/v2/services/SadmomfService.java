@@ -20,14 +20,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 
 
 @Service
-public class SadmotfService {
-	private static final Logger logger = LoggerFactory.getLogger(SadmotfService.class);
+public class SadmomfService {
+	private static final Logger logger = LoggerFactory.getLogger(SadmomfService.class);
 	
 	
 	@Autowired
@@ -37,17 +38,17 @@ public class SadmotfService {
 	//SadexhfService sadexhfService;
 	
 	
-	public List<SadmotfDto> getSadmotf(String serverRoot, String user, String avd, String pro) {
-		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
+	public List<SadmomfDto> getSadmomf(String serverRoot, String user, String avd, String pro) {
+		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
 		
 		logger.warn("USER:" + user);
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADMOTF.do")
+				.path("/syjservicestn/syjsSADMOMF.do")
 				.queryParam("user", user)
-				.queryParam("etavd", avd)
-				.queryParam("etpro", pro) 
+				.queryParam("emavd", avd)
+				.queryParam("empro", pro) 
 				.build()
 				.encode()
 				.toUri();
@@ -66,13 +67,13 @@ public class SadmotfService {
 			
 			//at this point the dtoContainer has an error or not
 			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
-				logger.error("select-SADMOTF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				logger.error("select-SADMOMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
 				result = null;
 			}else {
-				logger.warn("select-SADMOTF-REST-http-response:" + response.getStatusCodeValue());
+				logger.warn("select-SADMOMF-REST-http-response:" + response.getStatusCodeValue());
 				
 				for(Object o: dtoContainer.getList()){
-					SadmotfDto pojo = mapper.convertValue(o, SadmotfDto.class);
+					SadmomfDto pojo = mapper.convertValue(o, SadmomfDto.class);
 					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
 					//pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
 					//logger.warn(pojo.getHouseDtoList().toString());

@@ -233,7 +233,7 @@ public class MapperMasterConsignment {
 			if(StringUtils.isNotEmpty("sourceDto.getEmlku()")) {
 				AddressCountry addressCountry = new AddressCountry();
 				addressCountry.setCountry("sourceDto.getEmlku()");
-				pul.setAddress(addressCountry);
+				pdel.setAddress(addressCountry);
 			}
 			cml.setPlaceOfDelivery(pdel);
 		//}
