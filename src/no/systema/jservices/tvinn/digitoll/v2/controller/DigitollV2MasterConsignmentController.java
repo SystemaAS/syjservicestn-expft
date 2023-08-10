@@ -148,14 +148,14 @@ public class DigitollV2MasterConsignmentController {
 	@RequestMapping(value="/digitollv2/postMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse postMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "emavd", required = true) String emavd,
-																				@RequestParam(value = "empro", required = true) String empro) throws Exception {
+																				@RequestParam(value = "emlnrt", required = true) String emlnrt,
+																				@RequestParam(value = "emlnrm", required = true) String emlnrm) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(emavd);
-		dtoResponse.setPro(empro);
+		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEmlnrm(emlnrm);
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setRequestMethodApi("POST");
 		
@@ -171,15 +171,15 @@ public class DigitollV2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emavd, empro);
+				List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
 				if(list != null) {
 					logger.warn("list size:" + list.size());
 					
 					for (SadmomfDto dto: list) {
 						//DEBUG
 						logger.info(dto.toString());
-						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
 						
+						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
 						if(StringUtils.isEmpty(dto.getEmmid()) && StringUtils.isEmpty(dto.getEmuuid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
@@ -242,11 +242,11 @@ public class DigitollV2MasterConsignmentController {
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
-							
-							}
+								
+							}*/
 							break; //only first in list
 							
-							*/
+							
 							
 							
 						}else {
@@ -273,11 +273,12 @@ public class DigitollV2MasterConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -331,12 +332,13 @@ public class DigitollV2MasterConsignmentController {
 					for (SadexmfDto dto: list) {
 						logger.warn(dto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
+						/*
 						if(StringUtils.isNotEmpty(dto.getEmmid()) && StringUtils.isNotEmpty(dto.getEmuuid() )) {
-							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
+							MasterConsignment mc =  new MapperMasterConsignment()mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
 							//API - PROD
 							
-							/* TODO 
+							
 							
 							String json = apiServices.putMasterConsignmentExpressMovementRoad(mc, mrn);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
@@ -408,13 +410,13 @@ public class DigitollV2MasterConsignmentController {
 							  
 							}
 							break; //only first in list
-							*/
+							
 							
 						}else {
 							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any PUT ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
-						
+						*/
 					}
 				}else {
 					errMsg.append(" no records to fetch from SADEXMF ");

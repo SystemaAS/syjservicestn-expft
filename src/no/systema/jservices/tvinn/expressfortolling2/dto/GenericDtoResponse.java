@@ -34,6 +34,9 @@ public class GenericDtoResponse {
 	private String timestamp = "";
 	private String errMsg = "";
 	
+	private String emlnrt = "";
+	private String emlnrm = "";
+	
 	private List<Object> list = new ArrayList<Object>();
 	
 }

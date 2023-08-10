@@ -20,7 +20,7 @@ public class ConsignmentMasterLevel {
 	//Mandatory
 	private Integer containerIndicator;
 	//Mandatory
-	private Double grossMass;
+	private Integer grossMass;
 	//Mandatory
 	private Carrier carrier;
 	private Consignee consignee;

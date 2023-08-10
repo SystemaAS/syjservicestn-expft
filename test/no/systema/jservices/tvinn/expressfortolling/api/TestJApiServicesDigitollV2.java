@@ -15,6 +15,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.services.*;
 import no.systema.jservices.tvinn.expressfortolling.TestJBase;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -63,7 +64,7 @@ public class TestJApiServicesDigitollV2 extends TestJBase {
 	@Test //for validating the raw json swagger spec
 	public void writeJsonMasterConsignment() throws Exception {
 		//this will be populated by the SADxxx Dto in real-world. We can not test it here unfortunately ...
-		MasterConsignment entity = new MapperMasterConsignment().mapMasterConsignment(new Object()); 
+		MasterConsignment entity = new MapperMasterConsignment().mapMasterConsignment(new SadmomfDto()); 
 		//Debug
 		System.out.println(GenericJsonStringPrinter.debug(entity));
 		

@@ -38,7 +38,7 @@ public class SadmomfService {
 	//SadexhfService sadexhfService;
 	
 	
-	public List<SadmomfDto> getSadmomf(String serverRoot, String user, String avd, String pro) {
+	public List<SadmomfDto> getSadmomf(String serverRoot, String user, String emlnrt, String emlnrm) {
 		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
 		
 		logger.warn("USER:" + user);
@@ -47,8 +47,8 @@ public class SadmomfService {
 				.fromUriString(serverRoot)
 				.path("/syjservicestn/syjsSADMOMF.do")
 				.queryParam("user", user)
-				.queryParam("emavd", avd)
-				.queryParam("empro", pro) 
+				.queryParam("emlnrt", emlnrt)
+				.queryParam("emlnrm", emlnrm) 
 				.build()
 				.encode()
 				.toUri();
