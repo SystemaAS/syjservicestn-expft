@@ -136,7 +136,7 @@ public class DigitollV2TransportController {
 	 * @param empro
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/postTransport.do?user=NN&emavd=1&empro=501941
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/postTransport.do?user=NN&etavd=1&etpro=501941
 	 * 
 	 * test - OK
 	 * 
@@ -279,12 +279,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
+		
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;
@@ -301,6 +301,9 @@ public class DigitollV2TransportController {
 	 * @throws Exception
 	 * 
 	 * http://localhost:8080/syjservicestn-expft/digitollv2/putTransport?user=NN&etavd=1&etpro=501941&mrn=XXX
+	 * 
+	 * test - OK
+	 * 
 	 */
 	@RequestMapping(value="/digitollv2/putTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -458,7 +461,7 @@ public class DigitollV2TransportController {
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/deleteTransport?user=NN&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/deleteTransport?user=NN&etavd=1&etpro=501941&mrn=XXX
 	 * 
 	 * TEST - OK
 	 */
@@ -592,6 +595,8 @@ public class DigitollV2TransportController {
 	 * @param user
 	 * @param id
 	 * @return
+	 * 
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/getTransport.do?user=SYSTEMA&lrn=f2bfbb94-afae-4af3-a4ff-437f787d322f
 	 * 
 	 * test - OK
 	 */

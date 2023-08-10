@@ -197,7 +197,6 @@ public class SadmotfService {
 		return result; 
 	}
 	
-	
 	/**
 	 * 
 	 * @param serverRoot
@@ -210,17 +209,18 @@ public class SadmotfService {
 	public List<SadmotfDto> updateLrnMrnSadmotf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
 		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
 		
-		logger.warn("user:" + user);
-		logger.warn("mode:" + mode);
-		logger.warn("etavd:" + dtoResponse.getAvd());
-		logger.warn("etpro:" + dtoResponse.getPro());
-		logger.warn("etuuid:" + dtoResponse.getRequestId());
-		logger.warn("etmid:" + dtoResponse.getMrn());
-		logger.warn("etdtin:" + sendDate);
-		logger.warn("etst:" + dtoResponse.getDb_st());
-		logger.warn("etst2:" + dtoResponse.getDb_st2());
-		logger.warn("etst3:" + dtoResponse.getDb_st3());
+		logger.info("user:" + user);
+		logger.info("mode:" + mode);
+		logger.info("etavd:" + dtoResponse.getAvd());
+		logger.info("etpro:" + dtoResponse.getPro());
+		logger.info("etuuid:" + dtoResponse.getRequestId());
+		logger.info("etmid:" + dtoResponse.getMrn());
+		logger.info("etdtin:" + sendDate);
+		logger.info("etst:" + dtoResponse.getDb_st());
+		logger.info("etst2:" + dtoResponse.getDb_st2());
+		logger.info("etst3:" + dtoResponse.getDb_st3());
 		
+		logger.warn("Start --> update of Lrn and Mrn at SADMOTF_U...");
 		//example
 		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
 		URI uri = UriComponentsBuilder
@@ -268,7 +268,8 @@ public class SadmotfService {
 				result.add(pojo);
 				
 			}
-
+			logger.warn("End --> update of Lrn and Mrn at SADMOTF_U...");
+			
 		}catch(Exception e) {
 			logger.error(e.toString());
 			result = null;
