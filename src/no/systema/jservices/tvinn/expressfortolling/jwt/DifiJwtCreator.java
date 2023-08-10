@@ -231,7 +231,11 @@ public class DifiJwtCreator {
             	.signWith(SignatureAlgorithm.RS256, privateKeyParam)
             	.compact();
 	
-    			logger.info("createRequestJwt:" + result);
+				if(result!=null) {
+					logger.info("createRequestJwt:" + result.substring(0,20) + " ... ");
+				}else {
+					logger.error("createRequestJwt: null ??? --> ERROR towards Difi Jwt ...") ;
+				}
     			//for debugging purposes at customer site
     			jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuer);
 	

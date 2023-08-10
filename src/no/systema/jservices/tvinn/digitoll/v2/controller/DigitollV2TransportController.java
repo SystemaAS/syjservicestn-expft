@@ -45,6 +45,7 @@ import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
+import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -180,10 +181,12 @@ public class DigitollV2TransportController {
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
 							//Debug
 							logger.debug(GenericJsonStringPrinter.debug(transport));
+							
 							//API
 							
-							
-							String json = apiServices.postTransportDigitollV2(transport);
+							Map tollTokenMap = new HashMap(); //will be populated within the put-method
+							String json = apiServices.postTransportDigitollV2(transport, tollTokenMap);
+							//At this point we now have a valid tollToken to use
 							
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
@@ -200,14 +203,16 @@ public class DigitollV2TransportController {
 								dtoResponse.setRequestId(obj.getRequestId());
 								
 								//Delay 6-10 seconds
-								logger.warn("Start of delay: "+ new Date());
+								logger.warn(PrettyLoggerOutputer.FRAME);
+								logger.warn("START of delay: "+ new Date());
 								Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
-								logger.warn("End of delay: "+ new Date());
+								logger.warn("END of delay: "+ new Date());
+								logger.warn(PrettyLoggerOutputer.FRAME);
 								
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, requestId);
+								String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
 								
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
@@ -336,10 +341,10 @@ public class DigitollV2TransportController {
 							Transport transport =  new MapperTransport().mapTransport(dto);
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
 							//API - PROD
+							Map tollTokenMap = new HashMap(); //will be populated within the put-method
+							String json = apiServices.putTransportDigitollV2(transport, mrn, tollTokenMap);
+							//At this point we now have a valid tollToken to use
 							
-							String json = apiServices.putTransportDigitollV2(transport, mrn);
-							
-							//String json = apiServices.putMasterConsignmentExpressMovementRoad(mc, mrn);
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("requestId = " + obj.getRequestId());
@@ -383,11 +388,13 @@ public class DigitollV2TransportController {
 									//first received the LRN in the first PUT Master
 									
 									//Delay 6-10 seconds (as in POST) needed to avoid ERROR 404 on client ...
-									logger.warn("Start of delay: "+ new Date());
+									logger.warn(PrettyLoggerOutputer.FRAME);
+									logger.warn("START of delay: "+ new Date());
 									Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
-									logger.warn("End of delay: "+ new Date());
+									logger.warn("END of delay: "+ new Date());
+									logger.warn(PrettyLoggerOutputer.FRAME);
 									
-									this.checkLrnValidationStatusTransportDigitollV2FromApi(dtoResponse, requestId);
+									this.checkLrnValidationStatusTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
 										//Update ehst2(SADMOTF) with ERROR = M
@@ -708,19 +715,57 @@ public class DigitollV2TransportController {
 		return retval;
 	}
 	
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 * @param tollTokenMap
+	 * @return
+	 */
+	private String getMrnTransportDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
+		
+		String retval = "";
+		
+		try{
+			String json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("status:" + obj.getStatus());
+			logger.warn("MRN = " + obj.getMrn());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
+			
+			if(StringUtils.isNotEmpty(obj.getMrn())) {
+				retval = obj.getMrn();
+			}else {
+				dtoResponse.setErrMsg(json);
+			}
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
 	
 	/**
 	 * 
 	 * @param dtoResponse
 	 * @param lrn
+	 * @param tollTokenMap
 	 * @return
 	 */
-	private String checkLrnValidationStatusTransportDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn) {
+	private String checkLrnValidationStatusTransportDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
 		
 		String retval = "";
 		
 		try{
-			String json = apiServices.getValidationStatusTransportDigitollV2(lrn);
+			String json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap);
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("Status = " + obj.getStatus());
