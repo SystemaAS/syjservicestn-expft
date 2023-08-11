@@ -1081,16 +1081,17 @@ public class ApiServices {
 	/**
 	 * 
 	 * @param mc
+	 * @param tollTokenMap
 	 * @return
 	 */
-	public String postMasterConsignmentDigitollV2(no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment mc) {
+	public String postMasterConsignmentDigitollV2(no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment mc, Map tollTokenMap) {
 		  
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
-		
+		tollTokenMap.put(1, tollResponseDto);
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		//Debug for JSON string
@@ -1130,7 +1131,165 @@ public class ApiServices {
         return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
         		
 	}
+
+	/**
+	 * 
+	 * @param mc
+	 * @param mrn
+	 * @param tollTokenMap
+	 * @return
+	 */
+	public String putMasterConsignmentDigitollV2(no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment mc, String mrn, Map tollTokenMap) {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
+		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		tollTokenMap.put(1, tollResponseDto);
+		//Debug for JSON string
+		try {
+			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+			String json = ow.writeValueAsString(mc);
+			logger.warn(json);
+			
+		}catch(Exception e) {
+			e.toString();
+			
+		}
+		Object postBody = mc;
+		
+        //https://api-test.toll.no/api/movement/road/v1/test-auth
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/master-consignment/" + mrn).build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        
+        
+        return apiClient.invokeAPI(path, HttpMethod.PUT, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        		
+	}
+	/**
+	 * 
+	 * @param lrn
+	 * @param tollTokenMap
+	 * @return
+	 * @throws Exception
+	 */
+	public String getValidationStatusMasterConsignmentDigitollV2(String lrn, Map tollTokenMap) throws Exception {
+		
+		TokenResponseDto tollResponseDto = (TokenResponseDto)tollTokenMap.get(1);
+		
+		/*TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
+		*/
+		Object postBody = null; //Not in use
+		
+        //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementStatusRoadVersion + "/master-consignment/validation-status/" + lrn).build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        //headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        String tmpResponse = "";
+        
+        try {
+        	tmpResponse = apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        	
+        }catch(Exception e) {
+        	//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			throw new Exception(sw.toString());
+        }
+        
+        
+        return tmpResponse;
+        		
+	}
 	
+	/**
+	 * 
+	 * @param lrn
+	 * @return
+	 * @throws Exception
+	 */
+	public String getValidationStatusMasterConsignmentDigitollV2(String lrn) throws Exception {
+		
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
+		
+		Object postBody = null; //Not in use
+		
+        //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementStatusRoadVersion + "/master-consignment/validation-status/" + lrn).build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        //headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        String tmpResponse = "";
+        
+        try {
+        	tmpResponse = apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        	
+        }catch(Exception e) {
+        	//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			throw new Exception(sw.toString());
+        }
+        
+        
+        return tmpResponse;
+        		
+	}
+
 	
 	/**
 	 * Create new - POST

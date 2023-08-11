@@ -20,7 +20,11 @@ public class SadexlogDto {
 	private Integer eltime  = 0; // SONET        6  0       6        28        Begge    TID 
 	private String eltyp  = "" ; // TEGN            5       5        34        Begge    LOGGTYPE     
 	private String elltxt  = "" ; // TEGN         1024    1024        39        Begge    LOGTEXT     
-	private String elifsf  = "" ; // TEGN          100     100      1063        Begge    IFS FILENAME	 
+	private String elifsf  = "" ; // TEGN          100     100      1063        Begge    IFS FILENAME	
+	
+	//private Integer ellnrt  = 0; //SONET 7
+	//private Integer ellnrm  = 0; //SONET 4
+	//private Integer ellnrh  = 0; //SONET ?
 	
 	
 }

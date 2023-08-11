@@ -91,15 +91,15 @@ public class SadmomfService {
 		
 		return result; 
 	}
-	/*
-	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String avd, String pro, String mrn) {
-		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+	
+	public List<SadmomfDto> getSadmomfForUpdate(String serverRoot, String user, String emlnrt, String emlnrm, String mrn) {
+		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
 		
 		logger.warn("USER:" + user);
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADEXMF.do")
+				.path("/syjservicestn/syjsSADMOMF.do")
 				.queryParam("user", user)
 				.queryParam("emmid", mrn)
 				.build()
@@ -108,7 +108,7 @@ public class SadmomfService {
 		
 		try {
 			HttpHeaders headerParams = new HttpHeaders();
-			headerParams.add("Accept", "*");
+			headerParams.add("Accept", "*/*");
 			HttpEntity<?> entity = new HttpEntity<>(headerParams);
 		
 			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
@@ -120,16 +120,16 @@ public class SadmomfService {
 			
 			//at this point the dtoContainer has an error or not
 			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
-				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				logger.error("select-SADMOMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
 				result = null;
 			}else {
-				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
+				logger.warn("select-SADMOMF-REST-http-response:" + response.getStatusCodeValue());
 				
 				for(Object o: dtoContainer.getList()){
-					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
+					SadmomfDto pojo = mapper.convertValue(o, SadmomfDto.class);
 					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
-					pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
-					logger.warn(pojo.getHouseDtoList().toString());
+					//pojo.setHouseDtoList(sadmomfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					//logger.warn(pojo.getHouseDtoList().toString());
 					if(pojo!=null) {
 						result.add(pojo);
 					}
@@ -144,7 +144,7 @@ public class SadmomfService {
 		
 		return result; 
 	}
-	
+	/*
 	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String lrn) {
 		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
 		
@@ -197,6 +197,7 @@ public class SadmomfService {
 		
 		return result; 
 	}
+	*/
 	
 	
 	/**
@@ -207,31 +208,32 @@ public class SadmomfService {
 	 * @param sendDate
 	 * @param mode
 	 * @return
-	 
-	public List<SadexmfDto> updateLrnMrnSadexmf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
-		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+	 */
+	public List<SadmomfDto> updateLrnMrnSadmomf(String serverRoot, String user, GenericDtoResponse dtoResponse, String sendDate, String mode) {
+		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
 		
 		logger.warn("user:" + user);
 		logger.warn("mode:" + mode);
-		logger.warn("emavd:" + dtoResponse.getAvd());
-		logger.warn("empro:" + dtoResponse.getPro());
-		logger.warn("emuuid:" + dtoResponse.getLrn());
+		logger.warn("emlnrt:" + dtoResponse.getEmlnrt());
+		logger.warn("emlnrm:" + dtoResponse.getEmlnrm());
+		logger.warn("emuuid:" + dtoResponse.getRequestId());
 		logger.warn("emmid:" + dtoResponse.getMrn());
 		logger.warn("emdtin:" + sendDate);
 		logger.warn("emst:" + dtoResponse.getDb_st());
 		logger.warn("emst2:" + dtoResponse.getDb_st2());
 		logger.warn("emst3:" + dtoResponse.getDb_st3());
 		
+		logger.warn("Start --> update of Lrn and Mrn at SADMOTF_U...");
 		//example
-		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
+		//http://localhost:8080/syjservicestn/syjsSADMOMF_U.do?user=NN&emlnrt=1&emlnrm=2&mode=UL&emmid=XX&emuuid=uuid
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADEXMF_U.do")
+				.path("/syjservicestn/syjsSADMOMF_U.do")
 				.queryParam("user", user)
 				.queryParam("mode", mode)
-				.queryParam("emavd", Integer.valueOf(dtoResponse.getAvd()))
-				.queryParam("empro", Integer.valueOf(dtoResponse.getPro()))
-				.queryParam("emuuid", dtoResponse.getLrn())
+				.queryParam("emlnrt", dtoResponse.getEmlnrt())
+				.queryParam("emlnrm", dtoResponse.getEmlnrm())
+				.queryParam("emuuid", dtoResponse.getRequestId())
 				.queryParam("emmid", dtoResponse.getMrn())
 				.queryParam("emdtin", Integer.parseInt(sendDate))
 				.queryParam("emst", dtoResponse.getDb_st())
@@ -243,7 +245,7 @@ public class SadmomfService {
 		
 		try {
 			HttpHeaders headerParams = new HttpHeaders();
-			headerParams.add("Accept", "*");
+			headerParams.add("Accept", "*/*");
 			HttpEntity<?> entity = new HttpEntity<>(headerParams);
 		
 			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
@@ -255,11 +257,11 @@ public class SadmomfService {
 			
 			//at this point the dtoContainer has an error or not
 			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
-				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				logger.error("select-SADMOMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
 				result = null;
 			}else {
-				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
-				SadexmfDto pojo = new SadexmfDto();
+				logger.warn("select-SADMOMF-REST-http-response:" + response.getStatusCodeValue());
+				SadmomfDto pojo = new SadmomfDto();
 				if(mode.startsWith("D")){
 					//nothing since it is DELETE;
 				}else {
@@ -269,7 +271,8 @@ public class SadmomfService {
 				result.add(pojo);
 				
 			}
-
+			logger.warn("End --> update of Lrn and Mrn at SADMOMF_U...");
+			
 		}catch(Exception e) {
 			logger.error(e.toString());
 			result = null;
@@ -278,7 +281,7 @@ public class SadmomfService {
 		return result; 
 	}
 	
-	*/
+
 	
 	
 

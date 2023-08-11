@@ -31,9 +31,9 @@ public class MapperMasterConsignment {
 		mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		logger.warn(mc.getDocumentIssueDate());
 		
-		//(Optional) Representative
+		//(Optional) Representative (do not exist at db level, fetch from Transport if applicable = TODO
 		
-		//if(StringUtils.isNotEmpty(dto.getEmnar())){
+		/*if(StringUtils.isNotEmpty(dto.getEmnar())){
 			Representative rep = new Representative();
 			rep.setName("sourceDto.getEmnar()");
 			rep.setIdentificationNumber("sourceDto.getEmrgr()");
@@ -59,8 +59,8 @@ public class MapperMasterConsignment {
 			
 			mc.setRepresentative(rep);
 
-		//}
-	
+		}
+		*/
 		
 		//(Mandatory) Consig.MasterLevel - documentNumber IMPORTANT (parent to houseConsignment documentNumber)
 		mc.setConsignmentMasterLevel(this.populateConsignmentMasterLevel(dto));
@@ -163,7 +163,7 @@ public class MapperMasterConsignment {
 			Consignee consignee = new Consignee();
 			consignee.setName(dto.getEmnam() );
 			consignee.setIdentificationNumber(dto.getEmrgm() );
-			consignee.setTypeOfPerson(Integer.valueOf("0"));//sourceDto.getEmemmt()
+			consignee.setTypeOfPerson(2); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
 			if(StringUtils.isNotEmpty(dto.getEmpsm())) {
 				consignee.setAddress(this.setAddress(dto.getEmpsm(), dto.getEmlkm(), dto.getEmpnm(), dto.getEmad1m(), dto.getEmnrm() ));
 			}
@@ -177,7 +177,7 @@ public class MapperMasterConsignment {
 			Consignor consignor = new Consignor();
 			consignor.setName(dto.getEmnas());
 			consignor.setIdentificationNumber(dto.getEmrgs());
-			consignor.setTypeOfPerson(Integer.valueOf(dto.getEmemst()));
+			consignor.setTypeOfPerson(2); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
 			if(StringUtils.isNotEmpty(dto.getEmpss())) {
 				consignor.setAddress(this.setAddress(dto.getEmpss(),dto.getEmlks(),dto.getEmpns(),dto.getEmad1s(),dto.getEmnrs()));
 			}
@@ -202,50 +202,50 @@ public class MapperMasterConsignment {
 		//TODO (Optional)consignmentHouseLevel
 		
 		//(Optional) PlaceOfLoading
-		//if(StringUtils.isNotEmpty(sourceDto.getEmsdl())) {
+		if(StringUtils.isNotEmpty(dto.getEmlkl())) {
 			PlaceOfLoading pl = new PlaceOfLoading();
-			if(StringUtils.isNotEmpty("sourceDto.getEmsdlt()")) { pl.setLocation("sourceDto.getEmsdlt()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEmsdl()")) { pl.setUnloCode("sourceDto.getEmsdl()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEmlkl()")) {
+			if(StringUtils.isNotEmpty(dto.getEmsdlt())) { pl.setLocation(dto.getEmsdlt()); }
+			if(StringUtils.isNotEmpty(dto.getEmsdl())) { pl.setUnloCode(dto.getEmsdl()); }
+			if(StringUtils.isNotEmpty(dto.getEmlkl())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry("sourceDto.getEmlkl()");
+				addressCountry.setCountry(dto.getEmlkl());
 				pl.setAddress(addressCountry);
 			}
 			cml.setPlaceOfLoading(pl);
-		//}
+		}
 		
 		//(Optional) PlaceOfUnloading
-		//if(StringUtils.isNotEmpty(sourceDto.getEmsdl())) {
+		if(StringUtils.isNotEmpty(dto.getEmlku())) {
 			PlaceOfUnloading pul = new PlaceOfUnloading();
-			if(StringUtils.isNotEmpty("sourceDto.getEmsdut()")) { pul.setLocation("sourceDto.getEmsdut()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEmsdu()")) { pul.setUnloCode("sourceDto.getEmsdu()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEmlku()")) {
+			if(StringUtils.isNotEmpty(dto.getEmsdut())) { pul.setLocation(dto.getEmsdut()); }
+			if(StringUtils.isNotEmpty(dto.getEmsdu())) { pul.setUnloCode(dto.getEmsdu()); }
+			if(StringUtils.isNotEmpty(dto.getEmlku())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry("sourceDto.getEmlku()");
+				addressCountry.setCountry(dto.getEmlku());
 				pul.setAddress(addressCountry);
 			}
 			cml.setPlaceOfUnloading(pul);
-		//}
+		}
 			
 		//(Optional) PlaceOfDelivery
-		//if(StringUtils.isNotEmpty(sourceDto.getEmsdl())) {
+		if(StringUtils.isNotEmpty(dto.getEmlkd())) {
 			PlaceOfDelivery pdel = new PlaceOfDelivery();
-			if(StringUtils.isNotEmpty("sourceDto.getEmsdut()")) { pdel.setLocation("sourceDto.getEmsdut()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEmsdu()")) { pdel.setUnloCode("sourceDto.getEmsdu()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEmlku()")) {
+			if(StringUtils.isNotEmpty(dto.getEmsddt())) { pdel.setLocation(dto.getEmsddt()); }
+			if(StringUtils.isNotEmpty(dto.getEmsdd())) { pdel.setUnloCode(dto.getEmsdd()); }
+			if(StringUtils.isNotEmpty(dto.getEmlkd())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry("sourceDto.getEmlku()");
+				addressCountry.setCountry(dto.getEmlkd());
 				pdel.setAddress(addressCountry);
 			}
 			cml.setPlaceOfDelivery(pdel);
-		//}
+		}
 		
 		
 		
 		return cml;
 		
 	}
-	
+	//Containers
 	private List<TransportEquipment> populateTransportEquipment(SadmomfDto dto) {
 		List<TransportEquipment> listTranspEquip = new ArrayList<>();
 		if(StringUtils.isNotEmpty(dto.getEmc1id())) {
@@ -266,6 +266,17 @@ public class MapperMasterConsignment {
 			te.setContainerPackedStatus(dto.getEmc2ps());
 			te.setContainerSupplierType(dto.getEmc2ss());
 			listTranspEquip.add(te);
+			//3:rd
+			if(StringUtils.isNotEmpty(dto.getEmc3id())) {
+				TransportEquipment te3 = new TransportEquipment();
+				//all below mandatory
+				te3.setContainerIdentificationNumber(dto.getEmc3id());
+				te3.setContainerSizeAndType(dto.getEmc3ty());
+				te3.setContainerPackedStatus(dto.getEmc3ps());
+				te3.setContainerSupplierType(dto.getEmc3ss());
+				listTranspEquip.add(te3);
+				
+			}
 		}
 		
 			

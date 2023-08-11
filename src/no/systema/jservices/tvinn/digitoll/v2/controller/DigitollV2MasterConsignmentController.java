@@ -29,6 +29,7 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusDto;
@@ -41,6 +42,7 @@ import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus3;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
+import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -144,6 +146,9 @@ public class DigitollV2MasterConsignmentController {
 	 * @throws Exception
 	 * 
 	 * http://localhost:8080/syjservicestn-expft/digitollv2/postMasterConsignment.do?user=NN&emavd=1&empro=501941
+	 * 
+	 * test - OK
+	 * 
 	 */
 	@RequestMapping(value="/digitollv2/postMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -187,8 +192,10 @@ public class DigitollV2MasterConsignmentController {
 							logger.debug(GenericJsonStringPrinter.debug(mc));
 							//API
 							
-							/*
-							String json = apiServices.postMasterConsignmentDigitollV2(mc);
+							Map tollTokenMap = new HashMap();
+							String json = apiServices.postMasterConsignmentDigitollV2(mc, tollTokenMap);
+							//At this point we now have a valid tollToken to use
+							
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("requestId = " + obj.getRequestId());
@@ -202,48 +209,51 @@ public class DigitollV2MasterConsignmentController {
 								String requestId = obj.getRequestId();
 								dtoResponse.setRequestId(requestId);
 								
-								//Delay 10-seconds
-								logger.warn("Start of delay: "+ new Date());
+								//Delay 6-10 seconds
+								logger.warn(PrettyLoggerOutputer.FRAME);
+								logger.warn("START of delay: "+ new Date());
 								Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
-								logger.warn("End of delay: "+ new Date());
+								logger.warn("END of delay: "+ new Date());
+								logger.warn(PrettyLoggerOutputer.FRAME);
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnMasterFromApi(dtoResponse, requestId);
+								String mrn = this.getMrnMasterConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
-									dtoResponse.setDb_st2(EnumSadexmfStatus2.M.toString());
+									dtoResponse.setDb_st2(EnumSadmomfStatus2.M.toString());
 								}else {
-									dtoResponse.setDb_st2(EnumSadexmfStatus2.C.toString());
+									dtoResponse.setDb_st2(EnumSadmomfStatus2.C.toString());
 								}
 								
-								//(3)now we have lrn and mrn and proceed with the SADEXMF-update at master consignment
+								
+								//(3)now we have lrn and mrn and proceed with the SADMOMF-update at master consignment
 								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "ULM";
 									dtoResponse.setMrn(mrn);
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
+									List<SadmomfDto> xx = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
-										for (SadexmfDto rec: xx) {
+										for (SadmomfDto rec: xx) {
 											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
 												//OK
 											}else {
-												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+												errMsg.append("MRN empty after SADMOMF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
 											}
 										}
 									}
 									
 								}else {
-									errMsg.append("LRN and/or MRN empty ??: " + "-->requestId:" + requestId + " -->MRN from API (look at logback-logs): " + mrn);
+									errMsg.append("RequestId and/or MRN empty ??: " + "-->requestId:" + requestId + " -->MRN from API (look at logback-logs): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
 								
-							}*/
+							}
 							break; //only first in list
 							
 							
@@ -286,7 +296,7 @@ public class DigitollV2MasterConsignmentController {
 	
 	/**
 	 * 
-	 * Updates an existing Master Consignment through the API - PUT. Requires an existing MRN (emmid at SADEXMF)
+	 * Updates an existing Master Consignment through the API - PUT. Requires an existing MRN (emmid at SADMOMF)
 	 * @param request
 	 * @param user
 	 * @param emavd
@@ -294,20 +304,22 @@ public class DigitollV2MasterConsignmentController {
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/putMasterConsignment?user=NN&emavd=1&empro=501941&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/putMasterConsignment?user=NN&emlnrt=1&emlnrm=2&mrn=XXX
+	 * 
+	 * test - OK
 	 */
 	@RequestMapping(value="/digitollv2/putMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse putMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "emavd", required = true) String emavd,
-																				@RequestParam(value = "empro", required = true) String empro,
+																				@RequestParam(value = "emlnrt", required = true) String emlnrt,
+																				@RequestParam(value = "emlnrm", required = true) String emlnrm,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(emavd);
-		dtoResponse.setPro(empro);
+		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEmlnrm(emlnrm);
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
@@ -324,58 +336,59 @@ public class DigitollV2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(serverRoot, user, emavd, empro, mrn);
+				List<SadmomfDto> list = sadmomfService.getSadmomfForUpdate(serverRoot, user, emlnrt, emlnrm, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
 					
-					for (SadexmfDto dto: list) {
+					for (SadmomfDto dto: list) {
 						logger.warn(dto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
-						/*
+						
 						if(StringUtils.isNotEmpty(dto.getEmmid()) && StringUtils.isNotEmpty(dto.getEmuuid() )) {
-							MasterConsignment mc =  new MapperMasterConsignment()mapMasterConsignment(dto);
+							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
 							//API - PROD
 							
+							Map tollTokenMap = new HashMap();
+							String json = apiServices.putMasterConsignmentDigitollV2(mc, mrn, tollTokenMap);
 							
-							
-							String json = apiServices.putMasterConsignmentExpressMovementRoad(mc, mrn);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
-							logger.warn("LRN = " + obj.getLrn());
+							logger.warn("requestId = " + obj.getRequestId());
+							//At this point we now have a valid tollToken to use
 							
 							//put in response
-							dtoResponse.setLrn(obj.getLrn());
+							dtoResponse.setRequestId(obj.getRequestId());
 							dtoResponse.setAvd(String.valueOf(dto.getEmavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEmpro()));
 							
 							//In case there was an error at end-point and the LRN was not returned
-							if(StringUtils.isEmpty(obj.getLrn())){
-								errMsg.append("LRN empty ?? <json raw>: " + json);
+							if(StringUtils.isEmpty(obj.getRequestId())){
+								errMsg.append("requestId empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
 								
 							}else {
 								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
-								String lrn = obj.getLrn();
-								dtoResponse.setLrn(lrn);
+								String requestId = obj.getRequestId();
+								dtoResponse.setRequestId(requestId);
 								
-								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
-								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+								//(2)now we have the new lrn for the updated mrn so we proceed with the SADMOMF-update-lrn at master consignment
+								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "UL";
 									dtoResponse.setMrn(mrn);
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
+									List<SadmomfDto> xx = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
-										for (SadexmfDto rec: xx) {
+										for (SadmomfDto rec: xx) {
 											//logger.warn(rec.toString());
 											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
 												//OK
 											}else {
-												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
+												errMsg.append("MRN empty after SADMOMF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
 											}
 										}
@@ -383,26 +396,28 @@ public class DigitollV2MasterConsignmentController {
 									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
 									//first received the LRN in the first PUT Master
 									
-									//Delay 10-seconds (as in POST) needed to avoid ERROR 404 on client ...
-									logger.warn("Start of delay: "+ new Date());
+									//Delay 6-10 seconds (as in POST) needed to avoid ERROR 404 on client ...
+									logger.warn(PrettyLoggerOutputer.FRAME); 
+									logger.warn("START of delay: "+ new Date());
 									Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
-									logger.warn("End of delay: "+ new Date());
+									logger.warn("END of delay: "+ new Date());
+									logger.warn(PrettyLoggerOutputer.FRAME);
 									
-									this.checkLrnValidationStatus(dtoResponse, lrn);
+									this.checkLrnValidationStatusMasterConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
-										//Update ehst2(SADEXMF) with ERROR = M
-										dtoResponse.setDb_st2(EnumSadexmfStatus2.M.toString());
-										List<SadexmfDto> tmp = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
+										//Update ehst2(SADMOMF) with ERROR = M
+										dtoResponse.setDb_st2(EnumSadmomfStatus2.M.toString());
+										List<SadmomfDto> tmp = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, sendDate, mode);
 									}else {
 										//OK
-										logger.warn("LRN status is OK ... (no errors)");
-										dtoResponse.setDb_st2(EnumSadexmfStatus2.C.toString());
-										List<SadexmfDto> tmp = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
+										logger.warn("RequestId status is OK ... (no errors)");
+										dtoResponse.setDb_st2(EnumSadmomfStatus2.C.toString());
+										List<SadmomfDto> tmp = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, sendDate, mode);
 									}
 									
 								}else {
-									errMsg.append("LRN empty after PUT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXMF): " + mrn);
+									errMsg.append("RequestId empty after PUT ??: " + "-->RequestId:" + requestId + " -->MRN from db(SADMOMF): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
@@ -416,10 +431,10 @@ public class DigitollV2MasterConsignmentController {
 							errMsg.append(" LRN/MRN are empty. This operation is invalid. Make sure this fields have values before any PUT ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
-						*/
+						
 					}
 				}else {
-					errMsg.append(" no records to fetch from SADEXMF ");
+					errMsg.append(" no records to fetch from SADMOMF ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				
@@ -435,13 +450,15 @@ public class DigitollV2MasterConsignmentController {
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
 		}
-		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
 		
 		//std output (browser)
+		 
+		 */
 		return dtoResponse;
 	}
 	/**
@@ -610,7 +627,7 @@ public class DigitollV2MasterConsignmentController {
 					if(StringUtils.isNotEmpty(lrn)) {
 						dtoResponse.setLrn(lrn);
 						
-						String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
+						String mrn = this.getMrnMasterConsignmentDigitollV2FromApi(dtoResponse, lrn);
 						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 							errMsg.append(dtoResponse.getErrMsg());
 							
@@ -750,112 +767,7 @@ public class DigitollV2MasterConsignmentController {
 		//std output (browser)
 		return dtoResponse;
 	}
-	/**
-	 * Gets Master Consignment status through the API - GET - in order to get an MRN
-	 * This method is used for the update of an MRN in SADEXMF. The need for doing so is based upon the fact that toll.no
-	 * has an asynchronous routine with every POST that returns sometimes an empty MRN as soon as the LRN has been produced.
-	 * This will trigger a defect post in our db since the LRN without an MRN will be wrong if the POST was OK.
-	 * To correct the above this method will be used at some point in the GUI in order to prevent a user-POST and instead prompt a PUT (update at toll.no instead of a create new)
-	 * 
-	 * @param request
-	 * @param user
-	 * @param lrn
-	 * @return
-	 * @throws Exception
-	 */
-	@RequestMapping(value="/digitollv2/setMrnMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
-	@ResponseBody
-	public GenericDtoResponse setMrnMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
-																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
-		
-		String serverRoot = ServerRoot.getServerRoot(request);
-		GenericDtoResponse dtoResponse = new GenericDtoResponse();
-		dtoResponse.setUser(user);
-		dtoResponse.setLrn(lrn);
-		dtoResponse.setRequestMethodApi("GET");
-		StringBuilder errMsg = new StringBuilder("ERROR ");
-		String methodName = new Object() {}
-	      .getClass()
-	      .getEnclosingMethod()
-	      .getName();
-		
-		logger.warn("Inside " + methodName + "- LRNnr: " + lrn );
-		
-		try {
-			if(checkUser(user)) {
-					//(1)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
-					if(StringUtils.isNotEmpty(lrn)) {
-						dtoResponse.setLrn(lrn);
-						
-						String mrn = this.getMrnMasterFromApi(dtoResponse, lrn);
-						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
-							errMsg.append(dtoResponse.getErrMsg());
-							
-							if(StringUtils.isNotEmpty(mrn)) {
-								dtoResponse.setErrMsg("");
-							}else {
-								dtoResponse.setErrMsg(errMsg.toString());
-							}
-						}else {
-							dtoResponse.setMrn(mrn);
-							//(2) get the record to update
-							List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(serverRoot, user, lrn);
-							if(list != null) {
-								logger.warn("list size:" + list.size());
-								
-								for (SadexmfDto dto: list) {
-									String mode = "ULM";
-									logger.info("empro:" + dto.getEmpro());
-									//Update emst2(SADEXMF) with OK = C
-									dtoResponse.setAvd(String.valueOf(dto.getEmavd()));
-									dtoResponse.setPro(String.valueOf(dto.getEmpro()));
-									dtoResponse.setDb_st(dto.getEmst());
-									dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
-									dtoResponse.setDb_st3(dto.getEmst3());
-									String sendDate = String.valueOf(dto.getEmdtin());
-									//(3)now we have lrn and mrn. Proceed with the SADEXMF-update at master consignment
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
-									if(xx!=null && xx.size()>0) {
-										for (SadexmfDto rec: xx) {
-											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
-												//OK
-											}else {
-												errMsg.append("MRN empty after SADEXMF-update:" + mrn);
-												dtoResponse.setErrMsg(errMsg.toString());
-											}
-										}
-									}
-								}
-							}
-						}
-						
-					}else {
-						errMsg.append("LRN empty ?" + "-->LRN:" + lrn);
-						dtoResponse.setErrMsg(errMsg.toString());
-						
-					}
-											
-			}else {
-				errMsg.append(" invalid user " + user + " " + methodName);
-				dtoResponse.setErrMsg(errMsg.toString());
-			}
-			
-		}catch(Exception e) {
-			//e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			dtoResponse.setErrMsg(sw.toString());
-		}
-		
-		//NA --> log in db before std-output -- since this is a help method to be executed from the browser only ...
-		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
-		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		
-		//std output (browser)
-		return dtoResponse;
-	}
+
 	
 	/**
 	 * 
@@ -875,24 +787,62 @@ public class DigitollV2MasterConsignmentController {
 	 * 
 	 * @param dtoResponse
 	 * @param lrn
+	 * @param tollTokenMap
 	 * @return
 	 */
-	private String getMrnMasterFromApi(GenericDtoResponse dtoResponse, String lrn) {
+	private String getMrnMasterConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn) {
 		
 		String retval = "";
 		
 		try{
 			
-			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
+			String json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn);
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("status:" + obj.getStatus());
-			logger.warn("MRN = " + obj.getMasterReferenceNumber());
+			logger.warn("MRN = " + obj.getMrn());
 			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());
 			
-			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
-				retval = obj.getMasterReferenceNumber();
+			if(StringUtils.isNotEmpty(obj.getMrn())) {
+				retval = obj.getMrn();
+			}else {
+				dtoResponse.setErrMsg(json);
+			}
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 * @param tollTokenMap
+	 * @return
+	 */
+	private String getMrnMasterConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap);
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("status:" + obj.getStatus());
+			logger.warn("MRN = " + obj.getMrn());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
+			
+			if(StringUtils.isNotEmpty(obj.getMrn())) {
+				retval = obj.getMrn();
 			}else {
 				dtoResponse.setErrMsg(json);
 			}
@@ -908,17 +858,24 @@ public class DigitollV2MasterConsignmentController {
 		return retval;
 	}
 	
-private String checkLrnValidationStatus(GenericDtoResponse dtoResponse, String lrn) {
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 * @param tollTokenMap
+	 * @return
+	 */
+	private String checkLrnValidationStatusMasterConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
 		
 		String retval = "";
 		
 		try{
 			
-			String json = apiServices.getValidationStatusMasterConsignmentExpressMovementRoad(lrn);
+			String json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap);
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("Status = " + obj.getStatus());
-			logger.warn("localRefNumber = " + obj.getLocalReferenceNumber());
+			logger.warn("requestID = " + obj.getRequestId());
 			logger.warn("notificationDate = " + obj.getNotificationDate());
 			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
 			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);

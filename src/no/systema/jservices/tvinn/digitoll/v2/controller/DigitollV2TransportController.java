@@ -368,7 +368,7 @@ public class DigitollV2TransportController {
 								String requestId = obj.getRequestId();
 								dtoResponse.setRequestId(requestId);
 								
-								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+								//(2)now we have the new lrn for the updated mrn so we proceed with the SADMOTF-update-lrn at Transport
 								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "UL";
 									dtoResponse.setMrn(mrn);
