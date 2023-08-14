@@ -306,7 +306,7 @@ public class DigitollV2MasterConsignmentController {
 	 * 
 	 * http://localhost:8080/syjservicestn-expft/digitollv2/putMasterConsignment?user=NN&emlnrt=1&emlnrm=2&mrn=XXX
 	 * 
-	 * test - OK
+	 * test - OK 
 	 */
 	@RequestMapping(value="/digitollv2/putMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -585,10 +585,12 @@ public class DigitollV2MasterConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -679,6 +681,7 @@ public class DigitollV2MasterConsignmentController {
 	 * @return
 	 * @throws Exception
 	 */
+	/*
 	@RequestMapping(value="/digitollv2/getStatusMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getStatusMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
@@ -720,7 +723,7 @@ public class DigitollV2MasterConsignmentController {
 							dtoResponse.setList(list);
 							
 							//(1)Proceed with every documentNumber and match with its respective house
-							//This stage is necessary only to change a house status3 on wether it exist in Master at toll.no or not
+							//This stage is necessary only to change a house status3 on whether it exist in Master at toll.no or not
 							for (Object record: list) {
 								//(2)Update now the status-3 (SADEXHF.ehst3) on the valid house-documentNumber (SADEXHF.ehdkh)
 								ApiMrnStatusRecordDto apiDto = (ApiMrnStatusRecordDto)record;
@@ -767,7 +770,7 @@ public class DigitollV2MasterConsignmentController {
 		//std output (browser)
 		return dtoResponse;
 	}
-
+	*/
 	
 	/**
 	 * 
