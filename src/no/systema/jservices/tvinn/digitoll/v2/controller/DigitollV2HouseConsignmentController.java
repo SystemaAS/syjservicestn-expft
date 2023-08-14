@@ -47,8 +47,47 @@ import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 /**
  * Main entrance for accessing Digitoll Version 2 API.
  * 
+ * 
+ * ===================================================================
+ * Flow description with respect to the API and the SADMOHF db table
+ * ===================================================================
+ * 	===============================
+ * 	(A) Get MRN Digitoll - POST (API)
+ *	=============================== 
+ *	(1) Först POST (krav: ehuuid & etmid EMPTY)
+ *	Systema AS
+ *	toll-token expires_in:120 seconds
+ *	/movement/road/v2/house-consignment
+ *	JSON = {"requestId":"1bdf0f33-f42e-48e2-b334-3944722e3fe5"}
+ *	requestId (old LRN) = 1bdf0f33-f42e-48e2-b334-3944722e3fe5
+	
+ *	(2) GET /house-consignment/validation-status/{requestId}
+ *	Mrn and status on response. Update SADMOHF with requestId=ehuuid and mrn=ehmid  
+	
+ *	===========================
+ * 	(B) Update Mrn - PUT (API)
+ *	===========================
+ *	(1) PUT /house-consignment/{masterReferenceNumber}
+ *	Response returns new requestId which must be updated in SADMOHF. Only requestId update 
+ *	IMPORTANT! -->Last requestId received is the one valid for GET validation-status 
+ *	
+ * 	
+ *	=============================
+ *	(C) Delete Mrn - DELETE (API)
+ *	=============================
+ *	(1) DELETE /house-consignment/{masterReferenceNumber}
+ *	Response returns new requestId which we don't save.
+ *	(2) Ehuuid and Ehmid (SADMOHF) are blanked. The record is not deleted in db but is ready for new POST
+ *	This item (2) could change by deleting the record totally ...
+ *
+ *  NOTE! 
+ *	(D) To see the status of a given MRN att any given moment use the end-point --> getTransport.do in this Controller
+ * 
  * @author oscardelatorre
- * @date Aug 2022
+ * @date Aug 2023
+ *
+ *
+ *
  *
  */
 @RestController
@@ -75,21 +114,22 @@ public class DigitollV2HouseConsignmentController {
 	@Autowired
 	private SadexlogLogger sadexlogLogger;	
 	
-	
-	
 	/**
 	 * Creates a new House Consignment through the API - POST
 	 * The operation is only valid when the requestId(ehuuid) and mrn(ehmid) are empty at SADMOHF
 	 * (1)If these fields are already in place your should use the PUT method OR 
 	 * (2)erase the ehuuid and ehmid on db before using POST again
 	 * 
-	 * @param session
+	 * @param request
 	 * @param user
-	 * @param emavd
-	 * @param empro
+	 * @param ehlnrt
+	 * @param ehlnrm
+	 * @param ehlnrh
+	 * @return
 	 * @throws Exception
 	 * 
 	 * http://localhost:8080/syjservicestn-expft/digitollv2/postHouseConsignment.do?user=NN&ehlnrt=1&ehlnrm=2&ehlnrh=3
+	 * 
 	 */
 	@RequestMapping(value="/digitollv2/postHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -236,9 +276,9 @@ public class DigitollV2HouseConsignmentController {
 	 * 
 	 * @param request
 	 * @param user
-	 * @param ehavd
-	 * @param ehpro
-	 * @param ehtdn
+	 * @param ehlnrt
+	 * @param ehlnrm
+	 * @param ehlnrh
 	 * @param mrn
 	 * @return
 	 * @throws Exception
@@ -405,14 +445,14 @@ public class DigitollV2HouseConsignmentController {
 	 * 
 	 * @param request
 	 * @param user
-	 * @param ehavd
-	 * @param ehpro
-	 * @param ehtdn
+	 * @param ehlnrt
+	 * @param ehlnrm
+	 * @param ehlnrh
 	 * @param mrn
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/deleteHouseConsignment.do?user=NN&ehavd=1&ehpro=501941&ehtdn=38&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/deleteHouseConsignment.do?user=NN&ehlnrt=1&ehlnrm=2&ehlnrh=3&mrn=XXX
 	 * 
 	 */
 	@RequestMapping(value="/digitollv2/deleteHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
