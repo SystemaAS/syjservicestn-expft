@@ -1,8 +1,12 @@
 package no.systema.jservices.tvinn.digitoll.v2.controller;
 
 import java.io.PrintWriter;
+
+
+
 import java.io.StringWriter;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,13 +30,18 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
+import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmohfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
-import no.systema.jservices.tvinn.expressfortolling2.dto.SadexhfDto;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus2;
+
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperHouseConsignment;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
+import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
+import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
 import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 /**
@@ -58,6 +67,9 @@ public class DigitollV2HouseConsignmentController {
 	private SadexhfService sadexhfService;	
 	
 	@Autowired
+	private SadmohfService sadmohfService;	
+	
+	@Autowired
 	private ApiServices apiServices; 
 	
 	@Autowired
@@ -67,9 +79,9 @@ public class DigitollV2HouseConsignmentController {
 	
 	/**
 	 * Creates a new House Consignment through the API - POST
-	 * The operation is only valid when the requestId(emuuid) and mrn(emmid) are empty at SADEXMF
+	 * The operation is only valid when the requestId(ehuuid) and mrn(ehmid) are empty at SADMOHF
 	 * (1)If these fields are already in place your should use the PUT method OR 
-	 * (2)erase the emuuid and emmid on db before using POST again
+	 * (2)erase the ehuuid and ehmid on db before using POST again
 	 * 
 	 * @param session
 	 * @param user
@@ -77,21 +89,21 @@ public class DigitollV2HouseConsignmentController {
 	 * @param empro
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/postHouseConsignment.do?user=NN&ehavd=1&ehpro=501941&ehtdn=38
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/postHouseConsignment.do?user=NN&ehlnrt=1&ehlnrm=2&ehlnrh=3
 	 */
 	@RequestMapping(value="/digitollv2/postHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse postHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "ehavd", required = true) String ehavd,
-																				@RequestParam(value = "ehpro", required = true) String ehpro,
-																				@RequestParam(value = "ehtdn", required = true) String ehtdn) throws Exception {
+	public GenericDtoResponse postHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "ehlnrt", required = true) String ehlnrt,
+																				@RequestParam(value = "ehlnrm", required = true) String ehlnrm,
+																				@RequestParam(value = "ehlnrh", required = true) String ehlnrh) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(ehavd);
-		dtoResponse.setPro(ehpro);
-		dtoResponse.setTdn(ehtdn);
+		dtoResponse.setEhlnrt(ehlnrt);
+		dtoResponse.setEhlnrm(ehlnrm);
+		dtoResponse.setEhlnrh(ehlnrh);
 		dtoResponse.setRequestMethodApi("POST");
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
@@ -107,42 +119,49 @@ public class DigitollV2HouseConsignmentController {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
 				
-				List<SadexhfDto> list = sadexhfService.getSadexhf(serverRoot, user, ehavd, ehpro, ehtdn);
+				List<SadmohfDto> list = sadmohfService.getSadmohf(serverRoot, user, ehlnrt, ehlnrm, ehlnrh);
 				if(list != null) {
 					logger.warn("list size:" + list.size());
 					
-					for (SadexhfDto dto: list) {
+					for (SadmohfDto dto: list) {
 						logger.info(dto.toString());
 						//Only valid when mrn(emmid) is empty
 						if(StringUtils.isEmpty(dto.getEhmid()) ) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
+							//Debug
+							logger.debug(GenericJsonStringPrinter.debug(hc));
 							
-							/*
 							//API
-							String json = apiServices.postHouseConsignmentExpressMovementRoad(hc);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							Map tollTokenMap = new HashMap();
+							String json = apiServices.postHouseConsignmentDigitollV2(hc, tollTokenMap);
+							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
-							logger.warn("LRN = " + obj.getLrn());
+							logger.warn("requestId = " + obj.getRequestId());
+							//At this point we now have a valid tollToken to use
+							
+							
 							//In case there was an error at end-point and the LRN was not returned
-							if(StringUtils.isEmpty(obj.getLrn())){
-								errMsg.append("LRN empty ?? <json raw>: " + json);
+							if(StringUtils.isEmpty(obj.getRequestId())){
+								errMsg.append("requestId empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
 							}else {
 								
 								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
-								String lrn = obj.getLrn();
-								dtoResponse.setLrn(lrn);
+								String requestId = obj.getRequestId();
+								dtoResponse.setRequestId(requestId);
 								
-								 //Delay 10-seconds
-								logger.warn("Start of delay: "+ new Date());
+								//Delay 6-10 seconds
+								logger.warn(PrettyLoggerOutputer.FRAME);
+								logger.warn("START of delay: "+ new Date());
 								Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
-								logger.warn("End of delay: "+ new Date());
+								logger.warn("END of delay: "+ new Date());
+								logger.warn(PrettyLoggerOutputer.FRAME);
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnHouseFromApi(dtoResponse, lrn);
+								String mrn = this.getMrnHouseConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
 								dtoResponse.setMrn(mrn);
 								String mode = "ULM";
 								String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
@@ -152,12 +171,12 @@ public class DigitollV2HouseConsignmentController {
 									dtoResponse.setErrMsg("");
 									//Update ehst2(SADEXHF) with ERROR = M
 									logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
-									dtoResponse.setDb_st2(EnumSadexhfStatus2.M.toString());
+									dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 								}else {
 									//Update ehst2(SADEXHF) with OK = C
-									dtoResponse.setDb_st2(EnumSadexhfStatus2.C.toString());
+									dtoResponse.setDb_st2(EnumSadmohfStatus2.C.toString());
 								}
-								
+								/*
 								//(3)now we have lrn and mrn and proceed with the SADEXHF-update at house consignment
 								logger.warn("About to updateLrnMrnSadexh ...");
 								List<SadexhfDto> xx = sadexhfService.updateLrnMrnSadexhf(serverRoot, user, dtoResponse, sendDate, mode);
@@ -173,10 +192,10 @@ public class DigitollV2HouseConsignmentController {
 										}
 									}
 								}
-								
+								*/
 							}
 							break; //only first in list
-							*/
+							
 							
 						}else {
 							errMsg.append(" LRN/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
@@ -202,11 +221,12 @@ public class DigitollV2HouseConsignmentController {
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
 		}
-		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -223,22 +243,22 @@ public class DigitollV2HouseConsignmentController {
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/putHouseConsignment.do?user=NN&ehavd=1&ehpro=501941&ehtdn=38&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/putHouseConsignment.do?user=NN&ehlnrt=1&ehlnrm=501941&ehlnrh=38&mrn=XXX
 	 */
 	@RequestMapping(value="/digitollv2/putHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse putHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "ehavd", required = true) String ehavd,
-																				@RequestParam(value = "ehpro", required = true) String ehpro,
-																				@RequestParam(value = "ehtdn", required = true) String ehtdn,
+	public GenericDtoResponse putHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "ehlnrt", required = true) String ehlnrt,
+																				@RequestParam(value = "ehlnrm", required = true) String ehlnrm,
+																				@RequestParam(value = "ehlnrh", required = true) String ehlnrh,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(ehavd);
-		dtoResponse.setPro(ehpro);
-		dtoResponse.setTdn(ehtdn);
+		dtoResponse.setEhlnrt(ehlnrt);
+		dtoResponse.setEhlnrm(ehlnrm);
+		dtoResponse.setEhlnrh(ehlnrh);
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
 		
@@ -257,17 +277,19 @@ public class DigitollV2HouseConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn, ehavd, ehpro, ehtdn);
+				List<SadmohfDto> list = sadmohfService.getSadmohfForUpdate(serverRoot, user, mrn, ehlnrt, ehlnrm, ehlnrh);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("SADEXHF list size:" + list.size());
 					
-					for (SadexhfDto dto: list) {
+					for (SadmohfDto dto: list) {
 						logger.info(dto.toString());
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
 						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
+							//Debug
+							logger.debug(GenericJsonStringPrinter.debug(hc));
 							/*
 							//API - PROD
 							String json = apiServices.putHouseConsignmentExpressMovementRoad(hc, mrn);
@@ -368,11 +390,12 @@ public class DigitollV2HouseConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -394,17 +417,17 @@ public class DigitollV2HouseConsignmentController {
 	 */
 	@RequestMapping(value="/digitollv2/deleteHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse deleteHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
-																									@RequestParam(value = "ehavd", required = true) String ehavd,
-																									@RequestParam(value = "ehpro", required = true) String ehpro,
-																									@RequestParam(value = "ehtdn", required = true) String ehtdn,
+	public GenericDtoResponse deleteHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+																									@RequestParam(value = "ehlnrt", required = true) String ehlnrt,
+																									@RequestParam(value = "ehlnrm", required = true) String ehlnrm,
+																									@RequestParam(value = "ehlnrh", required = true) String ehlnrh,
 																									@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(ehavd);
-		dtoResponse.setPro(ehpro);
-		dtoResponse.setTdn(ehtdn);
+		dtoResponse.setEhlnrt(ehlnrt);
+		dtoResponse.setEhlnrm(ehlnrm);
+		dtoResponse.setEhlnrh(ehlnrh);
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
 		
@@ -420,12 +443,12 @@ public class DigitollV2HouseConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexhfDto> list = sadexhfService.getSadexhfForUpdate(serverRoot, user, mrn, ehavd, ehpro, ehtdn);
+				List<SadmohfDto> list = sadmohfService.getSadmohfForUpdate(serverRoot, user, mrn, ehlnrt, ehlnrm, ehlnrh);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
 					
-					for (SadexhfDto dto: list) {
+					for (SadmohfDto dto: list) {
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
 						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignmentForDelete(dto);
@@ -486,13 +509,13 @@ public class DigitollV2HouseConsignmentController {
 							*/
 							
 						}else {
-							errMsg.append(" LRN/MRN are empty (SADEXHF). This operation is invalid. Make sure emuuid(lrn)/emmid(mrn) fields have values before any DELETE ");
+							errMsg.append(" LRN/MRN are empty (SADMOHF). This operation is invalid. Make sure ehuuid(lrn)/ehmid(mrn) fields have values before any DELETE ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
 					}
 				}else {
-					errMsg.append(" no records to fetch from SADEXHF ");
+					errMsg.append(" no records to fetch from SADMOHF ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				
@@ -509,10 +532,12 @@ public class DigitollV2HouseConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		return dtoResponse;
 	}
@@ -527,10 +552,12 @@ public class DigitollV2HouseConsignmentController {
 	 * 
 	 * http://localhost:8080/syjservicestn-expft/digitollv2/getHouseConsignment.do?user=NN&lrn=XXX
 	 * 
+	 * test - OK
+	 * 
 	 */
 	@RequestMapping(value="/digitollv2/getHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+	public GenericDtoResponse getHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
@@ -549,11 +576,11 @@ public class DigitollV2HouseConsignmentController {
 		//create new - master consignment at toll.no
 		try {
 			if(checkUser(user)) {
-					//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+					//(2)now we have the new lrn for the updated mrn so we proceed with the SADMOHF-update-lrn at master consignment
 					if(StringUtils.isNotEmpty(lrn)) {
 						dtoResponse.setLrn(lrn);
 						
-						String mrn = this.getMrnHouseFromApi(dtoResponse, lrn);
+						String mrn = this.getMrnHouseConsignmentDigitollV2FromApi(dtoResponse, lrn);
 						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 							errMsg.append(dtoResponse.getErrMsg());
 							
@@ -609,9 +636,10 @@ public class DigitollV2HouseConsignmentController {
 	 * http://localhost:8080/syjservicestn-expft/digitollv2/setMrnHouseConsignment.do?user=NN&lrn=XXX
 	 * 
 	 */
+	/*
 	@RequestMapping(value="/digitollv2/setMrnHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse setMrnHouseConsignmentExpressMovementRoad(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+	public GenericDtoResponse setMrnHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
@@ -705,7 +733,7 @@ public class DigitollV2HouseConsignmentController {
 		
 		return dtoResponse;
 	}
-	
+	*/
 	
 	private boolean checkUser(String user) {
 		boolean retval = true;
@@ -722,21 +750,21 @@ public class DigitollV2HouseConsignmentController {
 	 * @param lrn
 	 * @return
 	 */
-	private String getMrnHouseFromApi(GenericDtoResponse dtoResponse, String lrn) {
+	private String getMrnHouseConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn) {
 		
 		String retval = "";
 		
 		try{
 			
-			String json = apiServices.getValidationStatusHouseConsignmentExpressMovementRoad(lrn);
+			String json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn);
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
-			logger.warn("MRN = " + obj.getMasterReferenceNumber());
+			logger.warn("MRN = " + obj.getMrn());
 			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());
 			
-			if(StringUtils.isNotEmpty(obj.getMasterReferenceNumber())) {
-				retval = obj.getMasterReferenceNumber();
+			if(StringUtils.isNotEmpty(obj.getMrn())) {
+				retval = obj.getMrn();
 			}else {
 				dtoResponse.setErrMsg(json);
 			}
@@ -757,8 +785,46 @@ public class DigitollV2HouseConsignmentController {
 	 * 
 	 * @param dtoResponse
 	 * @param lrn
+	 * @param tollTokenMap
+	 * @return
 	 */
-	private void checkLrnValidationStatus(GenericDtoResponse dtoResponse, String lrn) {
+	private String getMrnHouseConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
+		
+		String retval = "";
+		
+		try{
+			
+			String json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap);
+			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+			logger.warn("JSON = " + json);
+			logger.warn("status:" + obj.getStatus());
+			logger.warn("MRN = " + obj.getMrn());
+			dtoResponse.setStatusApi(obj.getStatus());
+			dtoResponse.setTimestamp(obj.getNotificationDate());
+			
+			if(StringUtils.isNotEmpty(obj.getMrn())) {
+				retval = obj.getMrn();
+			}else {
+				dtoResponse.setErrMsg(json);
+			}
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			
+		}
+		
+		return retval;
+	}
+	
+	/**
+	 * 
+	 * @param dtoResponse
+	 * @param lrn
+	 */
+	private void checkLrnValidationStatusHouseConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn) {
 		
 		try{
 			
@@ -766,7 +832,7 @@ public class DigitollV2HouseConsignmentController {
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("Status = " + obj.getStatus());
-			logger.warn("localRefNumber = " + obj.getLocalReferenceNumber());
+			logger.warn("requestID = " + obj.getRequestId());
 			logger.warn("notificationDate = " + obj.getNotificationDate());
 			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
 			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);

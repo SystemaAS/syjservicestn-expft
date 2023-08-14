@@ -37,6 +37,12 @@ public class GenericDtoResponse {
 	private String emlnrt = "";
 	private String emlnrm = "";
 	
+	private String ehlnrt = "";
+	private String ehlnrm = "";
+	private String ehlnrh = "";
+	
+	
+	
 	private List<Object> list = new ArrayList<Object>();
 	
 }

@@ -348,6 +348,10 @@ public class DigitollV2MasterConsignmentController {
 						if(StringUtils.isNotEmpty(dto.getEmmid()) && StringUtils.isNotEmpty(dto.getEmuuid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
+							
+							//Debug
+							logger.debug(GenericJsonStringPrinter.debug(mc));
+							
 							//API - PROD
 							
 							Map tollTokenMap = new HashMap();
@@ -604,6 +608,8 @@ public class DigitollV2MasterConsignmentController {
 	 * @param user
 	 * @param id
 	 * @return
+	 * 
+	 * test- OK
 	 */
 	@RequestMapping(value="/digitollv2/getMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody

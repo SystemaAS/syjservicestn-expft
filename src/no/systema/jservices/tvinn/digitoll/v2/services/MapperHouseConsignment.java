@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.BigDecimalFormatter;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -22,13 +23,13 @@ import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
  * https://api-test.toll.no/api/movement/road/v2/swagger-ui/index.html
  * 
  * @author oscardelatorre
- * Jun 2023
+ * Aug 2023
  * 
  */
 public class MapperHouseConsignment {
 	private static final Logger logger = LoggerFactory.getLogger(MapperHouseConsignment.class);
 	
-	public HouseConsignment mapHouseConsignment(Object sourceDto) {
+	public HouseConsignment mapHouseConsignment(SadmohfDto dto) {
 		
 		HouseConsignment hc = new HouseConsignment();
 		//(Mandatory) IssueDate
@@ -36,7 +37,8 @@ public class MapperHouseConsignment {
 		hc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		
 		
-		//(Mandatory) Representative
+		//(Optional) Representative (do not exist at db level, fetch from Transport if applicable = TODO
+		/*
 		Representative rep = new Representative();
 		rep.setName("sourceDto.getEhnar()");
 		rep.setIdentificationNumber("sourceDto.getEhrgr()");
@@ -46,10 +48,10 @@ public class MapperHouseConsignment {
 		rcommList.add(this.populateCommunication("sourceDto.getEhemr()", "sourceDto.getEhemrt()"));
 		rep.setCommunication(rcommList);
 		hc.setRepresentative(rep);
+		*/
 		
-		//(Mandatory)
-		
-		hc.setHouseConsignmentConsignmentHouseLevel(this.populateHouseConsignmentConsignmentHouseLevel(sourceDto));
+		//(Mandatory) consignmentHouseLevel
+		hc.setHouseConsignmentConsignmentHouseLevel(this.populateHouseConsignmentConsignmentHouseLevel(dto));
 		
 		
 		return hc;
@@ -61,7 +63,7 @@ public class MapperHouseConsignment {
 	 * @return
 	 * 
 	 */
-	public HouseConsignment mapHouseConsignmentForDelete(Object sourceDto) {
+	public HouseConsignment mapHouseConsignmentForDelete(SadmohfDto dto) {
 		
 		HouseConsignment hc = new HouseConsignment();
 		//(Mandatory) IssueDate
@@ -87,7 +89,7 @@ public class MapperHouseConsignment {
 	 * refer to https://api-test.toll.no/api/movement/road/v2/swagger-ui/... for all specifics
 	 */
 	
-	private HouseConsignmentConsignmentHouseLevel populateHouseConsignmentConsignmentHouseLevel(Object sourceDto) {
+	private HouseConsignmentConsignmentHouseLevel populateHouseConsignmentConsignmentHouseLevel(SadmohfDto dto) {
 		DateUtils dateUtils = new DateUtils("yyyyMMdd", "yyyy-MM-dd");
 		//(Mandatory) HouseConsignment-ConsignmentHouseLevel
 		HouseConsignmentConsignmentHouseLevel chl = new HouseConsignmentConsignmentHouseLevel();
@@ -98,145 +100,130 @@ public class MapperHouseConsignment {
 		//}
 		
 		//(Mandatory) ContainerIndicator
-		chl.setContainerIndicator(0);//sourceDto.getEhcnin()
+		chl.setContainerIndicator(dto.getEhcnin());
 		//(Mandatory) TotalGrossMass
-		chl.setTotalGrossMass(0.00);//sourceDto.getEhvkb()
-				
-		/* TODO
-		if(sourceDto.getGoodsItemList()!=null && sourceDto.getGoodsItemList().size()>0) {
-			//(Mandatory) numberOfPackages (sum of those in Item Lines)
-			chl.setNumberOfPackages(this.getTotalNumberOfPackages(sourceDto.getGoodsItemList())); 
-			//(Mandatory) goodsDescription (concatenated description of all item lines
-			chl.setGoodsDescription(this.getGoodsDescription(sourceDto.getGoodsItemList())); 
-		}
-		*/
+		chl.setTotalGrossMass(dto.getEhvkb());
+		//(Mandatory) numberOfPackages
+		chl.setNumberOfPackages(dto.getEhntk());
+		//(Mandatory) goodsDescription ()
+		chl.setGoodsDescription(dto.getEhvt());
 		
 		//(Mandatory) TransportDocumentHouseLevel
 		TransportDocumentHouseLevel transpDocHouseLevel = new TransportDocumentHouseLevel();
-		transpDocHouseLevel.setDocumentNumber("sourceDto.getEhdkh()");
-		transpDocHouseLevel.setType("sourceDto.getEhdkht()");
+		transpDocHouseLevel.setDocumentNumber(dto.getEhdkh());
+		transpDocHouseLevel.setType(dto.getEhdkht());
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
-
 		//TODO (Optional) consignmentMasterLevel
-		
-		
 		
 		//(Mandatory) ImportProcedure
 		ImportProcedure importProcedure = new ImportProcedure();
-		importProcedure.setImportProcedure("sourceDto.getEhprt()");
+		importProcedure.setImportProcedure(dto.getEhprt());
 		//(Optional)TRA/EXP/TRE/FALSE
-		if(StringUtils.isNotEmpty("sourceDto.getEhupr()")) {
-			//if("sourceDto.getEhupr()".equalsIgnoreCase("FALSE")){
-				importProcedure.setHasOutgoingProcedure("sourceDto.getEhupr()");
-			//}else {
+		if(StringUtils.isNotEmpty(dto.getEhupr())) {
+			if(dto.getEhupr().equalsIgnoreCase("FALSE")){
+				importProcedure.setHasOutgoingProcedure(dto.getEhupr());
+			}else {
 				//TRA/EXP/TRE
-				//importProcedure.setOutgoingProcedure(sourceDto.getEhupr());	
-			//}	
+				importProcedure.setOutgoingProcedure(dto.getEhupr());	
+			}	
 		}
 		chl.setImportProcedure(importProcedure);
 		
 		
 		//(Optional) Previous Documents
 		List prevDocsList = new ArrayList();
-		//if(StringUtils.isNotEmpty("sourceDto.getEhtrnr()") || 
-		//		(StringUtils.isNotEmpty("sourceDto.getEhrg()") && sourceDto.getEh0068b()>0 )) {
+		if(StringUtils.isNotEmpty(dto.getEhtrnr()) || 
+				(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
 			//(1)
-			if(StringUtils.isNotEmpty("sourceDto.getEhtrnr()")){
+			if(StringUtils.isNotEmpty(dto.getEhtrnr())){
 				PreviousDocuments prevDocs = new PreviousDocuments();
-				prevDocs.setTypeOfReference("sourceDto.getEhtrty()");
-				prevDocs.setReferenceNumber("sourceDto.getEhtrnr()");
+				prevDocs.setTypeOfReference(dto.getEhtrty());
+				prevDocs.setReferenceNumber(dto.getEhtrnr());
 				prevDocsList.add(prevDocs);
 
 			}
 			//(2)
-			//if(StringUtils.isNotEmpty(sourceDto.getEhrg()) && sourceDto.getEh0068b()>0) {
+			if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
 				PreviousDocuments prevDocs = new PreviousDocuments();
-				prevDocs.setTypeOfReference("CUDE");
-				prevDocs.setDeclarantNumber("sourceDto.getEhrg()");
-				prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf("sourceDto.getEh0068a()")));
-				prevDocs.setSequenceNumber(String.valueOf("sourceDto.getEh0068b()"));
+				prevDocs.setTypeOfReference("CUDE"); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+				prevDocs.setDeclarantNumber(dto.getEhrg());
+				prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
+				prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
 				prevDocsList.add(prevDocs);
-			//}
+			}
 			chl.setPreviousDocuments(prevDocsList);
-		//}
+		}
 		
 		//(Optional) ExportFromEU
 		List exportFromEUList = new ArrayList();
-		//if(StringUtils.isNotEmpty(sourceDto.getEheid())) {
+		if(StringUtils.isNotEmpty(dto.getEheid())) {
 			ExportFromEU exportFromEU = new ExportFromEU();
-			exportFromEU.setExportId("sourceDto.getEheid()");
-			//exportFromEU.setExportId("22SEE1452362514521");
-			exportFromEU.setTypeOfExport("sourceDto.getEhetypt()");
+			exportFromEU.setExportId(dto.getEheid());
+			exportFromEU.setTypeOfExport(dto.getEhetypt());
 			exportFromEUList.add(exportFromEU);
 			chl.setExportFromEU(exportFromEUList);
-		//}
+		}
 		
 		
 		//(Mandatory) Consignor
 		Consignor consignor = new Consignor();
-		consignor.setName("sourceDto.getEhnas()");
-		consignor.setIdentificationNumber("sourceDto.getEhrgs()");
-		//if(this.isPrivatePerson(sourceDto)) {
-			consignor.setTypeOfPerson(1);
-		//}else {
-		//	consignor.setTypeOfPerson(2);
-		//}
+		consignor.setName(dto.getEhnas());
+		consignor.setIdentificationNumber(dto.getEhrgs());
+		consignor.setTypeOfPerson(dto.getEhtpps());
+		
 		//(Optional)Address ... this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
-		//if(StringUtils.isNotEmpty(sourceDto.getEhpss())) {
-			consignor.setAddress(this.setAddress("sourceDto.getEhpss()", "sourceDto.getEhlks()", "sourceDto.getEhpns()", "sourceDto.getEhad1s()", "sourceDto.getEhnrs()"));
-		//}
+		if(StringUtils.isNotEmpty(dto.getEhpss())) {
+			consignor.setAddress(this.setAddress(dto.getEhpss(), dto.getEhlks(), dto.getEhpns(), dto.getEhad1s(), dto.getEhnrs()));
+		}
 		//(Optional) Communication
-		//if(StringUtils.isNotEmpty(sourceDto.getEhems())) { 
-			consignor.setCommunication(this.setCommunication("sourceDto.getEhems()", "sourceDto.getEhemst()"));
-		//}
+		if(StringUtils.isNotEmpty(dto.getEhems())) { 
+			consignor.setCommunication(this.setCommunication(dto.getEhems(), dto.getEhemst()));
+		}
 		chl.setConsignor(consignor);
 				
 		
 		//(Mandatory) Consignee
 		Consignee consignee = new Consignee();
-		consignee.setName("sourceDto.getEhnam()");
-		consignee.setIdentificationNumber("sourceDto.getEhrgm()");
-		//if(this.isPrivatePerson(sourceDto)) {
-			consignee.setTypeOfPerson(1); //personnumer = 11 siffror
-		//}else {
-		//	consignee.setTypeOfPerson(2); //orgnr = 9 siffror
-		//}
+		consignee.setName(dto.getEhnam());
+		consignee.setIdentificationNumber(dto.getEhrgm());
+		consignee.setTypeOfPerson(dto.getEhtppm()); //orgnr = 9 siffror, personnumer = 11 siffror ??
+		
 		//(Optional) Address
-		//if(StringUtils.isNotEmpty(sourceDto.getEhpsm())) { 
-			consignee.setAddress(this.setAddress("sourceDto.getEhpsm()", "sourceDto.getEhlkm()", "sourceDto.getEhpnm()", "sourceDto.getEhad1m()", "sourceDto.getEhnrm()"));
-		//}	
+		if(StringUtils.isNotEmpty(dto.getEhpsm())) { 
+			consignee.setAddress(this.setAddress(dto.getEhpsm(), dto.getEhlkm(), dto.getEhpnm(), dto.getEhad1m(), dto.getEhnrm()));
+		}	
 		//(Optional) Communication
-		//if(StringUtils.isNotEmpty(sourceDto.getEhemm())) { 
-			consignee.setCommunication(this.setCommunication("sourceDto.getEhemm()", "sourceDto.getEhemmt()")); 
-		//}
+		if(StringUtils.isNotEmpty(dto.getEhemm())) { 
+			consignee.setCommunication(this.setCommunication(dto.getEhemm(), dto.getEhemmt())); 
+		}
 		chl.setConsignee(consignee);
 		
 		//(Optional) PlaceOfAcceptance
-		//if(StringUtils.isNotEmpty(sourceDto.getEmsdl())) {
+		if(StringUtils.isNotEmpty(dto.getEmlka())) {
 			PlaceOfAcceptance placc = new PlaceOfAcceptance();
-			if(StringUtils.isNotEmpty("sourceDto.getEhsdlt()")) { placc.setLocation("sourceDto.getEhsdlt()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEhsdl()")) { placc.setUnloCode("sourceDto.getEhsdl()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEhlkl()")) {
+			if(StringUtils.isNotEmpty(dto.getEmsdat())) { placc.setLocation(dto.getEmsdat()); }
+			if(StringUtils.isNotEmpty(dto.getEmsda())) { placc.setUnloCode(dto.getEmsda()); }
+			if(StringUtils.isNotEmpty(dto.getEmlka())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry("sourceDto.getEmlkl()");
+				addressCountry.setCountry(dto.getEmlka());
 				placc.setAddress(addressCountry);
 			}
 			chl.setPlaceOfAcceptance(placc);
-		//}
+		}
 		
 		//(Optional) PlaceOfDelivery
-		//if(StringUtils.isNotEmpty(sourceDto.getExxx())) {
+		if(StringUtils.isNotEmpty(dto.getEmlkd())) {
 			PlaceOfDelivery pldel = new PlaceOfDelivery();
-			if(StringUtils.isNotEmpty("sourceDto.getEhsdlt()")) { pldel.setLocation("sourceDto.getEhsdlt()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEhsdl()")) { pldel.setUnloCode("sourceDto.getEhsdl()"); }
-			if(StringUtils.isNotEmpty("sourceDto.getEhlkl()")) {
+			if(StringUtils.isNotEmpty(dto.getEmsddt())) { pldel.setLocation(dto.getEmsddt()); }
+			if(StringUtils.isNotEmpty(dto.getEmsdd())) { pldel.setUnloCode(dto.getEmsdd()); }
+			if(StringUtils.isNotEmpty(dto.getEmlkd())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry("sourceDto.getEhlkl()");
+				addressCountry.setCountry(dto.getEmlkd());
 				pldel.setAddress(addressCountry);
 			}
 			chl.setPlaceOfDelivery(pldel);
-		//}
+		}
 		
 			
 			
@@ -255,17 +242,17 @@ public class MapperHouseConsignment {
 		*/
 		
 		//(Optional)Transport Equipment
-		List<TransportEquipment> list = this.populateTransportEquipment(sourceDto);
+		/*List<TransportEquipment> list = this.populateTransportEquipment(dto);
 		if(!list.isEmpty()) {
 			chl.setTranportEquipment(list);
-		}
+		}*/
 		
 		
 		return chl;
 		
 	}
-	
-	private List<TransportEquipment> populateTransportEquipment(Object sourceDto) {
+	/*
+	private List<TransportEquipment> populateTransportEquipment(SadmohfDto dto) {
 		List<TransportEquipment> listTranspEquip = new ArrayList<>();
 		//if(StringUtils.isNotEmpty(sourceDto.getEmcnr())) {
 			TransportEquipment te = new TransportEquipment();
@@ -286,13 +273,13 @@ public class MapperHouseConsignment {
 			te.setContainerPackedStatus("todo");
 			te.setContainerSupplierType("todo");
 			listTranspEquip.add(te);
-		}*/
+		}
 
 			
 		return listTranspEquip;
 		
 	}
-	
+	*/
 	/*
 	private List<CountriesOfRoutingOfConsignments> getExtraRoutes(SadexhfDto sourceDto, List<CountriesOfRoutingOfConsignments> list) {
 		List<CountriesOfRoutingOfConsignments> retval = list;

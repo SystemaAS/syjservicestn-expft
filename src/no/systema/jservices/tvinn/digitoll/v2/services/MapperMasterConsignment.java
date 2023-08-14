@@ -163,7 +163,7 @@ public class MapperMasterConsignment {
 			Consignee consignee = new Consignee();
 			consignee.setName(dto.getEmnam() );
 			consignee.setIdentificationNumber(dto.getEmrgm() );
-			consignee.setTypeOfPerson(2); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
+			consignee.setTypeOfPerson(dto.getEmtppm()); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
 			if(StringUtils.isNotEmpty(dto.getEmpsm())) {
 				consignee.setAddress(this.setAddress(dto.getEmpsm(), dto.getEmlkm(), dto.getEmpnm(), dto.getEmad1m(), dto.getEmnrm() ));
 			}
@@ -177,7 +177,7 @@ public class MapperMasterConsignment {
 			Consignor consignor = new Consignor();
 			consignor.setName(dto.getEmnas());
 			consignor.setIdentificationNumber(dto.getEmrgs());
-			consignor.setTypeOfPerson(2); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
+			consignor.setTypeOfPerson(dto.getEmtppm()); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
 			if(StringUtils.isNotEmpty(dto.getEmpss())) {
 				consignor.setAddress(this.setAddress(dto.getEmpss(),dto.getEmlks(),dto.getEmpns(),dto.getEmad1s(),dto.getEmnrs()));
 			}
