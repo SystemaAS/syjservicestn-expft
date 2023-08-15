@@ -200,26 +200,26 @@ public class MapperHouseConsignment {
 		chl.setConsignee(consignee);
 		
 		//(Optional) PlaceOfAcceptance
-		if(StringUtils.isNotEmpty(dto.getEmlka())) {
+		if(StringUtils.isNotEmpty(dto.getEhlka())) {
 			PlaceOfAcceptance placc = new PlaceOfAcceptance();
-			if(StringUtils.isNotEmpty(dto.getEmsdat())) { placc.setLocation(dto.getEmsdat()); }
-			if(StringUtils.isNotEmpty(dto.getEmsda())) { placc.setUnloCode(dto.getEmsda()); }
-			if(StringUtils.isNotEmpty(dto.getEmlka())) {
+			if(StringUtils.isNotEmpty(dto.getEhsdat())) { placc.setLocation(dto.getEhsdat()); }
+			if(StringUtils.isNotEmpty(dto.getEhsda())) { placc.setUnloCode(dto.getEhsda()); }
+			if(StringUtils.isNotEmpty(dto.getEhlka())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry(dto.getEmlka());
+				addressCountry.setCountry(dto.getEhlka());
 				placc.setAddress(addressCountry);
 			}
 			chl.setPlaceOfAcceptance(placc);
 		}
 		
 		//(Optional) PlaceOfDelivery
-		if(StringUtils.isNotEmpty(dto.getEmlkd())) {
+		if(StringUtils.isNotEmpty(dto.getEhlkd())) {
 			PlaceOfDelivery pldel = new PlaceOfDelivery();
-			if(StringUtils.isNotEmpty(dto.getEmsddt())) { pldel.setLocation(dto.getEmsddt()); }
-			if(StringUtils.isNotEmpty(dto.getEmsdd())) { pldel.setUnloCode(dto.getEmsdd()); }
-			if(StringUtils.isNotEmpty(dto.getEmlkd())) {
+			if(StringUtils.isNotEmpty(dto.getEhsddt())) { pldel.setLocation(dto.getEhsddt()); }
+			if(StringUtils.isNotEmpty(dto.getEhsdd())) { pldel.setUnloCode(dto.getEhsdd()); }
+			if(StringUtils.isNotEmpty(dto.getEhlkd())) {
 				AddressCountry addressCountry = new AddressCountry();
-				addressCountry.setCountry(dto.getEmlkd());
+				addressCountry.setCountry(dto.getEhlkd());
 				pldel.setAddress(addressCountry);
 			}
 			chl.setPlaceOfDelivery(pldel);

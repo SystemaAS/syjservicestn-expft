@@ -37,7 +37,7 @@ public class SadmotfService {
 	//SadexhfService sadexhfService;
 	
 	
-	public List<SadmotfDto> getSadmotf(String serverRoot, String user, String avd, String pro) {
+	public List<SadmotfDto> getSadmotf(String serverRoot, String user, String etlnrt) {
 		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
 		
 		logger.warn("USER:" + user);
@@ -46,8 +46,7 @@ public class SadmotfService {
 				.fromUriString(serverRoot)
 				.path("/syjservicestn/syjsSADMOTF.do")
 				.queryParam("user", user)
-				.queryParam("etavd", avd)
-				.queryParam("etpro", pro) 
+				.queryParam("etlnrt", etlnrt)
 				.build()
 				.encode()
 				.toUri();
@@ -91,7 +90,7 @@ public class SadmotfService {
 		return result; 
 	}
 	
-	public List<SadmotfDto> getSadmotfForUpdate(String serverRoot, String user, String avd, String pro, String mrn) {
+	public List<SadmotfDto> getSadmotfForUpdate(String serverRoot, String user, String etlnrt, String mrn) {
 		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
 		
 		logger.warn("USER:" + user);
@@ -211,8 +210,9 @@ public class SadmotfService {
 		
 		logger.info("user:" + user);
 		logger.info("mode:" + mode);
-		logger.info("etavd:" + dtoResponse.getAvd());
-		logger.info("etpro:" + dtoResponse.getPro());
+		logger.info("etlnrt:" + dtoResponse.getEtlnrt());
+		//logger.info("etavd:" + dtoResponse.getAvd());
+		//logger.info("etpro:" + dtoResponse.getPro());
 		logger.info("etuuid:" + dtoResponse.getRequestId());
 		logger.info("etmid:" + dtoResponse.getMrn());
 		logger.info("etdtin:" + sendDate);
@@ -228,8 +228,7 @@ public class SadmotfService {
 				.path("/syjservicestn/syjsSADMOTF_U.do")
 				.queryParam("user", user)
 				.queryParam("mode", mode)
-				.queryParam("etavd", Integer.valueOf(dtoResponse.getAvd()))
-				.queryParam("etpro", Integer.valueOf(dtoResponse.getPro()))
+				.queryParam("etlnrt", dtoResponse.getEtlnrt())
 				.queryParam("etuuid", dtoResponse.getRequestId())
 				.queryParam("etmid", dtoResponse.getMrn())
 				.queryParam("etdtin", Integer.parseInt(sendDate))

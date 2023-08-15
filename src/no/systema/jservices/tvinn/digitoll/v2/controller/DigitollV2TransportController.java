@@ -132,11 +132,10 @@ public class DigitollV2TransportController {
 	 * 
 	 * @param session
 	 * @param user
-	 * @param emavd
-	 * @param empro
+	 * @param etlnrt
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/postTransport.do?user=NN&etavd=1&etpro=501941
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/postTransport.do?user=NN&etlnrt=1...
 	 * 
 	 * test - OK
 	 * 
@@ -144,14 +143,12 @@ public class DigitollV2TransportController {
 	@RequestMapping(value="/digitollv2/postTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse postTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "etavd", required = true) String etavd,
-																				@RequestParam(value = "etpro", required = true) String etpro) throws Exception {
+																				@RequestParam(value = "etlnrt", required = true) String etlnrt) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(etavd);
-		dtoResponse.setPro(etpro);
+		dtoResponse.setEtlnrt(etlnrt);
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setRequestMethodApi("POST");
 		
@@ -167,7 +164,7 @@ public class DigitollV2TransportController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadmotfDto> list = sadmotfService.getSadmotf(serverRoot, user, etavd, etpro);
+				List<SadmotfDto> list = sadmotfService.getSadmotf(serverRoot, user, etlnrt);
 				if(list != null) {
 					logger.warn("list size:" + list.size());
 					
@@ -279,12 +276,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -295,12 +292,12 @@ public class DigitollV2TransportController {
 	 * Updates an existing Transport through the API - PUT. Requires an existing MRN (etmid at SADMOTF)
 	 * @param request
 	 * @param user
-	 * @param emavd
-	 * @param empro
+	 * @param etlnrt
+	 * @param mrn
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/putTransport?user=NN&etavd=1&etpro=501941&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/putTransport?user=NN&etlnrt=1&mrn=XXX
 	 * 
 	 * test - OK
 	 * 
@@ -308,15 +305,13 @@ public class DigitollV2TransportController {
 	@RequestMapping(value="/digitollv2/putTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse putTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "etavd", required = true) String etavd,
-																				@RequestParam(value = "etpro", required = true) String etpro,
+																				@RequestParam(value = "etlnrt", required = true) String etlnrt,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(etavd);
-		dtoResponse.setPro(etpro);
+		dtoResponse.setEtlnrt(etlnrt);
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
@@ -332,7 +327,7 @@ public class DigitollV2TransportController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadmotfDto> list = sadmotfService.getSadmotfForUpdate(serverRoot, user, etavd, etpro, mrn);
+				List<SadmotfDto> list = sadmotfService.getSadmotfForUpdate(serverRoot, user, etlnrt, mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -354,6 +349,7 @@ public class DigitollV2TransportController {
 							
 							//put in response
 							dtoResponse.setRequestId(obj.getRequestId());
+							dtoResponse.setEtlnrt(String.valueOf(dto.getEtlnrt()));
 							dtoResponse.setAvd(String.valueOf(dto.getEtavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEtpro()));
 							
@@ -445,10 +441,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -457,26 +455,25 @@ public class DigitollV2TransportController {
 	 * Delete MasterConsignment through the API - DELETE
 	 * @param request
 	 * @param user
+	 * @param etlnrt
 	 * @param mrn
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/deleteTransport?user=NN&etavd=1&etpro=501941&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/deleteTransport?user=NN&etlnrt=1&mrn=XXX
 	 * 
 	 * TEST - OK
 	 */
 	@RequestMapping(value="/digitollv2/deleteTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse deleteTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
-																				@RequestParam(value = "etavd", required = true) String etavd,
-																				@RequestParam(value = "etpro", required = true) String etpro,
+																				@RequestParam(value = "etlnrt", required = true) String etlnrt,
 																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(etavd);
-		dtoResponse.setPro(etpro);
+		dtoResponse.setEtlnrt(etlnrt);
 		dtoResponse.setTdn("0");
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
@@ -492,7 +489,7 @@ public class DigitollV2TransportController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadmotfDto> list = sadmotfService.getSadmotfForUpdate(serverRoot, user, etavd, etpro,  mrn);
+				List<SadmotfDto> list = sadmotfService.getSadmotfForUpdate(serverRoot, user, etlnrt,  mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
@@ -510,6 +507,7 @@ public class DigitollV2TransportController {
 							logger.warn("RequestId = " + obj.getRequestId());
 							//put in response
 							dtoResponse.setRequestId(obj.getRequestId());
+							dtoResponse.setEtlnrt(String.valueOf(sadmotfDto.getEtlnrt()));
 							dtoResponse.setAvd(String.valueOf(sadmotfDto.getEtavd()));
 							dtoResponse.setPro(String.valueOf(sadmotfDto.getEtpro()));
 							//In case there was an error at end-point and the LRN was not returned
@@ -578,10 +576,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
+		/*
 		//log in db before std-output
 		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		*/
 		
 		//std output (browser)
 		return dtoResponse;
