@@ -542,7 +542,7 @@ public class DigitollV2TransportController {
 									}
 									
 								}else {
-									errMsg.append("LRN empty after DELETE-LIGHT ??: " + "-->requestId:" + requestId + " -->MRN from db(SADEXMF): " + mrn);
+									errMsg.append("LRN empty after DELETE-LIGHT ??: " + "-->requestId:" + requestId + " -->MRN from db(SADMOTF): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
@@ -553,13 +553,13 @@ public class DigitollV2TransportController {
 							
 							
 						}else {
-							errMsg.append(" LRN/MRN are empty (SADEXMF). This operation is invalid. Make sure emuuid(lrn)/emmid(mrn) fields have values before any DELETE ");
+							errMsg.append(" LRN/MRN are empty (SADMOTF). This operation is invalid. Make sure emuuid(lrn)/emmid(mrn) fields have values before any DELETE ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
 					} 
 				}else {
-					errMsg.append(" no records to fetch from SADEXMF ");
+					errMsg.append(" no records to fetch from SADMOTF ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				

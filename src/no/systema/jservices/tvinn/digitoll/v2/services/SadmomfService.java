@@ -92,6 +92,68 @@ public class SadmomfService {
 		return result; 
 	}
 	
+	public SadmomfDto getSadmomfDto(String serverRoot, String user, String emlnrt, String emlnrm) {
+		SadmomfDto result = new SadmomfDto();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADMOMF.do")
+				.queryParam("user", user)
+				.queryParam("emlnrt", emlnrt)
+				.queryParam("emlnrm", emlnrm) 
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADMOMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADMOMF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadmomfDto pojo = mapper.convertValue(o, SadmomfDto.class);
+					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
+					//pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					//logger.warn(pojo.getHouseDtoList().toString());
+					if(pojo!=null) {
+						result = pojo;
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	/**
+	 * 
+	 * @param serverRoot
+	 * @param user
+	 * @param emlnrt
+	 * @param emlnrm
+	 * @param mrn
+	 * @return
+	 */
 	public List<SadmomfDto> getSadmomfForUpdate(String serverRoot, String user, String emlnrt, String emlnrm, String mrn) {
 		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
 		
@@ -144,15 +206,23 @@ public class SadmomfService {
 		
 		return result; 
 	}
+	
+	/**
+	 * 
+	 * @param serverRoot
+	 * @param user
+	 * @param lrn
+	 * @return
+	 */
 	/*
-	public List<SadexmfDto> getSadexmfForUpdate(String serverRoot, String user, String lrn) {
-		List<SadexmfDto> result = new ArrayList<SadexmfDto>();
+	public List<SadmomfDto> getSadmomfForUpdate(String serverRoot, String user, String lrn) {
+		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
 		
 		logger.warn("USER:" + user);
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
-				.path("/syjservicestn/syjsSADEXMF.do")
+				.path("/syjservicestn/syjsSADMOMF.do")
 				.queryParam("user", user)
 				.queryParam("emuuid", lrn)
 				.build()
@@ -173,13 +243,13 @@ public class SadmomfService {
 			
 			//at this point the dtoContainer has an error or not
 			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
-				logger.error("select-SADEXMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				logger.error("select-SADMOMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
 				result = null;
 			}else {
-				logger.warn("select-SADEXMF-REST-http-response:" + response.getStatusCodeValue());
+				logger.warn("select-SADMOMF-REST-http-response:" + response.getStatusCodeValue());
 				
 				for(Object o: dtoContainer.getList()){
-					SadexmfDto pojo = mapper.convertValue(o, SadexmfDto.class);
+					SadmomfDto pojo = mapper.convertValue(o, SadmomfDto.class);
 					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
 					//N/A -->pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
 					//logger.warn(pojo.getHouseDtoList().toString());

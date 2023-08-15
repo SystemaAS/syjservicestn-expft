@@ -89,6 +89,59 @@ public class SadmotfService {
 		
 		return result; 
 	}
+	public SadmotfDto getSadmotfDto(String serverRoot, String user, String etlnrt) {
+		SadmotfDto result = new SadmotfDto();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADMOTF.do")
+				.queryParam("user", user)
+				.queryParam("etlnrt", etlnrt)
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADMOTF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADMOTF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadmotfDto pojo = mapper.convertValue(o, SadmotfDto.class);
+					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
+					//pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					//logger.warn(pojo.getHouseDtoList().toString());
+					if(pojo!=null) {
+						result = pojo;
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	
 	
 	public List<SadmotfDto> getSadmotfForUpdate(String serverRoot, String user, String etlnrt, String mrn) {
 		List<SadmotfDto> result = new ArrayList<SadmotfDto>();

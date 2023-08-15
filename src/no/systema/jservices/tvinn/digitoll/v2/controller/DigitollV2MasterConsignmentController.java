@@ -469,24 +469,26 @@ public class DigitollV2MasterConsignmentController {
 	 * Delete MasterConsignment through the API - DELETE
 	 * @param request
 	 * @param user
+	 * @param etlnrt
 	 * @param mrn
 	 * @return
 	 * @throws Exception
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/deleteMasterConsignment?user=NN&mrn=XXX
+	 * http://localhost:8080/syjservicestn-expft/digitollv2/deleteMasterConsignment?user=NN&emlnrt=XXX&mrn=XXX
 	 */
 	@RequestMapping(value="/digitollv2/deleteMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse deleteMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
-																				@RequestParam(value = "emavd", required = true) String emavd,
-																				@RequestParam(value = "empro", required = true) String empro,
+																				@RequestParam(value = "emlnrt", required = true) String emlnrt,
+																				@RequestParam(value = "emlnrm", required = true) String emlnrm,
 																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(emavd);
-		dtoResponse.setPro(empro);
+		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEmlnrm(emlnrm);
+		
 		dtoResponse.setTdn("0");
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
@@ -502,60 +504,63 @@ public class DigitollV2MasterConsignmentController {
 		try {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
-				List<SadexmfDto> list = sadexmfService.getSadexmfForUpdate(serverRoot, user, emavd, empro,  mrn);
+				List<SadmomfDto> list = sadmomfService.getSadmomfForUpdate(serverRoot, user, emlnrt, emlnrm,  mrn);
 				
 				if(list != null && list.size()>0) {
 					logger.warn("list size:" + list.size());
 					
 					
-					for (SadexmfDto sadexmfDto: list) {
+					for (SadmomfDto sadmomfDto: list) {
 						//Only valid when those requestId(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(sadexmfDto.getEmmid()) && StringUtils.isNotEmpty(sadexmfDto.getEmuuid() )) {
+						if(StringUtils.isNotEmpty(sadmomfDto.getEmmid()) && StringUtils.isNotEmpty(sadmomfDto.getEmuuid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignmentForDelete();
 							//API
 							
-							/*
-							String json = apiServices.deleteMasterConsignmentExpressMovementRoad(mc, mrn);
+							
+							String json = apiServices.deleteMasterConsignmentDigitollV2(mc, mrn);
 							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
 							logger.warn("JSON = " + json);
-							logger.warn("LRN = " + obj.getLrn());
+							logger.warn("RequestId = " + obj.getRequestId());
 							//put in response
-							dtoResponse.setLrn(obj.getLrn());
-							dtoResponse.setAvd(String.valueOf(sadexmfDto.getEmavd()));
-							dtoResponse.setPro(String.valueOf(sadexmfDto.getEmpro()));
+							dtoResponse.setRequestId(obj.getRequestId());
+							dtoResponse.setEmlnrt(String.valueOf(sadmomfDto.getEmlnrt()));
+							dtoResponse.setEmlnrm(String.valueOf(sadmomfDto.getEmlnrm()));
+							dtoResponse.setAvd(String.valueOf(sadmomfDto.getEmavd()));
+							dtoResponse.setPro(String.valueOf(sadmomfDto.getEmpro()));
+							
 							//In case there was an error at end-point and the LRN was not returned
-							if(StringUtils.isEmpty(obj.getLrn())){
-								errMsg.append("LRN empty ?? <json raw>: " + json);
+							if(StringUtils.isEmpty(obj.getRequestId())){
+								errMsg.append("requestId empty ?? <json raw>: " + json);
 								dtoResponse.setErrMsg(errMsg.toString());
 								break;
 								
 							}else {
 								//(1) we have the lrn at this point. We must go an API-round trip again to get the MRN
-								String lrn = obj.getLrn();
-								dtoResponse.setLrn(lrn);
+								String requestId = obj.getRequestId();
+								dtoResponse.setRequestId(requestId);
 								
-								//(2)now we have the new lrn for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
-								if(StringUtils.isNotEmpty(lrn) && StringUtils.isNotEmpty(mrn)) {
+								//(2)now we have the new requestId for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "DL";
 									dtoResponse.setMrn(mrn);
 									dtoResponse.setDb_st2(EnumSadexmfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
-									List<SadexmfDto> xx = sadexmfService.updateLrnMrnSadexmf(serverRoot, user, dtoResponse, sendDate, mode);
+									List<SadmomfDto> xx = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
-										for (SadexmfDto rec: xx) {
+										for (SadmomfDto rec: xx) {
 											if(StringUtils.isEmpty(rec.getEmmid()) ){
 												//OK
 											}else {
-												errMsg.append("MRN has not been removed after SADEXMF-delete-light mrn:" + mrn);
+												errMsg.append("MRN has not been removed after SADMOMF-delete-light mrn:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
 											}
 										}
 									}
 									
 								}else {
-									errMsg.append("LRN empty after DELETE-LIGHT ??: " + "-->LRN:" + lrn + " -->MRN from db(SADEXMF): " + mrn);
+									errMsg.append("LRN empty after DELETE-LIGHT ??: " + "-->requestId:" + requestId + " -->MRN from db(SADMOMF): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
@@ -563,16 +568,16 @@ public class DigitollV2MasterConsignmentController {
 							}
 							
 							break; //only first in list
-							*/
+							
 							
 						}else {
-							errMsg.append(" LRN/MRN are empty (SADEXMF). This operation is invalid. Make sure emuuid(lrn)/emmid(mrn) fields have values before any DELETE ");
+							errMsg.append(" LRN/MRN are empty (SADMOTF). This operation is invalid. Make sure emuuid(lrn)/emmid(mrn) fields have values before any DELETE ");
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
 						
 					} 
 				}else {
-					errMsg.append(" no records to fetch from SADEXMF ");
+					errMsg.append(" no records to fetch from SADMOTF ");
 					dtoResponse.setErrMsg(errMsg.toString());
 				}
 				

@@ -71,4 +71,8 @@ public class SadmohfDto  {
 	private String ehlkd = ""; //      tegn            2       2       896        begge    land of delivery     
 	private String ehsdd = ""; //      tegn            5       5       898        begge    place of delivery    
 	private String ehsddt = ""; //     tegn           30      30       903        begge    place of delivery
+	//from transport level
+	private SadmotfDto transportDto;
+	//from master level
+	private SadmomfDto masterDto;
 }

@@ -19,7 +19,7 @@ public class HouseConsignmentMasterLevel {
 	//Mandatory
 	private String carrierIdentificationNumber;
 	//Mandatory
-	private String transportDocumentMasterLevel;
+	private TransportDocumentMasterLevel transportDocumentMasterLevel;
 	
 	
 	

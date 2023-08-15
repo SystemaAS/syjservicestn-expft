@@ -96,6 +96,8 @@ public class SadmohfService {
 		List<SadmohfDto> result = new ArrayList<SadmohfDto>();
 		
 		logger.warn("USER:" + user);
+		logger.warn("MRN:" + mrn);
+		
 		
 		URI uri = UriComponentsBuilder
 				.fromUriString(serverRoot)
@@ -235,7 +237,7 @@ public class SadmohfService {
 				.queryParam("mode", mode)
 				.queryParam("ehlnrt", dtoResponse.getEhlnrt())
 				.queryParam("ehlnrm", dtoResponse.getEhlnrm())
-				.queryParam("ehlnrt", dtoResponse.getEhlnrt())
+				.queryParam("ehlnrh", dtoResponse.getEhlnrh())
 				.queryParam("ehuuid", dtoResponse.getRequestId())
 				.queryParam("ehmid", dtoResponse.getMrn())
 				.queryParam("ehdts", Integer.parseInt(sendDate))

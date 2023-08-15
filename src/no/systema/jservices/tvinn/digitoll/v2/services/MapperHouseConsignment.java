@@ -114,7 +114,14 @@ public class MapperHouseConsignment {
 		transpDocHouseLevel.setType(dto.getEhdkht());
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
-		//TODO (Optional) consignmentMasterLevel
+		//(Optional but required anymway -> consignmentMasterLevel but must be in place before the carrier arrives to the border! ergo = required
+		HouseConsignmentMasterLevel consignmentMasterLevel = new HouseConsignmentMasterLevel();
+		consignmentMasterLevel.setCarrierIdentificationNumber(dto.getTransportDto().getEtrgt());
+		TransportDocumentMasterLevel transpDocMasterLevel = new TransportDocumentMasterLevel();
+		transpDocMasterLevel.setDocumentNumber(dto.getMasterDto().getEmdkm());
+		transpDocMasterLevel.setType(dto.getMasterDto().getEmdkmt());
+		consignmentMasterLevel.setTransportDocumentMasterLevel(transpDocMasterLevel);
+		chl.setConsignmentMasterLevel(consignmentMasterLevel);
 		
 		//(Mandatory) ImportProcedure
 		ImportProcedure importProcedure = new ImportProcedure();
