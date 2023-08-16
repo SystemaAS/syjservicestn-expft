@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmoifDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.BigDecimalFormatter;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -235,18 +236,39 @@ public class MapperHouseConsignment {
 			
 			
 		//TODO (Optional) goodsItem
-		/* Only for VOEC
-		logger.warn("GOODS-ITEM-LIST size:" + String.valueOf(sourceDto.getGoodsItemList().size()));
-		Map<String, Double> mapTotalAmountInvoiced = new HashMap<String, Double>(); //must be filled out as the sum of all amounts per item line)
-		StringBuilder currencyCodeTotalAmountInvoiced = new StringBuilder(); //this is the currency for the totalAmountInvoiced
+		// Only for VOEC
 		
-		if(sourceDto.getGoodsItemList()!=null && sourceDto.getGoodsItemList().size()>0) {
-			List goodsItem = this.getGoodsItemList(sourceDto.getGoodsItemList(), mapTotalAmountInvoiced, currencyCodeTotalAmountInvoiced);
-			chl.setGoodsItem(goodsItem);
-		}else {
-			logger.error("###ERROR-ERROR-ERROR --> GOODS-ITEM-LIST on SADEXIF is 0 ??? - not valid for API...");
+		if(dto.getGoodsItemList()!=null && !dto.getGoodsItemList().isEmpty()) {
+			List<GoodsItem> goodsItemList = new ArrayList<GoodsItem>();
+			for(SadmoifDto goodsItemDto : dto.getGoodsItemList()) {
+				logger.warn("GOODS-ITEM-LIST size:" + String.valueOf(dto.getGoodsItemList().size()));
+				GoodsItem goodsItem = new GoodsItem();
+				//ItemAmount
+				ItemAmountInvoicedVOEC iaiVOEC = new ItemAmountInvoicedVOEC();
+				if(goodsItemDto.getEistk()!=null && goodsItemDto.getEistk().contains(".") ) {
+					Integer x = goodsItemDto.getEistk().indexOf(".");
+					String tmp = goodsItemDto.getEistk().substring(0, x);
+					iaiVOEC.setNumberOfItems(Integer.valueOf(tmp));
+				}else {
+					iaiVOEC.setNumberOfItems(Integer.valueOf(goodsItemDto.getEistk()));
+				}
+				iaiVOEC.setValue(Double.valueOf(goodsItemDto.getEibl()));
+				goodsItem.setItemAmountInvoicedVOEC(iaiVOEC);
+				//Commodity
+				CommodityCodeVOEC ccVOEC = new CommodityCodeVOEC();
+				ccVOEC.setHarmonizedSystemSubheadingCode(String.valueOf(goodsItemDto.getEivnt()));
+				goodsItem.setCommodityCodeVOEC(ccVOEC);
+				//FiscalRefs
+				AdditionalFiscalReferences afr = new AdditionalFiscalReferences();
+				afr.setVatIdentificationNumber(goodsItemDto.getEirge());
+				afr.setRole(goodsItemDto.getEiroe());
+				goodsItem.setAdditionalFiscalReferences(afr);
+				//put the mapped goodsItem in the list
+				goodsItemList.add(goodsItem);
+			}
+			//now put the goodsItemList in the parent element
+			chl.setGoodsItem(goodsItemList);
 		}
-		*/
 		
 		//(Optional)Transport Equipment
 		/*List<TransportEquipment> list = this.populateTransportEquipment(dto);

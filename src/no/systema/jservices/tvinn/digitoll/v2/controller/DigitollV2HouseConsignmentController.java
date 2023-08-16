@@ -38,6 +38,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperHouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmoifService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
@@ -107,7 +108,9 @@ public class DigitollV2HouseConsignmentController {
 	@Autowired
 	private SadmomfService sadmomfService;
 	@Autowired
-	private SadmohfService sadmohfService;	
+	private SadmohfService sadmohfService;
+	@Autowired
+	private SadmoifService sadmoifService;	
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -176,6 +179,7 @@ public class DigitollV2HouseConsignmentController {
 						//Get the transportDto and masterDto - level since some fields might be required in the mapping
 						dto.setTransportDto(this.sadmotfService.getSadmotfDto(serverRoot, user, ehlnrt));
 						dto.setMasterDto(this.sadmomfService.getSadmomfDto(serverRoot, user, ehlnrt, ehlnrm)) ;
+						dto.setGoodsItemList(this.sadmoifService.getSadmoif(serverRoot, user, ehlnrt, ehlnrm, ehlnrh));
 						
 						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
 						if(StringUtils.isEmpty(dto.getEhmid()) && StringUtils.isEmpty(dto.getEhuuid() )) {
@@ -354,13 +358,14 @@ public class DigitollV2HouseConsignmentController {
 						//Get the transportDto and masterDto - level since some fields might be required in the mapping
 						dto.setTransportDto(this.sadmotfService.getSadmotfDto(serverRoot, user, ehlnrt));
 						dto.setMasterDto(this.sadmomfService.getSadmomfDto(serverRoot, user, ehlnrt, ehlnrm)) ;
+						dto.setGoodsItemList(this.sadmoifService.getSadmoif(serverRoot, user, ehlnrt, ehlnrm, ehlnrh));
 						
 						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
 						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
 							//Debug
-							//logger.debug(GenericJsonStringPrinter.debug(hc));
+							logger.debug(GenericJsonStringPrinter.debug(hc));
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap();
@@ -464,7 +469,7 @@ public class DigitollV2HouseConsignmentController {
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
 		}
-
+		
 		//log in db before std-output
 		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file

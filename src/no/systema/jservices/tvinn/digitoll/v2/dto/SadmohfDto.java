@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.digitoll.v2.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
@@ -75,4 +77,6 @@ public class SadmohfDto  {
 	private SadmotfDto transportDto;
 	//from master level
 	private SadmomfDto masterDto;
+	//from item lines level
+	private List<SadmoifDto> goodsItemList;
 }
