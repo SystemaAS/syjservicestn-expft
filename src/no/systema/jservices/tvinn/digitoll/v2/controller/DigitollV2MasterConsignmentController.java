@@ -20,8 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
@@ -30,24 +28,13 @@ import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
-import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus2;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus3;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
-import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 import no.systema.main.util.ObjectMapperHalJson;
 /**
@@ -107,10 +94,7 @@ public class DigitollV2MasterConsignmentController {
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
-	private SadmomfService sadmomfService;	
-	
-	@Autowired
-	private SadexmfService sadexmfService;	
+	private SadmomfService sadmomfService;		
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -530,7 +514,7 @@ public class DigitollV2MasterConsignmentController {
 							
 							
 							String json = apiServices.deleteMasterConsignmentDigitollV2(mc, mrn);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("RequestId = " + obj.getRequestId());
 							//put in response
@@ -555,7 +539,7 @@ public class DigitollV2MasterConsignmentController {
 								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "DL";
 									dtoResponse.setMrn(mrn);
-									dtoResponse.setDb_st2(EnumSadexmfStatus2.D.toString());
+									dtoResponse.setDb_st2(EnumSadmomfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = mc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									

@@ -30,26 +30,19 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
-import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
-import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
-import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmohfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperHouseConsignment;
-import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
+import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
-import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 /**
  * Main entrance for accessing Digitoll Version 2 API.
@@ -110,9 +103,6 @@ public class DigitollV2HouseConsignmentController {
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
-	private SadexhfService sadexhfService;	
-	
-	@Autowired
 	private SadmotfService sadmotfService;
 	@Autowired
 	private SadmomfService sadmomfService;
@@ -123,7 +113,7 @@ public class DigitollV2HouseConsignmentController {
 	private ApiServices apiServices; 
 	
 	@Autowired
-	private SadexlogLogger sadexlogLogger;	
+	private SadmologLogger sadmologLogger;	
 	
 	/**
 	 * Creates a new House Consignment through the API - POST
@@ -155,8 +145,11 @@ public class DigitollV2HouseConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEhlnrt(ehlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(ehlnrt));//for log purposes only
 		dtoResponse.setEhlnrm(ehlnrm);
+		dtoResponse.setEllnrm(Integer.valueOf(ehlnrm));//for log purposes only
 		dtoResponse.setEhlnrh(ehlnrh);
+		dtoResponse.setEllnrh(Integer.valueOf(ehlnrh));//for log purposes only
 		dtoResponse.setRequestMethodApi("POST");
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
@@ -199,6 +192,9 @@ public class DigitollV2HouseConsignmentController {
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("requestId = " + obj.getRequestId());
+							dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
+							dtoResponse.setPro(String.valueOf(dto.getEhpro()));
+							
 							//In case there was an error at end-point and the requestId was not returned
 							if(StringUtils.isEmpty(obj.getRequestId())){
 								errMsg.append("requestId empty ?? <json raw>: " + json);
@@ -285,12 +281,12 @@ public class DigitollV2HouseConsignmentController {
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
 		}
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;
@@ -324,8 +320,11 @@ public class DigitollV2HouseConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEhlnrt(ehlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(ehlnrt));//for log purposes only
 		dtoResponse.setEhlnrm(ehlnrm);
+		dtoResponse.setEllnrm(Integer.valueOf(ehlnrm));//for log purposes only
 		dtoResponse.setEhlnrh(ehlnrh);
+		dtoResponse.setEllnrh(Integer.valueOf(ehlnrh));//for log purposes only
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
 		
@@ -371,7 +370,10 @@ public class DigitollV2HouseConsignmentController {
 							logger.warn("requestId = " + obj.getRequestId());
 							
 							//put in response
-							dtoResponse.setLrn(obj.getRequestId());
+							dtoResponse.setRequestId(obj.getRequestId());
+							dtoResponse.setEhlnrt(String.valueOf(dto.getEhlnrt()));
+							dtoResponse.setEhlnrm(String.valueOf(dto.getEhlnrm()));
+							dtoResponse.setEhlnrh(String.valueOf(dto.getEhlnrh()));
 							dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEhpro()));
 							dtoResponse.setTdn(String.valueOf(dto.getEhtdn()));
@@ -462,13 +464,11 @@ public class DigitollV2HouseConsignmentController {
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
 		}
-		
-		/*
+
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
 		
 		//std output (browser)
 		return dtoResponse;
@@ -501,8 +501,11 @@ public class DigitollV2HouseConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEhlnrt(ehlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(ehlnrt));//for log purposes only
 		dtoResponse.setEhlnrm(ehlnrm);
+		dtoResponse.setEllnrm(Integer.valueOf(ehlnrm));//for log purposes only
 		dtoResponse.setEhlnrh(ehlnrh);
+		dtoResponse.setEllnrh(Integer.valueOf(ehlnrh));//for log purposes only
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
 		
@@ -530,7 +533,7 @@ public class DigitollV2HouseConsignmentController {
 							logger.warn("documentIssueDate:" + hc.getDocumentIssueDate());
 							//API
 							String json = apiServices.deleteHouseConsignmentDigitollV2(hc, mrn);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("RequestId = " + obj.getRequestId());
 							//put in response
@@ -555,7 +558,7 @@ public class DigitollV2HouseConsignmentController {
 								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "DL";
 									dtoResponse.setMrn(mrn);
-									dtoResponse.setDb_st2(EnumSadexmfStatus2.D.toString());
+									dtoResponse.setDb_st2(EnumSadmomfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
@@ -605,12 +608,11 @@ public class DigitollV2HouseConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		return dtoResponse;
 	}

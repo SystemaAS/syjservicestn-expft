@@ -33,7 +33,7 @@ public class SadmologLogger {
 			logger.debug("A-level");
 			if(StringUtils.isNotEmpty(dtoResponse.getAvd())) { dto.setElavd(Integer.valueOf(dtoResponse.getAvd())); }
 			if(StringUtils.isNotEmpty(dtoResponse.getPro())) { dto.setElpro(Integer.valueOf(dtoResponse.getPro())); }
-			if(StringUtils.isNotEmpty(dtoResponse.getPro())) { dto.setEltdn(Integer.valueOf(dtoResponse.getTdn())); }
+			if(StringUtils.isNotEmpty(dtoResponse.getTdn())) { dto.setEltdn(Integer.valueOf(dtoResponse.getTdn())); }
 			
 			//new for digitoll log
 			logger.debug("B-level");
