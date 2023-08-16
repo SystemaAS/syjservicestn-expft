@@ -20,38 +20,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
-import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
-import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiLrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
-import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
-import no.systema.jservices.tvinn.expressfortolling2.dto.SadexmfDto;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus2;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexhfStatus3;
-import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
-import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
+
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
-import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
+import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
-import no.systema.jservices.tvinn.expressfortolling2.util.SadexlogLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
-import no.systema.main.util.ObjectMapperHalJson;
 /**
  * Main entrance for accessing Digitoll Version 2 API.
  * 
@@ -109,19 +94,13 @@ public class DigitollV2TransportController {
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
-	private SadexmfService sadexmfService;	
-	
-	@Autowired
 	private SadmotfService sadmotfService;	
-	
-	@Autowired
-	private SadexhfService sadexhfService;	
 	
 	@Autowired
 	private ApiServices apiServices; 
 	
 	@Autowired
-	private SadexlogLogger sadexlogLogger;	
+	private SadmologLogger sadmologLogger;	
 	
 	
 	/**
@@ -149,6 +128,7 @@ public class DigitollV2TransportController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEtlnrt(etlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(etlnrt));//for log purposes only
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setRequestMethodApi("POST");
 		
@@ -276,12 +256,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;
@@ -312,6 +292,7 @@ public class DigitollV2TransportController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEtlnrt(etlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(etlnrt));//for log purposes only
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
@@ -441,12 +422,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;
@@ -474,6 +455,7 @@ public class DigitollV2TransportController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEtlnrt(etlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(etlnrt));//for log purposes only
 		dtoResponse.setTdn("0");
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
@@ -502,7 +484,7 @@ public class DigitollV2TransportController {
 							//API
 							
 							String json = apiServices.deleteTransportDigitollV2(transport, mrn);
-							ApiLrnDto obj = new ObjectMapper().readValue(json, ApiLrnDto.class);
+							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("RequestId = " + obj.getRequestId());
 							//put in response
@@ -525,7 +507,7 @@ public class DigitollV2TransportController {
 								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "DL";
 									dtoResponse.setMrn(mrn);
-									dtoResponse.setDb_st2(EnumSadexmfStatus2.D.toString());
+									dtoResponse.setDb_st2(EnumSadmotfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = transport.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
 									
@@ -576,12 +558,12 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;

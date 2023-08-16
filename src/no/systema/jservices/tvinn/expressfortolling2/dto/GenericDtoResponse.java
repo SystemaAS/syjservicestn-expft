@@ -33,15 +33,19 @@ public class GenericDtoResponse {
 	private String db_st3 = "";
 	private String timestamp = "";
 	private String errMsg = "";
-	
+	//transport
 	private String etlnrt = "";
-	
+	//master
 	private String emlnrt = "";
 	private String emlnrm = "";
-	
+	//house
 	private String ehlnrt = "";
 	private String ehlnrm = "";
 	private String ehlnrh = "";
+	//log
+	private Integer ellnrt = 0;
+	private Integer ellnrm = 0;
+	private Integer ellnrh = 0;
 	
 	
 	
