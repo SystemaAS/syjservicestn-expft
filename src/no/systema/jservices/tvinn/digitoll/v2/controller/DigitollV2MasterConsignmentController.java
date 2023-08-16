@@ -43,6 +43,7 @@ import no.systema.jservices.tvinn.expressfortolling2.enums.EnumSadexmfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
+import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexhfService;
 import no.systema.jservices.tvinn.expressfortolling2.services.SadexmfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -115,7 +116,7 @@ public class DigitollV2MasterConsignmentController {
 	private ApiServices apiServices; 
 	
 	@Autowired
-	private SadexlogLogger sadexlogLogger;	
+	private SadmologLogger sadmologLogger;	
 	
 	/**
 	 * Test authorization towards Toll.no with certificates
@@ -160,8 +161,10 @@ public class DigitollV2MasterConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(emlnrt));//for log purposes only
 		dtoResponse.setEmlnrm(emlnrm);
-		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
+		dtoResponse.setEllnrm(Integer.valueOf(emlnrm));//for log purposes only
+		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADMOLOG)
 		dtoResponse.setRequestMethodApi("POST");
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
@@ -199,6 +202,9 @@ public class DigitollV2MasterConsignmentController {
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("requestId = " + obj.getRequestId());
+							dtoResponse.setAvd(String.valueOf(dto.getEmavd()));
+							dtoResponse.setPro(String.valueOf(dto.getEmpro()));
+							
 							//In case there was an error at end-point and the requestId was not returned
 							if(StringUtils.isEmpty(obj.getRequestId())){
 								errMsg.append("requestId empty ?? <json raw>: " + json);
@@ -283,12 +289,12 @@ public class DigitollV2MasterConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;
@@ -319,7 +325,9 @@ public class DigitollV2MasterConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(emlnrt));//for log purposes only
 		dtoResponse.setEmlnrm(emlnrm);
+		dtoResponse.setEllnrm(Integer.valueOf(emlnrm));//for log purposes only
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
@@ -364,6 +372,8 @@ public class DigitollV2MasterConsignmentController {
 							
 							//put in response
 							dtoResponse.setRequestId(obj.getRequestId());
+							dtoResponse.setEmlnrt(String.valueOf(dto.getEmlnrt()));
+							dtoResponse.setEmlnrm(String.valueOf(dto.getEmlnrt()));
 							dtoResponse.setAvd(String.valueOf(dto.getEmavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEmpro()));
 							
@@ -454,15 +464,15 @@ public class DigitollV2MasterConsignmentController {
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
 		}
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
 		
 		//std output (browser)
 		 
-		 */
+		 
 		return dtoResponse;
 	}
 	/**
@@ -487,7 +497,9 @@ public class DigitollV2MasterConsignmentController {
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
 		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEllnrt(Integer.valueOf(emlnrt));//for log purposes only
 		dtoResponse.setEmlnrm(emlnrm);
+		dtoResponse.setEllnrm(Integer.valueOf(emlnrm));//for log purposes only
 		
 		dtoResponse.setTdn("0");
 		dtoResponse.setMrn(mrn);
@@ -594,12 +606,12 @@ public class DigitollV2MasterConsignmentController {
 			dtoResponse.setErrMsg(sw.toString());
 		}
 		
-		/*
+		
 		//log in db before std-output
-		sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		*/
+		
 		
 		//std output (browser)
 		return dtoResponse;

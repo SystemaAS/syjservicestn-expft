@@ -129,7 +129,7 @@ public class DigitollV2TransportController {
 		dtoResponse.setUser(user);
 		dtoResponse.setEtlnrt(etlnrt);
 		dtoResponse.setEllnrt(Integer.valueOf(etlnrt));//for log purposes only
-		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADEXLOG)
+		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADMOLOG)
 		dtoResponse.setRequestMethodApi("POST");
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
@@ -168,6 +168,8 @@ public class DigitollV2TransportController {
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("requestId = " + obj.getRequestId());
+							dtoResponse.setAvd(String.valueOf(dto.getEtavd()));
+							dtoResponse.setPro(String.valueOf(dto.getEtpro()));
 							
 							//In case there was an error at end-point and the requestId was not returned
 							if(StringUtils.isEmpty(obj.getRequestId())){
