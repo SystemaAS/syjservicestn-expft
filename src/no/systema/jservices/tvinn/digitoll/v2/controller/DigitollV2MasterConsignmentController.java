@@ -29,6 +29,7 @@ import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
@@ -681,26 +682,26 @@ public class DigitollV2MasterConsignmentController {
 	 * Gets Master Consignment status through the API - GET - without having to check our db 
 	 * This method returns all documenNumbers that Toll.no has after having sent these HOUSES
 	 * 
-	 * @Example http://localhost:8080/syjservicestn-expft/digitollv2/getStatusMasterConsignment.do?user=NN&emavd=1&empro=500086&mrn=22NOM6O19GRP8UQBT6
+	 * @Example http://localhost:8080/syjservicestn-expft/digitollv2/getDocsStatusMasterConsignment.do?user=NN&emlnrt=1&emlnrm=2&mrn=22NOM6O19GRP8UQBT6
 	 * @param request
 	 * @param user
 	 * @param mrn
 	 * @return
 	 * @throws Exception
 	 */
-	/*
-	@RequestMapping(value="/digitollv2/getStatusMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	
+	@RequestMapping(value="/digitollv2/getDocsRecMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getStatusMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "emavd", required = true) String emavd,
-																				@RequestParam(value = "empro", required = true) String empro,	
+	public GenericDtoResponse getDocsReceivedMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "emlnrt", required = true) String emlnrt,
+																				@RequestParam(value = "emlnrm", required = true) String emlnrm,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setAvd(emavd); 
-		dtoResponse.setPro(empro);
+		dtoResponse.setEmlnrt(emlnrt);
+		dtoResponse.setEmlnrm(emlnrm);
 		dtoResponse.setTdn("0"); //dummy
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("GET all documentNumbers in MASTER-level at toll.no");
@@ -717,7 +718,7 @@ public class DigitollV2MasterConsignmentController {
 			if(checkUser(user)) {
 				logger.warn("user OK:" + user);
 				//API - PROD
-				String json = apiServices.getMrnStatusMasterConsignmentExpressMovementRoad(mrn);
+				String json = apiServices.getDocsReceivedMasterConsignmentDigitollV2(mrn);
 				logger.warn("JSON = " + json);
 				if(StringUtils.isNotEmpty(json)) {
 					ApiMrnStatusRecordDto[] obj = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
@@ -731,7 +732,7 @@ public class DigitollV2MasterConsignmentController {
 							
 							//(1)Proceed with every documentNumber and match with its respective house
 							//This stage is necessary only to change a house status3 on whether it exist in Master at toll.no or not
-							for (Object record: list) {
+							/*for (Object record: list) {
 								//(2)Update now the status-3 (SADEXHF.ehst3) on the valid house-documentNumber (SADEXHF.ehdkh)
 								ApiMrnStatusRecordDto apiDto = (ApiMrnStatusRecordDto)record;
 								String MODE_STATUS3 = "US3";
@@ -745,7 +746,7 @@ public class DigitollV2MasterConsignmentController {
 								//TODO or OBSOLETE talk with CHANG regarding status3 ...
 								//sadexhfService.updateStatus3Sadexhf(serverRoot, user, apiDto.getDocumentNumber(), dtoResponse.getDb_st3(), MODE_STATUS3);
 								
-							}
+							}*/
 						}else {
 							errMsg.append(methodName + " -->MRN not existent ?? <json raw>: " + json);
 							dtoResponse.setErrMsg(errMsg.toString());
@@ -777,7 +778,7 @@ public class DigitollV2MasterConsignmentController {
 		//std output (browser)
 		return dtoResponse;
 	}
-	*/
+	
 	
 	/**
 	 * 

@@ -1077,7 +1077,7 @@ public class ApiServices {
         return tmpResponse;
         		
 	}
-
+	
 	/**
 	 * 
 	 * @param mc
@@ -1305,6 +1305,59 @@ public class ApiServices {
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
         headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
         //headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
+        apiClient.setBasePath(this.basePathMovementRoad);
+       
+        ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
+        String tmpResponse = "";
+        
+        try {
+        	tmpResponse = apiClient.invokeAPI(path, HttpMethod.GET, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+        	
+        }catch(Exception e) {
+        	//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			throw new Exception(sw.toString());
+        }
+        
+        
+        return tmpResponse;
+        		
+	}
+
+	/**
+	 * This method returns a list with all document references received (at toll.no) so far ...
+	 * @param mrn
+	 * @return
+	 * @throws Exception
+	 */
+	public String getDocsReceivedMasterConsignmentDigitollV2(String mrn) throws Exception {
+		  
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
+		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
+		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
+		
+		
+		Object postBody = null; //Not in use
+		
+        //https://api-test.toll.no/api/movement/road/status/v2/master-consignment/23NONJB08UP98SOBT7/transport-document/status
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementStatusRoadVersion + "/master-consignment/" + mrn + "/transport-document/status").build().toUriString();
+		System.out.println(path);
+		logger.warn(path);
+		
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        headerParams.add("Accept-Charset", "utf-8");
+        final String[] accepts = { "application/json" };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+        
+        headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
         apiClient.setBasePath(this.basePathMovementRoad);
        
         ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};

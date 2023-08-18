@@ -29,6 +29,7 @@ import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
@@ -650,7 +651,6 @@ public class DigitollV2TransportController {
 		return dtoResponse;
 	}
 	
-
 	
 	/**
 	 * 
