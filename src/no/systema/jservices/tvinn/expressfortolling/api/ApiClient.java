@@ -1,6 +1,9 @@
 package no.systema.jservices.tvinn.expressfortolling.api;
 
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.Proxy.Type;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -28,7 +31,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.RequestEntity.BodyBuilder;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -68,6 +73,8 @@ public class ApiClient {
     private String basePathVersion;
 	
 	
+	
+	
     public enum CollectionFormat {
         CSV(","), TSV("\t"), SSV(" "), PIPES("|"), MULTI(null);
 
@@ -86,6 +93,13 @@ public class ApiClient {
         this.restTemplate = restTemplate();
         init();
     }
+    
+    
+    public void resetRestTemplateWithProxy(String host, Integer port) {
+        this.restTemplate = restTemplate(host, port);
+        init();
+    }
+    
 
     protected void init() {
         // Use RFC3339 format for date and datetime.
@@ -493,11 +507,28 @@ public class ApiClient {
 	 */
     @Bean
 	public RestTemplate restTemplate(){
-    	//RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter(objectMapper())));
-    	RestTemplate restTemplate = new RestTemplate();
+    	
+		//RestTemplate restTemplate = new RestTemplate(Arrays.asList(new MappingJackson2HttpMessageConverter(objectMapper())));
+		RestTemplate restTemplate = new RestTemplate();
 		restTemplate.setInterceptors(Arrays.asList(new CommonClientHttpRequestInterceptor()));
 		restTemplate.setErrorHandler(new CommonResponseErrorHandler());
-
+		
+		return restTemplate;  
+		
+	}
+    
+    
+    @Bean
+	public RestTemplate restTemplate(String proxyHost, Integer proxyPort){
+    	
+    	//proxy (DHL)
+    	logger.info("Inside resetTemplate with PROXY:" + proxyHost);
+		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+		requestFactory.setProxy(proxy);
+		RestTemplate restTemplate = new RestTemplate(requestFactory);
+		
+		
 		return restTemplate;  
 		
 	}

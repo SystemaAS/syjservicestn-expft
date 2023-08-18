@@ -41,6 +41,16 @@ public class Authorization {
 	@Value("${expft.basepath.movement.road.tolltoken}")
 	String tollAccessTokenUrl;
 	
+	@Value("${digitoll.access.use.proxy}")
+	String proxyIsUsed;
+	
+	@Value("${digitoll.access.proxy.host}")
+	String proxyHost;
+	
+	@Value("${digitoll.access.proxy.port}")
+	Integer proxyPort;
+	
+	
 	 /**
      * Get the access token
      * 
@@ -51,6 +61,13 @@ public class Authorization {
      */
     public TokenResponseDto accessTokenRequestPost() throws RestClientException {
     	logger.info("accessTokenRequestPost(TokenRequestDto tokenRequest)");
+    	//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+    	
+    	
     	Object postBody = null;  //Not in use
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
@@ -88,6 +105,14 @@ public class Authorization {
      */
     public TokenResponseDto accessTokenRequestPostMovementRoad() throws RestClientException {
     	logger.info("accessTokenRequestPostMovementRoad()");
+    	
+    	//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
+        
     	Object postBody = null;  //Not in use
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
@@ -98,7 +123,7 @@ public class Authorization {
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
-              
+        
         formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "grant_type", tokenRequest.getGrantType()));       
         formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "assertion", tokenRequest.getAssertion()));       
         
@@ -131,6 +156,12 @@ public class Authorization {
      */
     public TokenResponseDto accessTokenRequestPostToll(TokenResponseDto maskinPortenToken) throws RestClientException {
     	logger.info("accessTokenRequestPostToll(TokenRequestDto tokenRequest)");
+    	//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+    	
     	Object postBody = null;  //Not in use
     	
     	
@@ -171,6 +202,12 @@ public class Authorization {
      */
     public TokenResponseDto accessTokenForKurerRequestPost(String uploadUrlImmutable) throws RestClientException {
     	logger.info("accessTokenForKurerRequestPost(TokenRequestDto tokenRequest)");
+    	//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
     	Object postBody = null;  //Not in use
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
@@ -220,6 +257,12 @@ public class Authorization {
      */
     public TokenResponseDto accessTokenForDocsRequestPost() throws RestClientException {
     	logger.info("accessTokenRequestPost(TokenRequestDto tokenRequest)");
+    	//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
     	Object postBody = null;  //Not in use
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();

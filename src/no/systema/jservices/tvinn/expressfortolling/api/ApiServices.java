@@ -66,6 +66,7 @@ public class ApiServices {
 	@Autowired
     private ApiClient apiClient;
 	
+	
 	@Autowired
     private ApiUploadClient apiUploadClient;
 	
@@ -98,6 +99,15 @@ public class ApiServices {
 	@Value("${expft.basepath.movement.road.status.version}")
     private String basePathMovementStatusRoadVersion;
 	
+	
+	@Value("${digitoll.access.use.proxy}")
+	String proxyIsUsed;
+	
+	@Value("${digitoll.access.proxy.host}")
+	String proxyHost;
+	
+	@Value("${digitoll.access.proxy.port}")
+	Integer proxyPort;
 	
 	
 	
@@ -850,6 +860,13 @@ public class ApiServices {
 			e.toString();
 			
 		}
+		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = transport;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -902,6 +919,13 @@ public class ApiServices {
 			e.toString();
 			
 		}
+		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = transport;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -943,7 +967,12 @@ public class ApiServices {
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
-		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = transport;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -982,11 +1011,12 @@ public class ApiServices {
 		
 		TokenResponseDto tollResponseDto = (TokenResponseDto)tollTokenMap.get(1);
 		
-		/*TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
-		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
-		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
-		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
-		*/
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
@@ -1039,6 +1069,12 @@ public class ApiServices {
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
 		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
@@ -1093,6 +1129,12 @@ public class ApiServices {
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		tollTokenMap.put(1, tollResponseDto);
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
 		
 		//Debug for JSON string
 		try {
@@ -1157,6 +1199,13 @@ public class ApiServices {
 			e.toString();
 			
 		}
+		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+		
 		Object postBody = mc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -1197,7 +1246,12 @@ public class ApiServices {
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
-		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = mc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -1235,6 +1289,12 @@ public class ApiServices {
 		
 		TokenResponseDto tollResponseDto = (TokenResponseDto)tollTokenMap.get(1);
 		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
@@ -1287,6 +1347,12 @@ public class ApiServices {
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
 		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+		
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
@@ -1333,13 +1399,19 @@ public class ApiServices {
 	 * @throws Exception
 	 */
 	public String getDocsReceivedMasterConsignmentDigitollV2(String mrn) throws Exception {
-		  
+		
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
 		
-		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
+        
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/master-consignment/23NONJB08UP98SOBT7/transport-document/status
@@ -1405,6 +1477,13 @@ public class ApiServices {
 			e.toString();
 			
 		}
+		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = hc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -1458,6 +1537,13 @@ public class ApiServices {
 			e.toString();
 			
 		}
+		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = hc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -1496,6 +1582,12 @@ public class ApiServices {
 		
 		TokenResponseDto tollResponseDto = (TokenResponseDto)tollTokenMap.get(1);
 		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
@@ -1548,7 +1640,12 @@ public class ApiServices {
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
-		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = hc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
@@ -1588,6 +1685,12 @@ public class ApiServices {
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
 		
+		//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/road/status/v2/ -->check the difference against all other end-points that do not have "status" in the path
@@ -1641,7 +1744,6 @@ public class ApiServices {
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
 		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
-		
 		logger.warn("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		
 		//Debug for JSON string
@@ -1654,6 +1756,8 @@ public class ApiServices {
 			e.toString();
 			
 		}
+		
+        
 		Object postBody = mc;
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
