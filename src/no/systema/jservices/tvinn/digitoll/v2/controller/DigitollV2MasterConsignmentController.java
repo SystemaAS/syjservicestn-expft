@@ -693,15 +693,11 @@ public class DigitollV2MasterConsignmentController {
 	@RequestMapping(value="/digitollv2/getDocsRecMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getDocsReceivedMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "emlnrt", required = true) String emlnrt,
-																				@RequestParam(value = "emlnrm", required = true) String emlnrm,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
-		dtoResponse.setEmlnrt(emlnrt);
-		dtoResponse.setEmlnrm(emlnrm);
 		dtoResponse.setTdn("0"); //dummy
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("GET all documentNumbers in MASTER-level at toll.no");
