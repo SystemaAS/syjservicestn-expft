@@ -199,7 +199,7 @@ public class DigitollV2TransportController {
 									dtoResponse.setErrMsg("");
 									dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
 								}else {
-									dtoResponse.setDb_st2(EnumSadmotfStatus2.C.toString());
+									dtoResponse.setDb_st2(EnumSadmotfStatus2.S.toString());
 								}
 								
 								
@@ -386,7 +386,7 @@ public class DigitollV2TransportController {
 									}else {
 										//OK
 										logger.warn("RequestId status is OK ... (no errors)");
-										dtoResponse.setDb_st2(EnumSadmotfStatus2.C.toString());
+										dtoResponse.setDb_st2(EnumSadmotfStatus2.S.toString());
 										List<SadmotfDto> tmp = sadmotfService.updateLrnMrnSadmotf(serverRoot, user, dtoResponse, sendDate, mode);
 									}
 									

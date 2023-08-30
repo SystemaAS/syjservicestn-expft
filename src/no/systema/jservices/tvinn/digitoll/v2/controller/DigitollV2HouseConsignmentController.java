@@ -226,7 +226,7 @@ public class DigitollV2HouseConsignmentController {
 									dtoResponse.setErrMsg("");
 									dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 								}else {
-									dtoResponse.setDb_st2(EnumSadmohfStatus2.C.toString());
+									dtoResponse.setDb_st2(EnumSadmohfStatus2.S.toString());
 								}
 								
 								
@@ -431,7 +431,7 @@ public class DigitollV2HouseConsignmentController {
 										//OK
 										logger.warn("LRN status is OK ... (no errors)");
 										//Update ehst2 (SADEXHF) with OK = C
-										dtoResponse.setDb_st2(EnumSadmohfStatus2.C.toString());
+										dtoResponse.setDb_st2(EnumSadmohfStatus2.S.toString());
 										List<SadmohfDto> tmp = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, sendDate, mode);
 									}
 									

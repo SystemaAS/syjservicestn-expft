@@ -215,7 +215,7 @@ public class DigitollV2MasterConsignmentController {
 									dtoResponse.setErrMsg("");
 									dtoResponse.setDb_st2(EnumSadmomfStatus2.M.toString());
 								}else {
-									dtoResponse.setDb_st2(EnumSadmomfStatus2.C.toString());
+									dtoResponse.setDb_st2(EnumSadmomfStatus2.S.toString());
 								}
 								
 								
@@ -411,7 +411,7 @@ public class DigitollV2MasterConsignmentController {
 									}else {
 										//OK
 										logger.warn("RequestId status is OK ... (no errors)");
-										dtoResponse.setDb_st2(EnumSadmomfStatus2.C.toString());
+										dtoResponse.setDb_st2(EnumSadmomfStatus2.S.toString());
 										List<SadmomfDto> tmp = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, sendDate, mode);
 									}
 									
@@ -536,7 +536,7 @@ public class DigitollV2MasterConsignmentController {
 								String requestId = obj.getRequestId();
 								dtoResponse.setRequestId(requestId);
 								
-								//(2)now we have the new requestId for the updated mrn so we proceed with the SADEXMF-update-lrn at master consignment
+								//(2)now we have the new requestId for the updated mrn so we proceed with the SADMOMF-update-lrn at master consignment
 								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "DL";
 									dtoResponse.setMrn(mrn);
