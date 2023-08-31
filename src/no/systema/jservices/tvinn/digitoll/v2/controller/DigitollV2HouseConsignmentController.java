@@ -32,8 +32,10 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmohfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperHouseConsignment;
@@ -155,6 +157,7 @@ public class DigitollV2HouseConsignmentController {
 		dtoResponse.setEhlnrh(ehlnrh);
 		dtoResponse.setEllnrh(Integer.valueOf(ehlnrh));//for log purposes only
 		dtoResponse.setRequestMethodApi("POST");
+		boolean apiStatusAlreadyUpdated = false;
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -237,12 +240,14 @@ public class DigitollV2HouseConsignmentController {
 									dtoResponse.setMrn(mrn);
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									dtoResponse.setDocumentIssueDate(sendDate);//as aux for logging purposes
 									
 									List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadmohfDto rec: xx) {
 											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
+												apiStatusAlreadyUpdated = true;
 											}else {
 												errMsg.append("MRN empty after SADMOHF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
@@ -285,14 +290,23 @@ public class DigitollV2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+		
+		}finally {
+			
+			if(!apiStatusAlreadyUpdated) {
+				//check on status
+				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
+					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
+					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
+					//
+					List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
+					logger.info("After update on status 2 (finally-clause)");
+				}
+			}
+			//log in log file
+			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		}
-		
-		//log in db before std-output
-		sadmologLogger.doLog(serverRoot, user, dtoResponse);
-		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
-		
-		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -332,6 +346,7 @@ public class DigitollV2HouseConsignmentController {
 		dtoResponse.setEllnrh(Integer.valueOf(ehlnrh));//for log purposes only
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
+		boolean apiStatusAlreadyUpdated = false;
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -403,12 +418,14 @@ public class DigitollV2HouseConsignmentController {
 									//dtoResponse.setDb_st(EnumSadexhfStatus.O.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									dtoResponse.setDocumentIssueDate(sendDate);//as aux for logging purposes
 									
 									List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadmohfDto rec: xx) {
 											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
+												apiStatusAlreadyUpdated = true;
 											}else {
 												errMsg.append("MRN empty after SADMOHF-update:" + mrn + " " + methodName);
 												dtoResponse.setErrMsg(errMsg.toString());
@@ -469,13 +486,23 @@ public class DigitollV2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+		
+		}finally {
+			
+			if(!apiStatusAlreadyUpdated) {
+				//check on status
+				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
+					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
+					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
+					//
+					List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
+					logger.info("After update on status 2 (finally-clause)");
+				}
+			}
+			//log in log file
+			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		}
-		
-		//log in db before std-output
-		sadmologLogger.doLog(serverRoot, user, dtoResponse);
-		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
-		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -514,6 +541,7 @@ public class DigitollV2HouseConsignmentController {
 		dtoResponse.setEllnrh(Integer.valueOf(ehlnrh));//for log purposes only
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
+		boolean apiStatusAlreadyUpdated = false;
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -567,12 +595,14 @@ public class DigitollV2HouseConsignmentController {
 									dtoResponse.setDb_st2(EnumSadmomfStatus2.D.toString());
 									//we must update the send date as well. Only 8-numbers
 									String sendDate = hc.getDocumentIssueDate().replaceAll("-", "").substring(0,8);
+									dtoResponse.setDocumentIssueDate(sendDate);//as aux for logging purposes
 									
 									List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, sendDate, mode);
 									if(xx!=null && xx.size()>0) {
 										for (SadmohfDto rec: xx) {
 											if(StringUtils.isEmpty(rec.getEhmid()) ){
 												//OK
+												apiStatusAlreadyUpdated = true;
 											}else {
 												errMsg.append("MRN has not been removed after SADMOHF-delete-light mrn:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
@@ -612,13 +642,23 @@ public class DigitollV2HouseConsignmentController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+		
+		}finally {
+			
+			if(!apiStatusAlreadyUpdated) {
+				//check on status
+				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
+					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
+					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
+					//
+					List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
+					logger.info("After update on status 2 (finally-clause)");
+				}
+			}
+			//log in log file
+			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		}
-		
-		//log in db before std-output
-		sadmologLogger.doLog(serverRoot, user, dtoResponse);
-		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
-		
 		
 		return dtoResponse;
 	}

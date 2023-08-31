@@ -47,7 +47,8 @@ public class GenericDtoResponse {
 	private Integer ellnrt = 0;
 	private Integer ellnrm = 0;
 	private Integer ellnrh = 0;
-	
+	//aux
+	private String documentIssueDate = "0";
 	
 	
 	private List<Object> list = new ArrayList<Object>();
