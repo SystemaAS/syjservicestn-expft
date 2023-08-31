@@ -862,7 +862,7 @@ public class ApiServices {
 		}
 		
 		//reset for proxy if needed
-    	logger.info(this.proxyIsUsed);
+    	logger.info("proxy:" + this.proxyIsUsed);
         if(Boolean.parseBoolean(proxyIsUsed)) {
         	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
         }
@@ -921,7 +921,7 @@ public class ApiServices {
 		}
 		
 		//reset for proxy if needed
-    	logger.info(this.proxyIsUsed);
+    	logger.info("proxy:" + this.proxyIsUsed);
         if(Boolean.parseBoolean(proxyIsUsed)) {
         	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
         }

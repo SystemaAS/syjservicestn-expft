@@ -1,6 +1,7 @@
 package no.systema.jservices.tvinn.digitoll.v2.dto;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -65,6 +66,7 @@ public class SadmotfDto {
 	private String etemt = ""; // varchar(50), Epostadr/tlf 
 	private String etemtt = ""; // varchar(2), Epostadr/tlf typ (TE-EM)
 	
+	//IMPORTANT- this fields are not used since the references must be a list of all master-consignments documentnrs (emdkm && emdkmt)
 	private String etdkm = ""; // varchar(50), Master Dokumentnr 
 	private String etdkmt = ""; // varchar(4), Master Dokumenttype
 	
@@ -72,6 +74,7 @@ public class SadmotfDto {
 	private String emerr = ""; // varchar(50), Feilmelding ved SND
 		
 	
+	private List<SadmomfDto> masterList;
 }
 
 

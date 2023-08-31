@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -74,26 +75,31 @@ public class MapperTransport {
 			//TEST transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		}
 		
-		//Mandatory ref to MasterConsignment
-		List list = new ArrayList();
-		list.add(this.populateConsignmentMasterLevelTransport(sourceDto.getEtdkm(), sourceDto.getEtdkmt()));
-		// if needed in the future-->list.add(this.populateConsignmentMasterLevelTransport("two", "N730"));
-		//
-		transport.setConsignmentMasterLevelTransport(list);
+		//Mandatory ref to MasterConsignment max 9999
+		//Liste over hovedforsendelser som skal transporteres til grensen med denne transporten
+		transport.setConsignmentMasterLevelTransport(this.populateConsignmentMasterLevelTransport(sourceDto.getMasterList()));
 		
 		
 		return transport;
 	}
-	
-	private ConsignmentMasterLevelTransport populateConsignmentMasterLevelTransport(String id, String type) {
-			
-		ConsignmentMasterLevelTransport ml = new ConsignmentMasterLevelTransport();
-		TransportDocumentMasterLevel trDocMasterLevel = new TransportDocumentMasterLevel();
-		trDocMasterLevel.setDocumentNumber(id);
-		trDocMasterLevel.setType(type);
-		ml.setTransportDocumentMasterLevel(trDocMasterLevel);
-		return ml;
-		   
+	/**
+	 * 
+	 * @param list
+	 * @return
+	 */
+	private List<ConsignmentMasterLevelTransport> populateConsignmentMasterLevelTransport(List<SadmomfDto> list) {
+		List<ConsignmentMasterLevelTransport> targetList = new ArrayList();
+		for(SadmomfDto record : list) {
+			ConsignmentMasterLevelTransport ml = new ConsignmentMasterLevelTransport();
+			TransportDocumentMasterLevel trDocMasterLevel = new TransportDocumentMasterLevel();
+			trDocMasterLevel.setDocumentNumber(record.getEmdkm());
+			trDocMasterLevel.setType(record.getEmdkmt());
+			ml.setTransportDocumentMasterLevel(trDocMasterLevel);
+			targetList.add(ml);
+		}
+		
+		return targetList;
+		  
 	}
 	
 	public Transport mapTransportForDelete() {

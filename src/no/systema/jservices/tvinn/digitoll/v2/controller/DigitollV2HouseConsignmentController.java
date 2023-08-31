@@ -99,6 +99,7 @@ public class DigitollV2HouseConsignmentController {
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
 	private int THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS = 6000;
+	private final String LOG_PREFIX_LEGEND = "Logged on SADMOLOG >> ";
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -289,7 +290,7 @@ public class DigitollV2HouseConsignmentController {
 		//log in db before std-output
 		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
 		
 		
 		//std output (browser)
@@ -473,7 +474,7 @@ public class DigitollV2HouseConsignmentController {
 		//log in db before std-output
 		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
 		
 		//std output (browser)
 		return dtoResponse;
@@ -616,7 +617,7 @@ public class DigitollV2HouseConsignmentController {
 		//log in db before std-output
 		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
 		
 		
 		return dtoResponse;

@@ -33,6 +33,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
@@ -90,12 +91,15 @@ public class DigitollV2TransportController {
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
 	private int THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS = 6000;
+	private final String LOG_PREFIX_LEGEND = "Logged on SADMOLOG >> ";
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
-	private SadmotfService sadmotfService;	
+	private SadmotfService sadmotfService;
+	@Autowired
+	private SadmomfService sadmomfService;
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -150,9 +154,10 @@ public class DigitollV2TransportController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadmotfDto dto: list) {
+						//get list of master for the mapping of some attributes
+						dto.setMasterList(this.sadmomfService.getSadmomf(serverRoot, user, etlnrt)) ;
 						//DEBUG
-						logger.info(dto.toString());
-						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
+						//logger.info(dto.toString());
 						
 						if(StringUtils.isEmpty(dto.getEtmid()) && StringUtils.isEmpty(dto.getEtuuid() )) {
 							Transport transport =  new MapperTransport().mapTransport(dto);
@@ -161,7 +166,6 @@ public class DigitollV2TransportController {
 							logger.debug(GenericJsonStringPrinter.debug(transport));
 							
 							//API
-							
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
 							String json = apiServices.postTransportDigitollV2(transport, tollTokenMap);
 							//At this point we now have a valid tollToken to use
@@ -233,8 +237,6 @@ public class DigitollV2TransportController {
 							break; //only first in list
 							
 							
-							
-							
 						}else {
 							errMsg.append(" requestId/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
 							dtoResponse.setErrMsg(errMsg.toString());
@@ -257,15 +259,26 @@ public class DigitollV2TransportController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			
+			
+		}finally {
+			
+			
+			//check on status
+			if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
+				logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+				dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
+				logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
+				//
+				List<SadmotfDto> xx = sadmotfService.updateLrnMrnSadmotf(serverRoot, user, dtoResponse, "0", "ULM");
+				logger.info("After update on status 2...");
+			}
+			
+			//log in log file
+			sadmologLogger.doLog(serverRoot, user, dtoResponse);
+	
+			
 		}
-		
-		
-		//log in db before std-output
-		sadmologLogger.doLog(serverRoot, user, dtoResponse);
-		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		
-		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -318,7 +331,11 @@ public class DigitollV2TransportController {
 					
 					for (SadmotfDto dto: list) {
 						logger.warn(dto.toString());
-						//Only valid when those lrn(etuuid) and mrn(etmid) are NOT empty
+						//get list of master for the mapping of some attributes
+						dto.setMasterList(this.sadmomfService.getSadmomf(serverRoot, user, etlnrt)) ;
+						//DEBUG
+						//logger.info(dto.toString());
+						
 						if(StringUtils.isNotEmpty(dto.getEtmid()) && StringUtils.isNotEmpty(dto.getEtuuid() )) {
 							Transport transport =  new MapperTransport().mapTransport(dto);
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
@@ -423,13 +440,14 @@ public class DigitollV2TransportController {
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
 		}
 		
 		
 		//log in db before std-output
 		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
 		
 		
 		//std output (browser)
@@ -554,18 +572,22 @@ public class DigitollV2TransportController {
 			}
 			
 		}catch(Exception e) {
+			
 			e.printStackTrace();
 			//Get out stackTrace to the response (errMsg)
 			StringWriter sw = new StringWriter();
 			e.printStackTrace(new PrintWriter(sw));
 			dtoResponse.setErrMsg(sw.toString());
+			dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
+			
 		}
 		
 		
 		//log in db before std-output
+		logger.info(dtoResponse.toString());
 		sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg()); }
 		
 		
 		//std output (browser)

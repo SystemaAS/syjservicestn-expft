@@ -26,5 +26,7 @@ public class SadmologDto{
 	private String elltxt  = "" ; // TEGN         1024    1024        39        Begge    LOGTEXT     
 	private String elifsf  = "" ; // TEGN          100     100      1063        Begge    IFS FILENAME	 
 	
-	
+	private String status_1 = "";
+	private String status_2 = "";
+	private String status_3 = "";
 }

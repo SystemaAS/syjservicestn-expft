@@ -34,9 +34,59 @@ public class SadmomfService {
 	@Autowired
 	RestTemplate restTemplate;
 	
-	//@Autowired
-	//SadexhfService sadexhfService;
 	
+	public List<SadmomfDto> getSadmomf(String serverRoot, String user, String emlnrt) {
+		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
+		
+		logger.warn("USER:" + user);
+		
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADMOMF.do")
+				.queryParam("user", user)
+				.queryParam("emlnrt", emlnrt)
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("select-SADMOMF-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("select-SADMOMF-REST-http-response:" + response.getStatusCodeValue());
+				
+				for(Object o: dtoContainer.getList()){
+					SadmomfDto pojo = mapper.convertValue(o, SadmomfDto.class);
+					//get houses' dto for documentNumbers later on (with avd in order to include external Houses outside SYSPED registered manually)
+					//pojo.setHouseDtoList(sadexhfService.getDocumentNumberListFromHouses(serverRoot, user, pro));
+					//logger.warn(pojo.getHouseDtoList().toString());
+					if(pojo!=null) {
+						result.add(pojo);
+					}
+				}
+				
+			}
+
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
 	
 	public List<SadmomfDto> getSadmomf(String serverRoot, String user, String emlnrt, String emlnrm) {
 		List<SadmomfDto> result = new ArrayList<SadmomfDto>();
