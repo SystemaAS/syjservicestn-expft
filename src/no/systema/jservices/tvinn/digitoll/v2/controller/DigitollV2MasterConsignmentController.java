@@ -35,6 +35,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -98,7 +99,9 @@ public class DigitollV2MasterConsignmentController {
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
-	private SadmomfService sadmomfService;		
+	private SadmomfService sadmomfService;
+	@Autowired
+	private SadmotfService sadmotfService;
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -174,14 +177,18 @@ public class DigitollV2MasterConsignmentController {
 					
 					for (SadmomfDto dto: list) {
 						//DEBUG
-						logger.info(dto.toString());
+						//logger.info(dto.toString());
 						
-						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
-						if(StringUtils.isEmpty(dto.getEmmid()) && StringUtils.isEmpty(dto.getEmuuid() )) {
+						//Get the transportDto - level since some fields might be required in the mapping
+						dto.setTransportDto(this.sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
+						
+						//Only valid when mrn(emmid) are empty
+						//if(StringUtils.isEmpty(dto.getEmmid()) && StringUtils.isEmpty(dto.getEmuuid() )) {
+						if(StringUtils.isEmpty(dto.getEmmid()) ) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
 							//Debug
-							logger.debug(GenericJsonStringPrinter.debug(mc));
+							//logger.debug(GenericJsonStringPrinter.debug(mc));
 							//API
 							
 							Map tollTokenMap = new HashMap();
@@ -360,7 +367,7 @@ public class DigitollV2MasterConsignmentController {
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
 							
 							//Debug
-							logger.debug(GenericJsonStringPrinter.debug(mc));
+							//logger.debug(GenericJsonStringPrinter.debug(mc));
 							
 							//API - PROD
 							
@@ -923,8 +930,10 @@ public class DigitollV2MasterConsignmentController {
 			logger.warn("Status = " + obj.getStatus());
 			logger.warn("requestID = " + obj.getRequestId());
 			logger.warn("notificationDate = " + obj.getNotificationDate());
-			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
-			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			if(obj.getValidationErrorList()!=null) {
+				logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
+				logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			}
 			//
 			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());

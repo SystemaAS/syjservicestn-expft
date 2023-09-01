@@ -186,11 +186,12 @@ public class DigitollV2HouseConsignmentController {
 						dto.setGoodsItemList(this.sadmoifService.getSadmoif(serverRoot, user, ehlnrt, ehlnrm, ehlnrh));
 						
 						//Only valid when those lrn(emuuid) and mrn(emmid) are empty
-						if(StringUtils.isEmpty(dto.getEhmid()) && StringUtils.isEmpty(dto.getEhuuid() )) {
+						//if(StringUtils.isEmpty(dto.getEhmid()) && StringUtils.isEmpty(dto.getEhuuid() )) {
+						if(StringUtils.isEmpty(dto.getEhmid()) ) {
 							HouseConsignment hc =  new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("DocumentIssueDate:" + hc.getDocumentIssueDate());
 							//Debug
-							logger.debug(GenericJsonStringPrinter.debug(hc));
+							//logger.debug(GenericJsonStringPrinter.debug(hc));
 							//API
 							
 							Map tollTokenMap = new HashMap();
@@ -300,6 +301,7 @@ public class DigitollV2HouseConsignmentController {
 					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
+					
 					List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
 					logger.info("After update on status 2 (finally-clause)");
 				}
@@ -381,7 +383,7 @@ public class DigitollV2HouseConsignmentController {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
 							//Debug
-							logger.debug(GenericJsonStringPrinter.debug(hc));
+							//logger.debug(GenericJsonStringPrinter.debug(hc));
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap();
@@ -903,6 +905,7 @@ public class DigitollV2HouseConsignmentController {
 	}
 	
 	/**
+	 * Only used from POST
 	 * 
 	 * @param dtoResponse
 	 * @param lrn
@@ -926,6 +929,7 @@ public class DigitollV2HouseConsignmentController {
 			if(StringUtils.isNotEmpty(obj.getMrn())) {
 				retval = obj.getMrn();
 			}else {
+				
 				dtoResponse.setErrMsg(json);
 			}
 		}catch(Exception e) {
@@ -955,8 +959,10 @@ public class DigitollV2HouseConsignmentController {
 			logger.warn("Status = " + obj.getStatus());
 			logger.warn("requestID = " + obj.getRequestId());
 			logger.warn("notificationDate = " + obj.getNotificationDate());
-			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
-			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			if(obj.getValidationErrorList()!=null) {
+				logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
+				logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			}
 			//
 			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());

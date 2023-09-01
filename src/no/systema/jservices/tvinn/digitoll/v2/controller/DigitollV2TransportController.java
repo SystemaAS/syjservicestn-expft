@@ -160,11 +160,11 @@ public class DigitollV2TransportController {
 						//DEBUG
 						//logger.info(dto.toString());
 						
-						if(StringUtils.isEmpty(dto.getEtmid()) && StringUtils.isEmpty(dto.getEtuuid() )) {
+						if(StringUtils.isEmpty(dto.getEtmid()) ) {
 							Transport transport =  new MapperTransport().mapTransport(dto);
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
 							//Debug
-							logger.debug(GenericJsonStringPrinter.debug(transport));
+							//logger.debug(GenericJsonStringPrinter.debug(transport));
 							
 							//API
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
@@ -807,8 +807,10 @@ public class DigitollV2TransportController {
 			logger.warn("Status = " + obj.getStatus());
 			logger.warn("requestID = " + obj.getRequestId());
 			logger.warn("notificationDate = " + obj.getNotificationDate());
-			logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
-			logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			if(obj.getValidationErrorList()!=null) {
+				logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
+				logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			}
 			//
 			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());

@@ -82,5 +82,7 @@ public class SadmomfDto {
 	private String emsddt = "";   //tegn           30  place of deliv text  
 	private String emerr = "";  //tegn           50    feilmelding ved snd  
 	
+	//from transport level
+	private SadmotfDto transportDto;
 }
 	      
