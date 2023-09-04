@@ -141,12 +141,11 @@ public class MapperHouseConsignment {
 		
 		//(Optional) Previous Documents
 		List prevDocsList = new ArrayList();
-		if(StringUtils.isNotEmpty(dto.getEhtrnr()) || 
-				(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
+		if(StringUtils.isNotEmpty(dto.getEhtrnr()) || (StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
 			//(1)
 			if(StringUtils.isNotEmpty(dto.getEhtrnr())){
 				PreviousDocuments prevDocs = new PreviousDocuments();
-				prevDocs.setTypeOfReference(dto.getEhtrty());
+				prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
 				prevDocs.setReferenceNumber(dto.getEhtrnr());
 				prevDocsList.add(prevDocs);
 
@@ -154,7 +153,7 @@ public class MapperHouseConsignment {
 			//(2)
 			if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
 				PreviousDocuments prevDocs = new PreviousDocuments();
-				prevDocs.setTypeOfReference("CUDE"); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+				prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
 				prevDocs.setDeclarantNumber(dto.getEhrg());
 				prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
 				prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
