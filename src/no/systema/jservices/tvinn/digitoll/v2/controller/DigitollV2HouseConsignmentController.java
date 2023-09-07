@@ -266,8 +266,6 @@ public class DigitollV2HouseConsignmentController {
 							break; //only first in list
 							
 							
-							
-							
 						}else {
 							errMsg.append(" requestId/MRN already exist. This operation is invalid. Make sure this fields are empty before any POST or issue a PUT (with current MRN) ");
 							dtoResponse.setErrMsg(errMsg.toString());
@@ -384,6 +382,7 @@ public class DigitollV2HouseConsignmentController {
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
 							//Debug
 							//logger.debug(GenericJsonStringPrinter.debug(hc));
+							
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap();

@@ -164,11 +164,20 @@ public class MapperHouseConsignment {
 		
 		//(Optional) ExportFromEU
 		List exportFromEUList = new ArrayList();
-		if(StringUtils.isNotEmpty(dto.getEheid())) {
-			ExportFromEU exportFromEU = new ExportFromEU();
-			exportFromEU.setExportId(dto.getEheid());
-			exportFromEU.setTypeOfExport(dto.getEhetypt());
-			exportFromEUList.add(exportFromEU);
+		if(StringUtils.isNotEmpty(dto.getEheid()) || StringUtils.isNotEmpty(dto.getEhetypt() )) {
+			if(StringUtils.isNotEmpty(dto.getEheid())) {
+				ExportFromEU exportFromEU = new ExportFromEU();
+				exportFromEU.setExportId(dto.getEheid());
+				exportFromEU.setTypeOfExport(dto.getEhetypt());
+				exportFromEUList.add(exportFromEU);
+				
+			}
+			if(StringUtils.isNotEmpty(dto.getEheid2())) {
+				ExportFromEU exportFromEU = new ExportFromEU();
+				exportFromEU.setExportId(dto.getEheid2());
+				exportFromEU.setTypeOfExport(dto.getEhetypt2());
+				exportFromEUList.add(exportFromEU);
+			}
 			chl.setExportFromEU(exportFromEUList);
 		}
 		
