@@ -359,17 +359,18 @@ public class DigitollV2MasterConsignmentController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadmomfDto dto: list) {
-						logger.warn(dto.toString());
+						//logger.warn(dto.toString());
+						//Get the transportDto - level since some fields might be required in the mapping
+						dto.setTransportDto(this.sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
+						
 						//Only valid when mrn(emmid) is NOT empty
 						if(StringUtils.isNotEmpty(dto.getEmmid()) ) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
-							
 							//Debug
 							//logger.debug(GenericJsonStringPrinter.debug(mc));
 							
 							//API - PROD
-							
 							Map tollTokenMap = new HashMap();
 							String json = apiServices.putMasterConsignmentDigitollV2(mc, mrn, tollTokenMap);
 							

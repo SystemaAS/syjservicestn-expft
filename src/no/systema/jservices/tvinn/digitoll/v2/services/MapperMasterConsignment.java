@@ -31,36 +31,36 @@ public class MapperMasterConsignment {
 		mc.setDocumentIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		logger.warn(mc.getDocumentIssueDate());
 		
-		//(Optional) Representative (do not exist at db level, fetch from Transport if applicable = TODO
-		
-		/*if(StringUtils.isNotEmpty(dto.getEmnar())){
-			Representative rep = new Representative();
-			rep.setName("sourceDto.getEmnar()");
-			rep.setIdentificationNumber("sourceDto.getEmrgr()");
-			//(Mandatory) this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
-			rep.setAddress(this.setAddress("sourceDto.getEmpsr()", "sourceDto.getEmlkr()", "sourceDto.getEmpnr()", "sourceDto.getEmad1r()", "sourceDto.getEmnrr()"));
-			//
-			List rcommList = new ArrayList();
-			rcommList.add(this.populateCommunication("sourceDto.getEmemr()", "sourceDto.getEmemrt()"));
-			rep.setCommunication(rcommList);
-			
-			//(Optional) ReleasedConfirmation 
-			//if(StringUtils.isNotEmpty("sourceDto.getEmrcem1()")) {
-				List relList = new ArrayList();
-				relList.add(this.populateReleasedConfirmation( "sourceDto.getEmrcem1()" ));
-				//if(StringUtils.isNotEmpty(sourceDto.getEmrcem2())) {
-					relList.add(this.populateReleasedConfirmation( "sourceDto.getEmrcem2()" ));
-					//if(StringUtils.isNotEmpty(sourceDto.getEmrcem3())) {
-						relList.add(this.populateReleasedConfirmation( "sourceDto.getEmrcem3()" ));
-					//}	
-				//}
-				rep.setReleasedConfirmation(relList);
-			//}
-			
-			mc.setRepresentative(rep);
+		//(Optional) Representative (do not exist at db level, fetch from Transport if applicable)
+		//The criteria to send the Representative at a Master level is that there is a confirmation-email wanted at the user-level
+		//It will be the copy of the representative at a Tranport level
+		if(StringUtils.isNotEmpty(dto.getEmrcem1())){
+			if(StringUtils.isNotEmpty(dto.getTransportDto().getEtnar())) {
+				Representative rep = new Representative();
+				rep.setName(dto.getTransportDto().getEtnar());
+				rep.setIdentificationNumber(dto.getTransportDto().getEtrgr());
+				//(Mandatory) this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
+				rep.setAddress(this.setAddress(dto.getTransportDto().getEtpsr(), dto.getTransportDto().getEtlkr(), dto.getTransportDto().getEtpnr(), dto.getTransportDto().getEtad1r(), dto.getTransportDto().getEtnrr()));
+				//
+				List rcommList = new ArrayList();
+				rcommList.add(this.populateCommunication(dto.getTransportDto().getEtemr(), dto.getTransportDto().getEtemrt()));
+				rep.setCommunication(rcommList);
+				//confirmastion emails
+				List rconfirmationList = new ArrayList();
+				rconfirmationList.add(this.populateConfirmation(dto.getEmrcem1()));
+				if(StringUtils.isNotEmpty(dto.getEmrcem2())) {
+					rconfirmationList.add(this.populateConfirmation(dto.getEmrcem2()));
+				}
+				if(StringUtils.isNotEmpty(dto.getEmrcem3())) {
+					rconfirmationList.add(this.populateConfirmation(dto.getEmrcem3()));
+				}
+				rep.setReleasedConfirmation(rconfirmationList);
+				
+				mc.setRepresentative(rep);
+			}
 
 		}
-		*/
+		
 		
 		//(Mandatory) Consig.MasterLevel - documentNumber IMPORTANT (parent to houseConsignment documentNumber)
 		mc.setConsignmentMasterLevel(this.populateConsignmentMasterLevel(dto));
@@ -109,6 +109,11 @@ public class MapperMasterConsignment {
 		communication.setIdentifier(id);
 		communication.setType(type);
 		return communication;
+	}
+	private ReleasedConfirmation populateConfirmation(String email ) {
+		ReleasedConfirmation confirmation = new ReleasedConfirmation();
+		confirmation.setEmailAddress(email);
+		return confirmation;
 	}
 	/**
 	 * Most important child in master: all house documentNumbers of the house consignments
