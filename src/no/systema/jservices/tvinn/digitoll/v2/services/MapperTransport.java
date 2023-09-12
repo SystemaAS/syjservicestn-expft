@@ -75,9 +75,12 @@ public class MapperTransport {
 			//TEST transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		}
 		
-		//Mandatory ref to MasterConsignment max 9999
-		//Liste over hovedforsendelser som skal transporteres til grensen med denne transporten
-		transport.setConsignmentMasterLevelTransport(this.populateConsignmentMasterLevelTransport(sourceDto.getMasterList()));
+		//Mandatory (at last before the lorry arrives) ref to MasterConsignment max 9999
+		//It could be missing at first but we have blocked this feature in the GUI... The master refs. must have been sent in his own right 
+		if(sourceDto.getMasterList()!= null && !sourceDto.getMasterList().isEmpty()) {
+			//Liste over hovedforsendelser som skal transporteres til grensen med denne transporten
+			transport.setConsignmentMasterLevelTransport(this.populateConsignmentMasterLevelTransport(sourceDto.getMasterList()));
+		}
 		
 		
 		return transport;
