@@ -360,9 +360,8 @@ public class DigitollV2MasterConsignmentController {
 					
 					for (SadmomfDto dto: list) {
 						logger.warn(dto.toString());
-						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
-						
-						if(StringUtils.isNotEmpty(dto.getEmmid()) && StringUtils.isNotEmpty(dto.getEmuuid() )) {
+						//Only valid when mrn(emmid) is NOT empty
+						if(StringUtils.isNotEmpty(dto.getEmmid()) ) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignment(dto);
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
 							
@@ -543,8 +542,8 @@ public class DigitollV2MasterConsignmentController {
 					
 					
 					for (SadmomfDto sadmomfDto: list) {
-						//Only valid when those requestId(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(sadmomfDto.getEmmid()) && StringUtils.isNotEmpty(sadmomfDto.getEmuuid() )) {
+						//Only valid when mrn(emmid) is NOT empty
+						if(StringUtils.isNotEmpty(sadmomfDto.getEmmid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignmentForDelete();
 							//API
 							

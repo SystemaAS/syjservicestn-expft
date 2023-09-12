@@ -164,7 +164,7 @@ public class DigitollV2TransportController {
 							Transport transport =  new MapperTransport().mapTransport(dto);
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
 							//Debug
-							//logger.debug(GenericJsonStringPrinter.debug(transport));
+							logger.info(GenericJsonStringPrinter.debug(transport));
 							
 							//API
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
@@ -339,9 +339,13 @@ public class DigitollV2TransportController {
 						//DEBUG
 						//logger.info(dto.toString());
 						
-						if(StringUtils.isNotEmpty(dto.getEtmid()) && StringUtils.isNotEmpty(dto.getEtuuid() )) {
+						//if(StringUtils.isNotEmpty(dto.getEtmid()) && StringUtils.isNotEmpty(dto.getEtuuid() )) {
+						if( StringUtils.isNotEmpty(dto.getEtmid()) ) {
 							Transport transport =  new MapperTransport().mapTransport(dto);
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
+							//Debug
+							logger.info(GenericJsonStringPrinter.debug(transport));
+							
 							//API - PROD
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
 							String json = apiServices.putTransportDigitollV2(transport, mrn, tollTokenMap);
@@ -514,8 +518,8 @@ public class DigitollV2TransportController {
 					
 					
 					for (SadmotfDto sadmotfDto: list) {
-						//Only valid when those requestId(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(sadmotfDto.getEtmid()) && StringUtils.isNotEmpty(sadmotfDto.getEtuuid() )) {
+						//Only valid when mrn(emmid) is NOT empty
+						if(StringUtils.isNotEmpty(sadmotfDto.getEtmid()) ) {
 							Transport transport =  new MapperTransport().mapTransportForDelete();
 							//API
 							

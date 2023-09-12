@@ -376,8 +376,8 @@ public class DigitollV2HouseConsignmentController {
 						dto.setMasterDto(this.sadmomfService.getSadmomfDto(serverRoot, user, ehlnrt, ehlnrm)) ;
 						dto.setGoodsItemList(this.sadmoifService.getSadmoif(serverRoot, user, ehlnrt, ehlnrm, ehlnrh));
 						
-						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
+						//Only valid when mrn(emmid) is NOT empty
+						if(StringUtils.isNotEmpty(dto.getEhmid()) ) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignment(dto);
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
 							//Debug
@@ -562,8 +562,8 @@ public class DigitollV2HouseConsignmentController {
 					logger.warn("list size:" + list.size());
 					
 					for (SadmohfDto dto: list) {
-						//Only valid when those lrn(emuuid) and mrn(emmid) are NOT empty
-						if(StringUtils.isNotEmpty(dto.getEhmid()) && StringUtils.isNotEmpty(dto.getEhuuid() )) {
+						//Only valid when mrn(emmid) is NOT empty
+						if(StringUtils.isNotEmpty(dto.getEhmid() )) {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignmentForDelete(dto);
 							logger.warn("documentIssueDate:" + hc.getDocumentIssueDate());
 							//API
