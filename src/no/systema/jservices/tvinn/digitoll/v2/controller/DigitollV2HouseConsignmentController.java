@@ -121,6 +121,16 @@ public class DigitollV2HouseConsignmentController {
 	@Autowired
 	private SadmologLogger sadmologLogger;	
 	
+	@RequestMapping(value="/digitollv2/jsonTest.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse postHouseConsignmentDigitollV2(HttpServletRequest request ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setErrMsg("myERROR in jsonTest !!!...");
+		return dtoResponse;
+	}
+	
 	/**
 	 * Creates a new House Consignment through the API - POST
 	 * The operation is only valid when the requestId(ehuuid) and mrn(ehmid) are empty at SADMOHF
