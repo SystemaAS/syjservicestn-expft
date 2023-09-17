@@ -24,6 +24,7 @@ import com.google.gson.JsonParser;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
+import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
@@ -35,6 +36,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
+import no.systema.jservices.tvinn.digitoll.v2.util.ApiAirRecognizer;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
@@ -105,6 +107,9 @@ public class DigitollV2TransportController {
 	private ApiServices apiServices; 
 	
 	@Autowired
+	private ApiServicesAir apiServicesAir; 
+	
+	@Autowired
 	private SadmologLogger sadmologLogger;	
 	
 	
@@ -137,6 +142,7 @@ public class DigitollV2TransportController {
 		dtoResponse.setTdn("0"); //dummy (needed for db-log on table SADMOLOG)
 		dtoResponse.setRequestMethodApi("POST");
 		boolean apiStatusAlreadyUpdated = false;
+		boolean isApiAir = false;
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -160,6 +166,9 @@ public class DigitollV2TransportController {
 						//DEBUG
 						//logger.info(dto.toString());
 						
+						//Check if we are using MO-Air and not road...
+						if(ApiAirRecognizer.isAir(dto.getEtktyp()))  { isApiAir = true; }
+						
 						if(StringUtils.isEmpty(dto.getEtmid()) ) {
 							Transport transport =  new MapperTransport().mapTransport(dto);
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
@@ -168,7 +177,12 @@ public class DigitollV2TransportController {
 							
 							//API
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
-							String json = apiServices.postTransportDigitollV2(transport, tollTokenMap);
+							String json = "";
+							if(isApiAir) {
+								json = apiServicesAir.postTransportDigitollV2(transport, tollTokenMap);
+							}else {
+								json = apiServices.postTransportDigitollV2(transport, tollTokenMap);
+							}
 							//At this point we now have a valid tollToken to use
 							
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
@@ -197,7 +211,7 @@ public class DigitollV2TransportController {
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
+								String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir);
 								
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
@@ -315,6 +329,7 @@ public class DigitollV2TransportController {
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("PUT");
 		boolean apiStatusAlreadyUpdated = false;
+		boolean isApiAir = false;
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		String methodName = new Object() {}
@@ -348,7 +363,14 @@ public class DigitollV2TransportController {
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
-							String json = apiServices.putTransportDigitollV2(transport, mrn, tollTokenMap);
+							//API
+							if(ApiAirRecognizer.isAir(dto.getEtktyp())) { isApiAir = true; }
+							String json = "";
+							if(isApiAir) {
+								json = apiServicesAir.putTransportDigitollV2(transport, mrn, tollTokenMap);
+							}else {
+								json = apiServices.putTransportDigitollV2(transport, mrn, tollTokenMap);
+							}
 							//At this point we now have a valid tollToken to use
 							
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
@@ -403,7 +425,7 @@ public class DigitollV2TransportController {
 									logger.warn("END of delay: "+ new Date());
 									logger.warn(PrettyLoggerOutputer.FRAME);
 									
-									this.checkLrnValidationStatusTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap);
+									this.checkLrnValidationStatusTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
 										//Update ehst2(SADMOTF) with ERROR = M
@@ -499,6 +521,8 @@ public class DigitollV2TransportController {
 		dtoResponse.setMrn(mrn);
 		dtoResponse.setRequestMethodApi("DELETE");
 		boolean apiStatusAlreadyUpdated = false;
+		boolean isApiAir = false;
+		
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		String methodName = new Object() {}
@@ -517,21 +541,27 @@ public class DigitollV2TransportController {
 					logger.warn("list size:" + list.size());
 					
 					
-					for (SadmotfDto sadmotfDto: list) {
+					for (SadmotfDto dto: list) {
 						//Only valid when mrn(emmid) is NOT empty
-						if(StringUtils.isNotEmpty(sadmotfDto.getEtmid()) ) {
+						if(StringUtils.isNotEmpty(dto.getEtmid()) ) {
 							Transport transport =  new MapperTransport().mapTransportForDelete();
 							//API
+							if(ApiAirRecognizer.isAir(dto.getEtktyp())) { isApiAir = true; }
+							String json = "";
+							if(isApiAir) {
+								json = apiServicesAir.deleteTransportDigitollV2(transport, mrn);
+							}else {
+								json = apiServices.deleteTransportDigitollV2(transport, mrn);
+							}
 							
-							String json = apiServices.deleteTransportDigitollV2(transport, mrn);
 							ApiRequestIdDto obj = new ObjectMapper().readValue(json, ApiRequestIdDto.class);
 							logger.warn("JSON = " + json);
 							logger.warn("RequestId = " + obj.getRequestId());
 							//put in response
 							dtoResponse.setRequestId(obj.getRequestId());
-							dtoResponse.setEtlnrt(String.valueOf(sadmotfDto.getEtlnrt()));
-							dtoResponse.setAvd(String.valueOf(sadmotfDto.getEtavd()));
-							dtoResponse.setPro(String.valueOf(sadmotfDto.getEtpro()));
+							dtoResponse.setEtlnrt(String.valueOf(dto.getEtlnrt()));
+							dtoResponse.setAvd(String.valueOf(dto.getEtavd()));
+							dtoResponse.setPro(String.valueOf(dto.getEtpro()));
 							//In case there was an error at end-point and the LRN was not returned
 							if(StringUtils.isEmpty(obj.getRequestId())){
 								errMsg.append("requestId empty ?? <json raw>: " + json);
@@ -639,7 +669,8 @@ public class DigitollV2TransportController {
 	@RequestMapping(value="/digitollv2/getTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
-																				@RequestParam(value = "lrn", required = true) String lrn) throws Exception {
+																				@RequestParam(value = "lrn", required = true) String lrn,
+																				@RequestParam(value = "apiType", required = true) String apiType) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
@@ -652,7 +683,7 @@ public class DigitollV2TransportController {
 	      .getEnclosingMethod()
 	      .getName();
 		
-		logger.warn("Inside " + methodName + "- LRNnr: " + lrn );
+		logger.warn("Inside " + methodName + "- LRNnr: " + lrn + "- apiType: " + apiType );
 		
 		try {
 			if(checkUser(user)) {
@@ -661,7 +692,7 @@ public class DigitollV2TransportController {
 						dtoResponse.setLrn(lrn);
 						
 						
-						String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, lrn);
+						String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, lrn, apiType);
 						if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 							errMsg.append(dtoResponse.getErrMsg());
 							
@@ -722,14 +753,21 @@ public class DigitollV2TransportController {
 	 * 
 	 * @param dtoResponse
 	 * @param lrn
+	 * @param apiType
 	 * @return
 	 */
-	private String getMrnTransportDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn) {
+	private String getMrnTransportDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn, String apiType) {
 		
 		String retval = "";
 		
 		try{
-			String json = apiServices.getValidationStatusTransportDigitollV2(lrn );
+			String json = "";
+			if(StringUtils.isNotEmpty(apiType) && apiType.equalsIgnoreCase("air")) {
+				json = apiServicesAir.getValidationStatusTransportDigitollV2(lrn);
+			}else {
+				json = apiServices.getValidationStatusTransportDigitollV2(lrn);
+			}
+			
 			
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
@@ -760,14 +798,21 @@ public class DigitollV2TransportController {
 	 * @param dtoResponse
 	 * @param lrn
 	 * @param tollTokenMap
+	 * @param isApiAir
+	 * 
 	 * @return
 	 */
-	private String getMrnTransportDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
+	private String getMrnTransportDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir) {
 		
 		String retval = "";
 		
 		try{
-			String json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			String json = "";	
+			if(isApiAir) {
+				json = apiServicesAir.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			}else {
+				json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			}
 			
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
@@ -798,14 +843,22 @@ public class DigitollV2TransportController {
 	 * @param dtoResponse
 	 * @param lrn
 	 * @param tollTokenMap
+	 * @param isApiAir
+	 * 
 	 * @return
 	 */
-	private String checkLrnValidationStatusTransportDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap) {
+	private String checkLrnValidationStatusTransportDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir) {
 		
 		String retval = "";
 		
 		try{
-			String json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap);
+			String json = "";	
+			if(isApiAir) {
+				json = apiServicesAir.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			}else {
+				json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			}
+				
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
 			logger.warn("JSON = " + json);
 			logger.warn("Status = " + obj.getStatus());
