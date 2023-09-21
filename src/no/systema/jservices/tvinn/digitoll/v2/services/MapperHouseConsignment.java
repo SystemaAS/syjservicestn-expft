@@ -190,7 +190,7 @@ public class MapperHouseConsignment {
 		
 		//(Optional)Address ... this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		if(StringUtils.isNotEmpty(dto.getEhpss())) {
-			consignor.setAddress(this.setAddress(dto.getEhpss(), dto.getEhlks(), dto.getEhpns(), dto.getEhad1s(), dto.getEhnrs()));
+			consignor.setAddress(this.setAddress(dto.getEhpss(), dto.getEhlks(), dto.getEhpns(), dto.getEhad1s(), dto.getEhpbs(), dto.getEhnrs()));
 		}
 		//(Optional) Communication
 		if(StringUtils.isNotEmpty(dto.getEhems())) { 
@@ -207,7 +207,7 @@ public class MapperHouseConsignment {
 		
 		//(Optional) Address
 		if(StringUtils.isNotEmpty(dto.getEhpsm())) { 
-			consignee.setAddress(this.setAddress(dto.getEhpsm(), dto.getEhlkm(), dto.getEhpnm(), dto.getEhad1m(), dto.getEhnrm()));
+			consignee.setAddress(this.setAddress(dto.getEhpsm(), dto.getEhlkm(), dto.getEhpnm(), dto.getEhad1m(), dto.getEhpbm(), dto.getEhnrm()));
 		}	
 		//(Optional) Communication
 		if(StringUtils.isNotEmpty(dto.getEhemm())) { 
@@ -558,7 +558,7 @@ public class MapperHouseConsignment {
 		return tmp;
 	}
 	
-	private Address setAddress(String city, String country, String postCode, String street, String number) {
+	private Address setAddress(String city, String country, String postCode, String street, String poBox, String number) {
 		Address address = new Address();
 		if(StringUtils.isNotEmpty(city)) {
 			address.setCity(city);
@@ -571,6 +571,11 @@ public class MapperHouseConsignment {
 		}
 		if(StringUtils.isNotEmpty(street)) {
 			address.setStreetLine(street);
+		}
+		//this is in order to catch anomalies in the SADH and or Kundreg regarding address1 and address2 (poBox is a place holder)
+		if(StringUtils.isNotEmpty(poBox)) {
+			address.setStreetAdditionalLine(poBox);
+			address.setPoBox(poBox);
 		}
 		if(StringUtils.isNotEmpty(number)) {
 			address.setNumber(number);

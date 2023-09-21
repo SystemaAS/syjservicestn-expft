@@ -67,11 +67,11 @@ public class MapperTransport {
 		
 		//Optional
 		if(sourceDto.getEtetad()>0) {
-			transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEtetad(), sourceDto.getEtetat()));
+			transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC_HHmm(sourceDto.getEtetad(), sourceDto.getEtetat()));
 			//TEST transport.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		}
 		if(sourceDto.getEtshed()>0) {
-			transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC(sourceDto.getEtshed(), sourceDto.getEtshet()));
+			transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC_HHmm(sourceDto.getEtshed(), sourceDto.getEtshet()));
 			//TEST transport.setScheduledDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		}
 		

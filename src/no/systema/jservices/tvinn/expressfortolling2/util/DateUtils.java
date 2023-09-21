@@ -99,6 +99,12 @@ public class DateUtils {
 		
 		return zoneDateString;
 	}
+	/**
+	 * Expects HHmmss as time
+	 * @param date
+	 * @param time
+	 * @return
+	 */
 	public String getZuluTimeWithoutMillisecondsUTC(Integer date, Integer time) {
 		String zoneDateString = "";
 		try {
@@ -108,6 +114,35 @@ public class DateUtils {
 			}
 			
 			DateTimeFormatter formatterIn = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+			DateTimeFormatter formatterOut = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
+			//the local time to convert into UTC
+			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + timeStr , formatterIn.withZone(ZoneId.systemDefault()));
+			//the final converted UTC time
+			ZonedDateTime zdtInLocalTimeline = zdtWithZoneOffset.withZoneSameInstant(ZoneId.of("UTC"));
+			zoneDateString = formatterOut.format(zdtInLocalTimeline);
+			
+		}catch(Exception e) {
+			//logger.error(LoggerException.doLog(e).toString());
+			e.printStackTrace();
+		}
+		
+		return zoneDateString;
+	}
+	/**
+	 * Expects HHmm as time
+	 * @param date
+	 * @param time
+	 * @return
+	 */
+	public String getZuluTimeWithoutMillisecondsUTC_HHmm(Integer date, Integer time) {
+		String zoneDateString = "";
+		try {
+			String timeStr = String.valueOf(time);
+			if (timeStr!=null && timeStr.length()<4) {
+				timeStr = new StringUtils().leadingStringWithNumericFiller(timeStr, 4, "0");
+			}
+			
+			DateTimeFormatter formatterIn = DateTimeFormatter.ofPattern("yyyyMMddHHmm");
 			DateTimeFormatter formatterOut = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss'Z'");
 			//the local time to convert into UTC
 			ZonedDateTime zdtWithZoneOffset = ZonedDateTime.parse(String.valueOf(date) + timeStr , formatterIn.withZone(ZoneId.systemDefault()));

@@ -15,6 +15,7 @@ public class Address {
 	private String country;
 	private String postcode;
 	private String streetLine;
+	private String streetAdditionalLine;
 	private String number;
 	private String poBox;
 	
