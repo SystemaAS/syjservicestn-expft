@@ -127,7 +127,7 @@ public class DigitollV2HouseConsignmentController {
 	
 	@RequestMapping(value="/digitollv2/jsonTest.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse postHouseConsignmentDigitollV2(HttpServletRequest request ) throws Exception {
+	public GenericDtoResponse jsonTest(HttpServletRequest request ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();

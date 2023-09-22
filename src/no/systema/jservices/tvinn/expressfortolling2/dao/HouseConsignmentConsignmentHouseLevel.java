@@ -24,11 +24,11 @@ public class HouseConsignmentConsignmentHouseLevel {
 	//Mandatory*
 	private String referenceNumberUCR;
 	//Optional
+	private List<PreviousDocuments> previousDocuments;
+	//Optional
 	private List<ExportFromEU> exportFromEU;
 	//Mandatory*
 	private ImportProcedure importProcedure;
-	//Optional
-	private List<PreviousDocuments> previousDocuments;
 	//Optional
 	private AdditionalFiscalReferences additionalFiscalReferences;
 	//Optional
