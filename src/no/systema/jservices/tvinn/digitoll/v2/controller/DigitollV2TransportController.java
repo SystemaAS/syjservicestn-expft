@@ -271,6 +271,7 @@ public class DigitollV2TransportController {
 			}
 			
 		}catch(Exception e) {
+			
 			e.printStackTrace();
 			//Get out stackTrace to the response (errMsg) and logger
 			StringWriter sw = new StringWriter();
@@ -278,7 +279,8 @@ public class DigitollV2TransportController {
 			dtoResponse.setErrMsg(sw.toString());
 			
 			
-		}finally {			
+		}finally {
+			
 			//check on status
 			if(!apiStatusAlreadyUpdated) {
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
@@ -292,7 +294,7 @@ public class DigitollV2TransportController {
 			}
 			//log in log file
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
-	
+			
 			
 		}
 		//std output (browser)
@@ -360,6 +362,8 @@ public class DigitollV2TransportController {
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
 							//Debug
 							logger.info(GenericJsonStringPrinter.debug(transport));
+							
+							
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
