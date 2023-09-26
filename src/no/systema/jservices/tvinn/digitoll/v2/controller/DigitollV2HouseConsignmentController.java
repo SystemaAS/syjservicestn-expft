@@ -466,9 +466,11 @@ public class DigitollV2HouseConsignmentController {
 									//(3) now we make a final check for LRN-status since there might have being some validation errors with the newly acquired LRN that did not appear when we 
 									//first received the LRN in the first PUT House
 									 //Delay 10-seconds
+									logger.warn(PrettyLoggerOutputer.FRAME);
 									logger.warn("Start of delay: "+ new Date());
 									Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
 									logger.warn("End of delay: "+ new Date());
+									logger.warn(PrettyLoggerOutputer.FRAME);
 									
 									this.checkLrnValidationStatusHouseConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
