@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import no.systema.jservices.tvinn.digitoll.v2.dao.*;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 /**
@@ -92,13 +93,16 @@ public class MapperTransport {
 	 */
 	private List<ConsignmentMasterLevelTransport> populateConsignmentMasterLevelTransport(List<SadmomfDto> list) {
 		List<ConsignmentMasterLevelTransport> targetList = new ArrayList();
+		//We do not include any master that has been canceled (SYSPED): emst = S
 		for(SadmomfDto record : list) {
-			ConsignmentMasterLevelTransport ml = new ConsignmentMasterLevelTransport();
-			TransportDocumentMasterLevel trDocMasterLevel = new TransportDocumentMasterLevel();
-			trDocMasterLevel.setDocumentNumber(record.getEmdkm());
-			trDocMasterLevel.setType(record.getEmdkmt());
-			ml.setTransportDocumentMasterLevel(trDocMasterLevel);
-			targetList.add(ml);
+			if(!EnumSadmomfStatus.S.toString().equalsIgnoreCase(record.getEmst())) {
+				ConsignmentMasterLevelTransport ml = new ConsignmentMasterLevelTransport();
+				TransportDocumentMasterLevel trDocMasterLevel = new TransportDocumentMasterLevel();
+				trDocMasterLevel.setDocumentNumber(record.getEmdkm());
+				trDocMasterLevel.setType(record.getEmdkmt());
+				ml.setTransportDocumentMasterLevel(trDocMasterLevel);
+				targetList.add(ml);
+			}
 		}
 		
 		return targetList;
