@@ -95,11 +95,10 @@ public class MapperHouseConsignment {
 		//(Mandatory) HouseConsignment-ConsignmentHouseLevel
 		HouseConsignmentConsignmentHouseLevel chl = new HouseConsignmentConsignmentHouseLevel();
 		
-		//(Optional) Bara för postsäckar
-		//if("todo") {
-		//	chl.setReceptacleIdentificationNumber("todo");
-		//}
-		
+		//(Optional) Bara för postsäckar. Då får man INTE sända consignmentMasterLevel...
+		if(StringUtils.isNotEmpty(dto.getEhrecid())) {
+			chl.setReceptacleIdentificationNumber(dto.getEhrecid());
+		}
 		//(Mandatory) ContainerIndicator
 		chl.setContainerIndicator(dto.getEhcnin());
 		//(Mandatory) TotalGrossMass
@@ -115,15 +114,16 @@ public class MapperHouseConsignment {
 		transpDocHouseLevel.setType(dto.getEhdkht());
 		chl.setTransportDocumentHouseLevel(transpDocHouseLevel);
 		
-		//(Optional but required anyway -> consignmentMasterLevel but must be in place before the carrier arrives to the border! ergo = required
-		HouseConsignmentMasterLevel consignmentMasterLevel = new HouseConsignmentMasterLevel();
-		consignmentMasterLevel.setCarrierIdentificationNumber(dto.getMasterDto().getEmrgt());
-		TransportDocumentMasterLevel transpDocMasterLevel = new TransportDocumentMasterLevel();
-		transpDocMasterLevel.setDocumentNumber(dto.getMasterDto().getEmdkm());
-		transpDocMasterLevel.setType(dto.getMasterDto().getEmdkmt());
-		consignmentMasterLevel.setTransportDocumentMasterLevel(transpDocMasterLevel);
-		chl.setConsignmentMasterLevel(consignmentMasterLevel);
-		
+		//(Optional but required anyway -> consignmentMasterLevel but must be in place before the carrier arrives to the border! ergo = required as long as we do not have a ReceptacleIdNumber above
+		if(StringUtils.isEmpty(dto.getEhrecid())) {
+			HouseConsignmentMasterLevel consignmentMasterLevel = new HouseConsignmentMasterLevel();
+			consignmentMasterLevel.setCarrierIdentificationNumber(dto.getMasterDto().getEmrgt());
+			TransportDocumentMasterLevel transpDocMasterLevel = new TransportDocumentMasterLevel();
+			transpDocMasterLevel.setDocumentNumber(dto.getMasterDto().getEmdkm());
+			transpDocMasterLevel.setType(dto.getMasterDto().getEmdkmt());
+			consignmentMasterLevel.setTransportDocumentMasterLevel(transpDocMasterLevel);
+			chl.setConsignmentMasterLevel(consignmentMasterLevel);
+		}
 		
 		//(Optional) Previous Documents
 		List prevDocsList = new ArrayList();
