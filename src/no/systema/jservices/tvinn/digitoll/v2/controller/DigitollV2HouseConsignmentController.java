@@ -787,6 +787,88 @@ public class DigitollV2HouseConsignmentController {
 		
 		return dtoResponse;
 	}
+	/**
+	 * Only for Air (special case for testing towards toll.no)
+	 * 
+	 * @param request
+	 * @param user
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/digitollv2/getRoutingHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse getRoutingHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setRequestMethodApi("GET");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName );
+		try {
+			if(checkUser(user)) {
+					
+				
+					String json = "";
+					json = apiServicesAir.getRoutingHouseConsignmentDigitollV2();
+					logger.warn("JSON = " + json);
+					/*ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
+					logger.warn("JSON = " + json);
+					logger.warn("MRN = " + obj.getMrn());
+					dtoResponse.setStatusApi(obj.getStatus());
+					dtoResponse.setTimestamp(obj.getNotificationDate());
+					
+					if(StringUtils.isNotEmpty(obj.getMrn())) {
+						retval = obj.getMrn();
+					}else {
+						dtoResponse.setErrMsg(json);
+					}
+					*/
+					
+				
+				
+				/*
+					String mrn = this.getMrnHouseConsignmentDigitollV2FromApi(dtoResponse, lrn, apiType);
+					if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
+						errMsg.append(dtoResponse.getErrMsg());
+						
+						if(StringUtils.isNotEmpty(mrn)) {
+							dtoResponse.setErrMsg("");
+						}else {
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+					}else {
+						dtoResponse.setMrn(mrn);
+					}
+				*/	
+					
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA - log in db before std-output
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		return dtoResponse;
+	}
 	
 	/**
 	 * Gets House Consignment status through the API - GET - in order to get an MRN
