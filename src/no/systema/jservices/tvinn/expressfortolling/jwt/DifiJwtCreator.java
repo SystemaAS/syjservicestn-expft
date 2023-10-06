@@ -66,6 +66,9 @@ public class DifiJwtCreator {
 	String scopeExpftMovementRoad;
 	@Value("${expft.scope.movement.air}")
 	String scopeExpftMovementAir;
+	//for air/routing
+	@Value("${expft.scope.movement.entry}")
+	String scopeExpftMovementEntry;
 	
 	@Value("${kurer.audience}")
 	String difiTokenAudienceKurerUrl;
@@ -156,6 +159,26 @@ public class DifiJwtCreator {
 		
 	    
 	}
+	public String createRequestMovementEntryJwt() {
+
+		String encodedCertificate; 
+		PrivateKey privateKey;
+
+		try {
+			encodedCertificate = certificateManager.getEncodedCertificate();
+			privateKey = certificateManager.getPrivateKey();
+		} catch (Exception e) {
+			String message = "Could not manage X.509 in a correct way!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+		
+		String result = this.getJwtString(this.expiration, this.scopeExpftMovementEntry, encodedCertificate, privateKey, this.ISNOT_KURER);
+		return result;
+		
+	    
+	}
+	
 	
 	
 	

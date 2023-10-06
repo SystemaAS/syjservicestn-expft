@@ -1013,7 +1013,7 @@ public class ApiServicesAir {
 	 */
 	public String getRoutingHouseConsignmentDigitollV2() throws Exception {
 		
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementAir();
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementEntry();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());

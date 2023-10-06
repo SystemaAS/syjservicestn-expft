@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 
 
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmohfStatus2;
@@ -788,7 +790,7 @@ public class DigitollV2HouseConsignmentController {
 		return dtoResponse;
 	}
 	/**
-	 * Only for Air (special case for testing towards toll.no)
+	 * Only for Air (special case for testing towards toll.no). Requires Difi-scope: toll:movement/entry
 	 * 
 	 * @param request
 	 * @param user
@@ -818,36 +820,15 @@ public class DigitollV2HouseConsignmentController {
 					String json = "";
 					json = apiServicesAir.getRoutingHouseConsignmentDigitollV2();
 					logger.warn("JSON = " + json);
-					/*ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
-					logger.warn("JSON = " + json);
-					logger.warn("MRN = " + obj.getMrn());
-					dtoResponse.setStatusApi(obj.getStatus());
-					dtoResponse.setTimestamp(obj.getNotificationDate());
-					
-					if(StringUtils.isNotEmpty(obj.getMrn())) {
-						retval = obj.getMrn();
-					}else {
-						dtoResponse.setErrMsg(json);
-					}
-					*/
-					
+					EntryDto[] obj = new ObjectMapper().readValue(json, EntryDto[].class);
+					//DEBUG
+					/*for (EntryDto dto: obj) {
+						logger.warn(dto.getEntrySummaryDeclarationMRN());
+						logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
+						logger.warn(dto.getRoutingResult().getId());
+					}*/
+					dtoResponse.setEntryList(Arrays.asList(obj));
 				
-				
-				/*
-					String mrn = this.getMrnHouseConsignmentDigitollV2FromApi(dtoResponse, lrn, apiType);
-					if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
-						errMsg.append(dtoResponse.getErrMsg());
-						
-						if(StringUtils.isNotEmpty(mrn)) {
-							dtoResponse.setErrMsg("");
-						}else {
-							dtoResponse.setErrMsg(errMsg.toString());
-						}
-					}else {
-						dtoResponse.setMrn(mrn);
-					}
-				*/	
-					
 											
 			}else {
 				errMsg.append(" invalid user " + user + " " + methodName);
