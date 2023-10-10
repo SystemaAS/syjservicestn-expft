@@ -21,6 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 
@@ -287,6 +288,70 @@ public class SadmohfService {
 	}
 	
 
+	/**
+	 * 
+	 * @param serverRoot
+	 * @param user
+	 * @param dtoResponse
+	 * @return
+	 */
+	public List<SadmohfDto> setMrnBupSadmohf(String serverRoot, String user, GenericDtoResponse dtoResponse) {
+		List<SadmohfDto> result = new ArrayList<SadmohfDto>();
+		
+		logger.info("user:" + user);
+		logger.info("ehlnrt:" + dtoResponse.getEhlnrt());
+		logger.info("ehlnrm:" + dtoResponse.getEhlnrm());
+		logger.info("ehlnrh:" + dtoResponse.getEhlnrh());
+		logger.info("ehmid:" + dtoResponse.getMrn());
+		
+		logger.warn("Start --> update of Mrn-Bup at SADMOHF_U_BUP...");
+		//example
+		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADMOHF_U_BUP.do")
+				.queryParam("user", user)
+				.queryParam("ehlnrt", dtoResponse.getEhlnrt())
+				.queryParam("ehlnrm", dtoResponse.getEhlnrm())
+				.queryParam("ehlnrh", dtoResponse.getEhlnrh())
+				.queryParam("ehmid", dtoResponse.getMrn())
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("SADMOHF-MRN-BUP-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("SADMOHF-MRN-BUP-REST-http-response:" + response.getStatusCodeValue());
+				SadmohfDto pojo = new SadmohfDto();
+				pojo.setEhmid(dtoResponse.getMrn());
+				result.add(pojo);
+				
+			}
+			logger.warn("End --> update of Mrn-Bup at SADMOHF_U_BUP...");
+			
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	
 	
 	
 

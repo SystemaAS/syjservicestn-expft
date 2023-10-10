@@ -273,6 +273,9 @@ public class DigitollV2HouseConsignmentController {
 											if(StringUtils.isNotEmpty(rec.getEhmid()) ){
 												//OK
 												apiStatusAlreadyUpdated = true;
+												//set MRN-BUP (only once and only here)
+												GenericDtoResponse dtoResponseBup = dtoResponse;
+												sadmohfService.setMrnBupSadmohf(serverRoot, user, dtoResponseBup);
 											}else {
 												errMsg.append("MRN empty after SADMOHF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
@@ -531,7 +534,7 @@ public class DigitollV2HouseConsignmentController {
 					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
-					List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
+					List<SadmohfDto> xx = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "UL");
 					logger.info("After update on status 2 (finally-clause)");
 				}
 			}

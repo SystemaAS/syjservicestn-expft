@@ -237,6 +237,9 @@ public class DigitollV2TransportController {
 											if(StringUtils.isNotEmpty(rec.getEtmid()) ){
 												//OK
 												apiStatusAlreadyUpdated = true;
+												//set MRN-BUP (only once and only here)
+												GenericDtoResponse dtoResponseBup = dtoResponse;
+												sadmotfService.setMrnBupSadmotf(serverRoot, user, dtoResponseBup);
 											}else {
 												errMsg.append("MRN empty after SADMOTF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
@@ -486,7 +489,7 @@ public class DigitollV2TransportController {
 					dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
-					List<SadmotfDto> xx = sadmotfService.updateLrnMrnSadmotf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
+					List<SadmotfDto> xx = sadmotfService.updateLrnMrnSadmotf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "UL");
 					logger.info("After update on status 2 (finally-clause)");
 				}
 			}

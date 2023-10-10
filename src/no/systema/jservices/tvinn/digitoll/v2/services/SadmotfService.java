@@ -330,6 +330,66 @@ public class SadmotfService {
 		return result; 
 	}
 	
+	/**
+	 * 
+	 * @param serverRoot
+	 * @param user
+	 * @param dtoResponse
+	 * @return
+	 */
+	public List<SadmotfDto> setMrnBupSadmotf(String serverRoot, String user, GenericDtoResponse dtoResponse) {
+		List<SadmotfDto> result = new ArrayList<SadmotfDto>();
+		
+		logger.info("user:" + user);
+		logger.info("etlnrt:" + dtoResponse.getEtlnrt());
+		logger.info("etmid:" + dtoResponse.getMrn());
+		
+		logger.warn("Start --> update of Mrn-Bup at SADMOTF_U_BUP...");
+		//example
+		//http://localhost:8080/syjservicestn/syjsSADEXMF_U.do?user=NN&emavd=1&empro=501941&mode=UL&emmid=XX&emuuid=uuid
+		URI uri = UriComponentsBuilder
+				.fromUriString(serverRoot)
+				.path("/syjservicestn/syjsSADMOTF_U_BUP.do")
+				.queryParam("user", user)
+				.queryParam("etlnrt", dtoResponse.getEtlnrt())
+				.queryParam("etmid", dtoResponse.getMrn())
+				.build()
+				.encode()
+				.toUri();
+		
+		try {
+			HttpHeaders headerParams = new HttpHeaders();
+			headerParams.add("Accept", "*/*");
+			HttpEntity<?> entity = new HttpEntity<>(headerParams);
+		
+			ResponseEntity<String> response = restTemplate.exchange(uri, HttpMethod.POST, entity, String.class);
+			String json = response.getBody();
+			logger.warn(json);
+			///Json Mapper (RestTemplate only working with String.class)
+			ObjectMapper mapper = new ObjectMapper();
+			GenericDtoContainer dtoContainer = mapper.readValue(json, GenericDtoContainer.class);
+			
+			//at this point the dtoContainer has an error or not
+			if( dtoContainer!=null && StringUtils.isNotEmpty(dtoContainer.getErrMsg()) ) {
+				logger.error("SADMOTF-MRN-BUP-ERROR REST-http-response:" + dtoContainer.getErrMsg());
+				result = null;
+			}else {
+				logger.warn("SADMOTF-MRN-BUP-REST-http-response:" + response.getStatusCodeValue());
+				SadmotfDto pojo = new SadmotfDto();
+				pojo.setEtmid(dtoResponse.getMrn());
+				result.add(pojo);
+				
+			}
+			logger.warn("End --> update of Mrn-Bup at SADMOTF_U_BUP...");
+			
+		}catch(Exception e) {
+			logger.error(e.toString());
+			result = null;
+		}
+		
+		return result; 
+	}
+	
 	
 	
 	

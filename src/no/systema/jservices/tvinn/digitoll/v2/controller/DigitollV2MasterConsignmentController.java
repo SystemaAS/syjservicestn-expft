@@ -258,6 +258,9 @@ public class DigitollV2MasterConsignmentController {
 											if(StringUtils.isNotEmpty(rec.getEmmid()) ){
 												//OK
 												apiStatusAlreadyUpdated = true;
+												//set MRN-BUP (only once and only here)
+												GenericDtoResponse dtoResponseBup = dtoResponse;
+												sadmomfService.setMrnBupSadmomf(serverRoot, user, dtoResponseBup);
 											}else {
 												errMsg.append("MRN empty after SADMOMF-update:" + mrn);
 												dtoResponse.setErrMsg(errMsg.toString());
@@ -505,7 +508,7 @@ public class DigitollV2MasterConsignmentController {
 					dtoResponse.setDb_st2(EnumSadmomfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
-					List<SadmomfDto> xx = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "ULM");
+					List<SadmomfDto> xx = sadmomfService.updateLrnMrnSadmomf(serverRoot, user, dtoResponse, dtoResponse.getDocumentIssueDate(), "UL");
 					logger.info("After update on status 2 (finally-clause)");
 				}
 			}
