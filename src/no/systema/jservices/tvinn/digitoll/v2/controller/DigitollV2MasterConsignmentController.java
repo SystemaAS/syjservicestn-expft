@@ -387,6 +387,8 @@ public class DigitollV2MasterConsignmentController {
 							logger.warn("GrossMass:" + mc.getConsignmentMasterLevel().getGrossMass());
 							//Debug
 							//logger.debug(GenericJsonStringPrinter.debug(mc));
+							//init response in case en ERROR occurs after apiSerivices...
+							dtoResponse.setRequestId(dto.getEmuuid());
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap();

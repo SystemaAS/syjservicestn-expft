@@ -365,8 +365,8 @@ public class DigitollV2TransportController {
 							logger.warn("Carrier name:" + transport.getCarrier().getName());
 							//Debug
 							logger.info(GenericJsonStringPrinter.debug(transport));
-							
-							
+							//init response in case en ERROR occurs after apiSerivices...
+							dtoResponse.setRequestId(dto.getEtuuid());
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
@@ -385,7 +385,7 @@ public class DigitollV2TransportController {
 							logger.warn("requestId = " + obj.getRequestId());
 							
 							//put in response
-							dtoResponse.setRequestId(obj.getRequestId());
+							dtoResponse.setRequestId(obj.getRequestId()); //update
 							dtoResponse.setEtlnrt(String.valueOf(dto.getEtlnrt()));
 							dtoResponse.setAvd(String.valueOf(dto.getEtavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEtpro()));

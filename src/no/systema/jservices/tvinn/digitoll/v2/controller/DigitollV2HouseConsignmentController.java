@@ -410,6 +410,8 @@ public class DigitollV2HouseConsignmentController {
 							logger.warn("totalGrossMass:" + hc.getHouseConsignmentConsignmentHouseLevel().getTotalGrossMass());
 							//Debug
 							//logger.debug(GenericJsonStringPrinter.debug(hc));
+							//init response in case en ERROR occurs after apiSerivices...
+							dtoResponse.setRequestId(dto.getEhuuid());
 							
 							//API - PROD
 							Map tollTokenMap = new HashMap();
