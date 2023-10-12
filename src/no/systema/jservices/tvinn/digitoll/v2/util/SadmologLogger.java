@@ -46,6 +46,14 @@ public class SadmologLogger {
 			dto.setEltime(getLogTime(dtoResponse.getTimestamp()));
 			dto.setEltyp(getLogTyp(dtoResponse.getErrMsg()));
 			if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
+				//escape reserved chars
+				String tmp = dtoResponse.getErrMsg().replaceAll("\\{", "");
+				tmp = this.wash(tmp, "\\}", "");
+				tmp = this.wash(tmp, "\\[", "");
+				tmp = this.wash(tmp, "\\]", "");
+				tmp = this.wash(tmp, "\t", "");
+						
+				dtoResponse.setErrMsg(tmp);
 				dto.setElltxt(getLogText(dtoResponse.getErrMsg()));
 			}else {
 				dto.setElltxt(dtoResponse.getStatusApi() + " " + dtoResponse.getRequestMethodApi());
@@ -69,6 +77,12 @@ public class SadmologLogger {
 			logger.error(dtoResponse.getErrMsg());
 			
 		}
+	}
+	
+	private String wash(String value, String _char, String replace) {
+		String retval = value.replaceAll(_char, replace);
+		
+		return retval;
 	}
 	/**
 	 * 
