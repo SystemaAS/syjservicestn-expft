@@ -126,36 +126,37 @@ public class MapperHouseConsignment {
 		}
 		
 		//(Optional) Previous Documents
-		List prevDocsList = new ArrayList();
-		if(StringUtils.isNotEmpty(dto.getEhtrnr()) || (StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
-			//(1)
-			if(StringUtils.isNotEmpty(dto.getEhtrnr())){
-				PreviousDocuments prevDocs = new PreviousDocuments();
-				//test for example 2: https://toll.github.io/api/mo-eksempler.html (special thing)
-				if(StringUtils.isNotEmpty(dto.getEhtrnr()) && (StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
-					if("CUDE".equals(dto.getEhtrty())) {
-						//this case will surely never happen in real life but we must comply for the TestCase...
-						prevDocs.setTypeOfReference("N820");
+		if(StringUtils.isNotEmpty(dto.getEhprt()) && !dto.getEhprt().contains("VOEC")) { //VOEC should not have any of this below!!
+			List prevDocsList = new ArrayList();
+			if(StringUtils.isNotEmpty(dto.getEhtrnr()) || (StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
+				//(1)
+				if(StringUtils.isNotEmpty(dto.getEhtrnr())){
+					PreviousDocuments prevDocs = new PreviousDocuments();
+					//test for example 2: https://toll.github.io/api/mo-eksempler.html (special thing)
+					if(StringUtils.isNotEmpty(dto.getEhtrnr()) && (StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0 )) {
+						if("CUDE".equals(dto.getEhtrty())) {
+							//this case will surely never happen in real life but we must comply for the TestCase...
+							prevDocs.setTypeOfReference("N820");
+						}
+					}else {
+						prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
 					}
-				}else {
-					prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+					prevDocs.setReferenceNumber(dto.getEhtrnr());
+					prevDocsList.add(prevDocs);
+	
 				}
-				prevDocs.setReferenceNumber(dto.getEhtrnr());
-				prevDocsList.add(prevDocs);
-
+				//(2)
+				if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+					PreviousDocuments prevDocs = new PreviousDocuments();
+					prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+					prevDocs.setDeclarantNumber(dto.getEhrg());
+					prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
+					prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
+					prevDocsList.add(prevDocs);
+				}
+				chl.setPreviousDocuments(prevDocsList);
 			}
-			//(2)
-			if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
-				PreviousDocuments prevDocs = new PreviousDocuments();
-				prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
-				prevDocs.setDeclarantNumber(dto.getEhrg());
-				prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
-				prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
-				prevDocsList.add(prevDocs);
-			}
-			chl.setPreviousDocuments(prevDocsList);
 		}
-		
 		//(Optional) ExportFromEU
 		List exportFromEUList = new ArrayList();
 		if(StringUtils.isNotEmpty(dto.getEheid()) || StringUtils.isNotEmpty(dto.getEhetypt() )) {

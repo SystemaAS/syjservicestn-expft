@@ -30,18 +30,18 @@ public class SadmologLogger {
 			logger.warn("Inside doLog ...");
 			SadmologDto dto = new SadmologDto();
 			//keys
-			logger.debug("A-level");
+			//logger.debug("A-level");
 			if(StringUtils.isNotEmpty(dtoResponse.getAvd())) { dto.setElavd(Integer.valueOf(dtoResponse.getAvd())); }
 			if(StringUtils.isNotEmpty(dtoResponse.getPro())) { dto.setElpro(Integer.valueOf(dtoResponse.getPro())); }
 			if(StringUtils.isNotEmpty(dtoResponse.getTdn())) { dto.setEltdn(Integer.valueOf(dtoResponse.getTdn())); }
 			
 			//new for digitoll log
-			logger.debug("B-level");
+			//logger.debug("B-level");
 			dto.setEllnrt(dtoResponse.getEllnrt());
 			dto.setEllnrm(dtoResponse.getEllnrm());
 			dto.setEllnrh(dtoResponse.getEllnrh());
 			//log data
-			logger.debug("C-level");
+			//ogger.debug("C-level");
 			dto.setEldate(getLogDate(dtoResponse.getTimestamp()));
 			dto.setEltime(getLogTime(dtoResponse.getTimestamp()));
 			dto.setEltyp(getLogTyp(dtoResponse.getErrMsg()));
@@ -58,7 +58,7 @@ public class SadmologLogger {
 			}else {
 				dto.setElltxt(dtoResponse.getStatusApi() + " " + dtoResponse.getRequestMethodApi());
 			}
-			logger.debug("D-level");
+			//logger.debug("D-level");
 			
 			//create error record
 			logger.trace("Record to log:" + dto.toString());

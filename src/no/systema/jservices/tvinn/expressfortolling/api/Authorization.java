@@ -117,9 +117,9 @@ public class Authorization {
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
     	tokenRequest.setAssertion(difiJwtCreator.createRequestMovementRoadJwt());
-        
+    	logger.info("AFTER --> difiJwtCreator.createRequestMovementRoadJwt()");
         String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
-        
+        logger.info("PATH --> " + path);
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
