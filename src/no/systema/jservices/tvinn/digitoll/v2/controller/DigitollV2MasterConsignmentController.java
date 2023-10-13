@@ -39,6 +39,7 @@ import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.digitoll.v2.util.ApiAirRecognizer;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
+import no.systema.jservices.tvinn.digitoll.v2.util.SadDigitollConstants;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
 import no.systema.jservices.tvinn.expressfortolling2.util.GenericJsonStringPrinter;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
@@ -94,7 +95,6 @@ public class DigitollV2MasterConsignmentController {
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
-	private int THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS = 6000;
 	private final String LOG_PREFIX_LEGEND = "Logged on SADMOLOG >> ";
 	
 	@Autowired
@@ -228,7 +228,7 @@ public class DigitollV2MasterConsignmentController {
 								//Delay 6-10 seconds
 								logger.warn(PrettyLoggerOutputer.FRAME);
 								logger.warn("START of delay: "+ new Date());
-								Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
+								Thread.sleep(SadDigitollConstants.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
 								logger.warn("END of delay: "+ new Date());
 								logger.warn(PrettyLoggerOutputer.FRAME);
 								
@@ -451,7 +451,7 @@ public class DigitollV2MasterConsignmentController {
 									//Delay 6-10 seconds (as in POST) needed to avoid ERROR 404 on client ...
 									logger.warn(PrettyLoggerOutputer.FRAME); 
 									logger.warn("START of delay: "+ new Date());
-									Thread.sleep(this.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
+									Thread.sleep(SadDigitollConstants.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
 									logger.warn("END of delay: "+ new Date());
 									logger.warn(PrettyLoggerOutputer.FRAME);
 									
