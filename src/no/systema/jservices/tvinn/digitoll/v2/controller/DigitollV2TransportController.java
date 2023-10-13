@@ -10,6 +10,11 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,7 +37,7 @@ import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
-
+import no.systema.jservices.tvinn.digitoll.v2.services.AsynchTransportService;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
@@ -93,7 +98,6 @@ public class DigitollV2TransportController {
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
-	private final String LOG_PREFIX_LEGEND = "Logged on SADMOLOG >> ";
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -111,6 +115,9 @@ public class DigitollV2TransportController {
 	
 	@Autowired
 	private SadmologLogger sadmologLogger;	
+	
+	@Autowired
+	private AsynchTransportService asynchTransportService;	
 	
 	
 	/**
@@ -287,7 +294,7 @@ public class DigitollV2TransportController {
 			//check on status
 			if(!apiStatusAlreadyUpdated) {
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
-					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					logger.info(SadDigitollConstants.LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
 					dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
@@ -305,19 +312,38 @@ public class DigitollV2TransportController {
 	}
 	
 	/**
+	 * Test for Async RestController. The service must have @Service @EnableAsync in order for the method to use @Async
 	 * 
-	 * Updates an existing Transport through the API - PUT. Requires an existing MRN (etmid at SADMOTF)
 	 * @param request
 	 * @param user
 	 * @param etlnrt
 	 * @param mrn
 	 * @return
 	 * @throws Exception
+	 */
+	@RequestMapping(value="/digitollv2/putTransportTestAsyncTest.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public ResponseEntity<GenericDtoResponse> putTransportDigitollV2Async(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "etlnrt", required = true) String etlnrt,
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		String serverRoot = ServerRoot.getServerRoot(request);
+		asynchTransportService.putTransportDigitollV2Test(serverRoot, user, etlnrt, mrn);
+
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user); dtoResponse.setEtlnrt(etlnrt); dtoResponse.setMrn(mrn);
+		
+		return new ResponseEntity<GenericDtoResponse>(dtoResponse, HttpStatus.OK);
+		
+	}
+	
+	/**
 	 * 
-	 * http://localhost:8080/syjservicestn-expft/digitollv2/putTransport?user=NN&etlnrt=1&mrn=XXX
-	 * 
-	 * test - OK
-	 * 
+	 * @param request
+	 * @param user
+	 * @param etlnrt
+	 * @param mrn
+	 * @return
+	 * @throws Exception
 	 */
 	@RequestMapping(value="/digitollv2/putTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
@@ -485,7 +511,7 @@ public class DigitollV2TransportController {
 			if(!apiStatusAlreadyUpdated) {
 				//check on status
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
-					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					logger.info(SadDigitollConstants.LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
 					dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
@@ -643,7 +669,7 @@ public class DigitollV2TransportController {
 			//check on status
 			if(!apiStatusAlreadyUpdated) {
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
-					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					logger.info(SadDigitollConstants.LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
 					dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//

@@ -105,7 +105,6 @@ public class DigitollV2HouseConsignmentController {
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
-	private final String LOG_PREFIX_LEGEND = "Logged on SADMOLOG >> ";
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -322,7 +321,7 @@ public class DigitollV2HouseConsignmentController {
 			if(!apiStatusAlreadyUpdated) {
 				//check on status
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
-					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					logger.info(SadDigitollConstants.LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
 					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
@@ -532,7 +531,7 @@ public class DigitollV2HouseConsignmentController {
 			if(!apiStatusAlreadyUpdated) {
 				//check on status
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
-					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					logger.info(SadDigitollConstants.LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
 					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
@@ -701,7 +700,7 @@ public class DigitollV2HouseConsignmentController {
 			if(!apiStatusAlreadyUpdated) {
 				//check on status
 				if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
-					logger.info(LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
+					logger.info(SadDigitollConstants.LOG_PREFIX_LEGEND + dtoResponse.getErrMsg());
 					dtoResponse.setDb_st2(EnumSadmohfStatus2.M.toString());
 					logger.info("INSIDE setStatus:" + dtoResponse.getDb_st2());
 					//
