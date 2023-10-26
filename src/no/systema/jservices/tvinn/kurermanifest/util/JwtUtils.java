@@ -29,7 +29,7 @@ public class JwtUtils {
 		try{
 			
 			NTPUDPClient timeClient = new NTPUDPClient();
-			timeClient.setDefaultTimeout(1000);
+			timeClient.setDefaultTimeout(500);
 			InetAddress inetAddress = InetAddress.getByName(TIME_SERVER);
 			TimeInfo timeInfo = timeClient.getTime(inetAddress);
 			NtpV3Packet message = timeInfo.getMessage();

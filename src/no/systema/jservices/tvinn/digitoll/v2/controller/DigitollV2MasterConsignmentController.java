@@ -320,6 +320,7 @@ public class DigitollV2MasterConsignmentController {
 			
 		
 		}
+		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -517,6 +518,7 @@ public class DigitollV2MasterConsignmentController {
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		
 		}
+		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -679,6 +681,7 @@ public class DigitollV2MasterConsignmentController {
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 			
 		}
+		
 		//std output (browser)
 		return dtoResponse;
 	}

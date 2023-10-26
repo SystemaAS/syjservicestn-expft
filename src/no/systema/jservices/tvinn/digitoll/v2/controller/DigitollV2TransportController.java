@@ -141,6 +141,9 @@ public class DigitollV2TransportController {
 	public GenericDtoResponse postTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
 																				@RequestParam(value = "etlnrt", required = true) String etlnrt) throws Exception {
 		
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		logger.warn("START of CALL<controller>: "+ new Date());
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
@@ -304,9 +307,12 @@ public class DigitollV2TransportController {
 			}
 			//log in log file
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
-			
-			
+		
 		}
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		logger.warn("END of CALL<controller>: "+ new Date());
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -350,6 +356,9 @@ public class DigitollV2TransportController {
 	public GenericDtoResponse putTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
 																				@RequestParam(value = "etlnrt", required = true) String etlnrt,
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		logger.warn("START of CALL<controller>: "+ new Date());
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
@@ -523,6 +532,11 @@ public class DigitollV2TransportController {
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		}
 		
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		logger.warn("END of CALL<controller>: "+ new Date());
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		
+		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -544,6 +558,10 @@ public class DigitollV2TransportController {
 	public GenericDtoResponse deleteTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
 																				@RequestParam(value = "etlnrt", required = true) String etlnrt,
 																				@RequestParam(value = "mrn", required = true) String mrn) throws Exception {
+		
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		logger.warn("START of CALL<controller>: "+ new Date());
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
@@ -681,6 +699,10 @@ public class DigitollV2TransportController {
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 	
 		}
+		
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
+		logger.warn("END of CALL<controller>: "+ new Date());
+		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
 		
 		//std output (browser)
 		return dtoResponse;

@@ -333,6 +333,7 @@ public class DigitollV2HouseConsignmentController {
 			//log in log file
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		}
+
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -542,6 +543,7 @@ public class DigitollV2HouseConsignmentController {
 			//log in log file
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
 		}
+		
 		//std output (browser)
 		return dtoResponse;
 	}
@@ -569,6 +571,7 @@ public class DigitollV2HouseConsignmentController {
 																									@RequestParam(value = "ehlnrm", required = true) String ehlnrm,
 																									@RequestParam(value = "ehlnrh", required = true) String ehlnrh,
 																									@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
