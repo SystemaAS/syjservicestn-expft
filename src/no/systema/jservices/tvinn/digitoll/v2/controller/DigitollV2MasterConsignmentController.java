@@ -10,6 +10,7 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -95,6 +96,10 @@ public class DigitollV2MasterConsignmentController {
 	private static ObjectMapper prettyErrorObjectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
 	private JsonParser prettyJsonParser = new JsonParser();
 	private Gson prettyGsonObject = new GsonBuilder().setPrettyPrinting().create();
+	
+	@Value("${expft.getmrn.timeout.milliseconds}")
+    private Integer GET_MRN_DELAY_MILLISECONDS;
+	
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -227,7 +232,7 @@ public class DigitollV2MasterConsignmentController {
 								//Delay 6-10 seconds
 								logger.warn(PrettyLoggerOutputer.FRAME);
 								logger.warn("START of delay: "+ new Date());
-								Thread.sleep(SadDigitollConstants.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
+								Thread.sleep(GET_MRN_DELAY_MILLISECONDS); 
 								logger.warn("END of delay: "+ new Date());
 								logger.warn(PrettyLoggerOutputer.FRAME);
 								
@@ -451,7 +456,7 @@ public class DigitollV2MasterConsignmentController {
 									//Delay 6-10 seconds (as in POST) needed to avoid ERROR 404 on client ...
 									logger.warn(PrettyLoggerOutputer.FRAME); 
 									logger.warn("START of delay: "+ new Date());
-									Thread.sleep(SadDigitollConstants.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
+									Thread.sleep(GET_MRN_DELAY_MILLISECONDS); 
 									logger.warn("END of delay: "+ new Date());
 									logger.warn(PrettyLoggerOutputer.FRAME);
 									

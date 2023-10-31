@@ -50,6 +50,9 @@ import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 public class AsynchTransportService {
 	private static final Logger logger = LoggerFactory.getLogger(AsynchTransportService.class);
 
+	@Value("${expft.getmrn.timeout.milliseconds}")
+    private Integer GET_MRN_DELAY_MILLISECONDS;
+	
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -180,7 +183,7 @@ public class AsynchTransportService {
 									//Delay 6-10 seconds (as in POST) needed to avoid ERROR 404 on client ...
 									logger.warn(PrettyLoggerOutputer.FRAME);
 									logger.warn("START of delay: "+ new Date());
-									Thread.sleep(SadDigitollConstants.THREAD_DELAY_FOR_GET_MRN_MILLICSECONDS); 
+									Thread.sleep(GET_MRN_DELAY_MILLISECONDS); 
 									logger.warn("END of delay: "+ new Date());
 									logger.warn(PrettyLoggerOutputer.FRAME);
 									
