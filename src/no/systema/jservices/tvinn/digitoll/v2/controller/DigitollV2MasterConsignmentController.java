@@ -192,8 +192,9 @@ public class DigitollV2MasterConsignmentController {
 						dto.setTransportDto(this.sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
 						
 						//Check if we are using MO-Air and not road...
-						if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp()))  { isApiAir = true; }
-						
+						if(dto.getTransportDto()!=null) {
+							if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp()))  { isApiAir = true; }
+						}
 						//Only valid when mrn(emmid) are empty
 						//if(StringUtils.isEmpty(dto.getEmmid()) && StringUtils.isEmpty(dto.getEmuuid() )) {
 						if(StringUtils.isEmpty(dto.getEmmid()) ) {
@@ -398,7 +399,9 @@ public class DigitollV2MasterConsignmentController {
 							//API - PROD
 							Map tollTokenMap = new HashMap();
 							//API
-							if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							if(dto.getTransportDto()!=null) {
+								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.putMasterConsignmentDigitollV2(mc, mrn, tollTokenMap);
@@ -584,7 +587,9 @@ public class DigitollV2MasterConsignmentController {
 						if(StringUtils.isNotEmpty(dto.getEmmid() )) {
 							MasterConsignment mc =  new MapperMasterConsignment().mapMasterConsignmentForDelete();
 							//API
-							if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							if(dto.getTransportDto()!=null) {
+								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.deleteMasterConsignmentDigitollV2(mc, mrn);

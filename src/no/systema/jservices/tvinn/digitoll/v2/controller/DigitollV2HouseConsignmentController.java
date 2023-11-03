@@ -216,7 +216,9 @@ public class DigitollV2HouseConsignmentController {
 							
 							Map tollTokenMap = new HashMap();
 							//Check if we are using MO-Air and not road...
-							if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp()))  { isApiAir = true; }
+							if(dto.getTransportDto()!=null) {
+								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp()))  { isApiAir = true; }
+							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.postHouseConsignmentDigitollV2(hc, tollTokenMap);
@@ -420,7 +422,9 @@ public class DigitollV2HouseConsignmentController {
 							//API - PROD
 							Map tollTokenMap = new HashMap();
 							//API
-							if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							if(dto.getTransportDto()!=null) {
+								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.putHouseConsignmentDigitollV2(hc, mrn, tollTokenMap);
@@ -617,7 +621,9 @@ public class DigitollV2HouseConsignmentController {
 							HouseConsignment hc = new MapperHouseConsignment().mapHouseConsignmentForDelete(dto);
 							logger.warn("documentIssueDate:" + hc.getDocumentIssueDate());
 							//API
-							if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							if(dto.getTransportDto()!=null) {
+								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.deleteHouseConsignmentDigitollV2(hc, mrn);
