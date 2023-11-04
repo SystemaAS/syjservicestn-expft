@@ -417,7 +417,7 @@ public class DigitollV2MasterConsignmentController {
 							//put in response
 							dtoResponse.setRequestId(obj.getRequestId());
 							dtoResponse.setEmlnrt(String.valueOf(dto.getEmlnrt()));
-							dtoResponse.setEmlnrm(String.valueOf(dto.getEmlnrt()));
+							dtoResponse.setEmlnrm(String.valueOf(dto.getEmlnrm()));
 							dtoResponse.setAvd(String.valueOf(dto.getEmavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEmpro()));
 							
