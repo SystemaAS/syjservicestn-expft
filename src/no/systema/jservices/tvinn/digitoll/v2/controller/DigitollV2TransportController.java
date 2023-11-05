@@ -33,6 +33,7 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
@@ -809,6 +810,61 @@ public class DigitollV2TransportController {
 		return retval;
 	}
 	
+	
+	@RequestMapping(value="/digitollv2/getRoutingTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse getRoutingTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setRequestMethodApi("GET");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName );
+		try {
+			if(checkUser(user)) {
+					
+				
+					String json = "";
+					json = apiServicesAir.getRoutingTransportDigitollV2();
+					logger.warn("JSON = " + json);
+					
+					EntryDto[] obj = new ObjectMapper().readValue(json, EntryDto[].class);
+					/*DEBUG
+					/*for (EntryDto dto: obj) {
+						logger.warn(dto.getEntrySummaryDeclarationMRN());
+						logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
+						logger.warn(dto.getRoutingResult().getId());
+					}*/
+					dtoResponse.setEntryList(Arrays.asList(obj));
+				
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA - log in db before std-output
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		return dtoResponse;
+	}
 
 	/**
 	 * 
