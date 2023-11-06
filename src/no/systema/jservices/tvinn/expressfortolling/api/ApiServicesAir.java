@@ -1027,7 +1027,7 @@ public class ApiServicesAir {
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
-		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment").build().toUriString();
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment/marker/69bd7e4a-f203-4681-858b-75aa32e7f7e1").build().toUriString();
 		System.out.println(path);
 		logger.warn(path);
 		

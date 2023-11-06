@@ -232,6 +232,9 @@ public class DigitollV2HouseConsignmentController {
 							logger.warn("requestId = " + obj.getRequestId());
 							dtoResponse.setAvd(String.valueOf(dto.getEhavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEhpro()));
+							dtoResponse.setEhlnrt(String.valueOf(dto.getEhlnrt()));
+							dtoResponse.setEhlnrm(String.valueOf(dto.getEhlnrm()));
+							dtoResponse.setEhlnrh(String.valueOf(dto.getEhlnrh()));
 							
 							//In case there was an error at end-point and the requestId was not returned
 							if(StringUtils.isEmpty(obj.getRequestId())){
@@ -240,9 +243,17 @@ public class DigitollV2HouseConsignmentController {
 								break;
 							}else {
 								//(1) we have the requestId at this point. We must go an API-round trip again to get the MRN
-								String requestId = obj.getRequestId();
-								dtoResponse.setRequestId(requestId);
+								String requestIdForMrn = obj.getRequestId();
+								dtoResponse.setRequestId(obj.getRequestId());
 								
+								//set RequestId-BUP (only once and only here) since the mrn could be lost as first-timer (Kakfa-queue not returning in time sometimes
+								if(StringUtils.isNotEmpty(dtoResponse.getRequestId())) {
+									if(StringUtils.isEmpty(dto.getEhuuid_own()) ){
+										//this will happen only once (populate the fall-back uuid_own
+										GenericDtoResponse dtoResponseBup = dtoResponse;
+										sadmohfService.setRequestIdBupSadmohf(serverRoot, user, dtoResponseBup);
+									}
+								}
 								//Delay 6-10 seconds
 								logger.warn(PrettyLoggerOutputer.FRAME);
 								logger.warn("START of delay: "+ new Date());
@@ -252,9 +263,17 @@ public class DigitollV2HouseConsignmentController {
 								
 								//(2) get mrn from API
 								//PROD-->
-								logger.info("********************:" + dtoResponse.getEhlnrt());logger.info(dtoResponse.getEhlnrm());logger.info(dtoResponse.getEhlnrh());
 								
-								String mrn = this.getMrnHouseConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir);
+								//use the first requestId until we get the MRN (only for getMRN)
+								//we are expecting the user to SEND until the MRN is returned
+								if(StringUtils.isNotEmpty(dto.getEhuuid_own()) && StringUtils.isEmpty(dto.getEhmid_own()) ){
+									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEhuuid_own());
+									requestIdForMrn = dto.getEhuuid_own();
+								}
+								String mrn = this.getMrnHouseConsignmentDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir);
+								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
+								
+								
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
@@ -265,7 +284,7 @@ public class DigitollV2HouseConsignmentController {
 								
 								
 								//(3)now we have lrn and mrn and proceed with the SADMOMF-update at master consignment
-								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
+								if(StringUtils.isNotEmpty(dtoResponse.getRequestId()) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "ULM";
 									dtoResponse.setMrn(mrn);
 									//we must update the send date as well. Only 8-numbers
@@ -289,7 +308,7 @@ public class DigitollV2HouseConsignmentController {
 									}
 									
 								}else {
-									errMsg.append("RequestId and/or MRN empty ??: " + "-->requestId:" + requestId + " -->MRN from API (look at logback-logs): " + mrn);
+									errMsg.append("RequestId and/or MRN empty ??: " + "-->requestId:" + dtoResponse.getRequestId() + " -->MRN from API (look at logback-logs): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}

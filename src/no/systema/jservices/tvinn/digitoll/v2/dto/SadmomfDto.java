@@ -12,7 +12,8 @@ import lombok.Data;
 public class SadmomfDto {
 	
 	private String emst  = "";  //tegn            1    status    
-	private String emuuid ="";  //tegn           36    lrn       
+	private String emuuid ="";  //tegn           36    lrn
+	private String emuuid_own ="";  //tegn           36    lrn
 	private String emmid = "";  //tegn           18    mrn  
 	private String emmid_own = "";  //tegn           18    mrn back up
 	private Integer emavd = 0;  //sonet        4  0    avdeling     

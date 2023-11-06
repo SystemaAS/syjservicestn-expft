@@ -207,6 +207,8 @@ public class DigitollV2TransportController {
 							logger.warn("requestId = " + obj.getRequestId());
 							dtoResponse.setAvd(String.valueOf(dto.getEtavd()));
 							dtoResponse.setPro(String.valueOf(dto.getEtpro()));
+							dtoResponse.setEtlnrt(String.valueOf(dto.getEtlnrt()));
+							
 							
 							//In case there was an error at end-point and the requestId was not returned
 							if(StringUtils.isEmpty(obj.getRequestId())){
@@ -215,10 +217,19 @@ public class DigitollV2TransportController {
 								
 							}else {
 								//(1) we have the requestId at this point. We must go an API-round trip again to get the MRN
-								String requestId = obj.getRequestId();
+								String requestIdForMrn = obj.getRequestId();
 								dtoResponse.setRequestId(obj.getRequestId());
 								
-								//Delay 6-10 seconds
+								//set RequestId-BUP (only once and only here) since the mrn could be lost as first-timer (Kakfa-queue not returning MRN in time sometimes)
+								if(StringUtils.isNotEmpty(dtoResponse.getRequestId()) ) {
+									if(StringUtils.isEmpty(dto.getEtuuid_own()) ){
+										//this will happen only once (populate the fall-back uuid_own
+										GenericDtoResponse dtoResponseBup = dtoResponse;
+										sadmotfService.setRequestIdBupSadmotf(serverRoot, user, dtoResponseBup);
+									}
+								}
+								
+								//Delay 3-10 seconds for the mrn (could be more in production)
 								logger.warn(PrettyLoggerOutputer.FRAME);
 								logger.warn("START of delay: "+ new Date());
 								Thread.sleep(GET_MRN_DELAY_MILLISECONDS); 
@@ -228,19 +239,29 @@ public class DigitollV2TransportController {
 								
 								//(2) get mrn from API
 								//PROD-->
-								String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir);
+								
+								//use the first requestId until we get the MRN (only for getMRN)
+								//we are expecting the user to SEND until the MRN is returned
+								if(StringUtils.isNotEmpty(dto.getEtuuid_own()) && StringUtils.isEmpty(dto.getEtmid_own()) ){
+									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEtuuid_own());
+									requestIdForMrn = dto.getEtuuid_own();
+								}
+								String mrn = this.getMrnTransportDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir);
+								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
+								
 								
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
 									dtoResponse.setDb_st2(EnumSadmotfStatus2.M.toString());
+									
 								}else {
 									dtoResponse.setDb_st2(EnumSadmotfStatus2.S.toString());
 								}
 								
 								
 								//(3)now we have lrn and mrn and proceed with the SADMOTF-update at transport
-								if(StringUtils.isNotEmpty(requestId) && StringUtils.isNotEmpty(mrn)) {
+								if(StringUtils.isNotEmpty(dtoResponse.getRequestId()) && StringUtils.isNotEmpty(mrn)) {
 									String mode = "ULM";
 									dtoResponse.setMrn(mrn);
 									//we must update the send date as well. Only 8-numbers
@@ -265,7 +286,7 @@ public class DigitollV2TransportController {
 									}
 									
 								}else {
-									errMsg.append("RequestId and/or MRN empty ??: " + "-->requestId:" + requestId + " -->MRN from API (look at logback-logs): " + mrn);
+									errMsg.append("RequestId and/or MRN empty ??: " + "-->requestId:" + dtoResponse.getRequestId() + " -->MRN from API (look at logback-logs): " + mrn);
 									dtoResponse.setErrMsg(errMsg.toString());
 									break;
 								}
