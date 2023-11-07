@@ -26,6 +26,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
+import no.systema.jservices.tvinn.digitoll.v2.controller.service.ControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
@@ -35,6 +36,7 @@ import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
@@ -112,7 +114,10 @@ public class DigitollV2MasterConsignmentController {
 	@Autowired
 	private ApiServices apiServices; 
 	@Autowired
-	private ApiServicesAir apiServicesAir; 
+	private ApiServicesAir apiServicesAir;
+	
+	@Autowired
+	private ControllerService controllerService;
 	
 	@Autowired
 	private SadmologLogger sadmologLogger;	
@@ -256,7 +261,7 @@ public class DigitollV2MasterConsignmentController {
 									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEmuuid_own());
 									requestIdForMrn = dto.getEmuuid_own();
 								}
-								String mrn = this.getMrnMasterConsignmentDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir);
+								String mrn = controllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.MASTER.toString());
 								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
 								
 								
@@ -924,50 +929,6 @@ public class DigitollV2MasterConsignmentController {
 				json = apiServicesAir.getValidationStatusMasterConsignmentDigitollV2(lrn);
 			}else {
 				json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn);
-			}
-			
-			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
-			logger.warn("JSON = " + json);
-			logger.warn("status:" + obj.getStatus());
-			logger.warn("MRN = " + obj.getMrn());
-			dtoResponse.setStatusApi(obj.getStatus());
-			dtoResponse.setTimestamp(obj.getNotificationDate());
-			
-			if(StringUtils.isNotEmpty(obj.getMrn())) {
-				retval = obj.getMrn();
-			}else {
-				dtoResponse.setErrMsg(json);
-			}
-		}catch(Exception e) {
-			//e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			dtoResponse.setErrMsg(sw.toString());
-			
-		}
-		
-		return retval;
-	}
-	/**
-	 * 
-	 * @param dtoResponse
-	 * @param lrn
-	 * @param tollTokenMap
-	 * @param isApiAir
-	 * 
-	 * @return
-	 */
-	private String getMrnMasterConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir) {
-		
-		String retval = "";
-		
-		try{
-			String json = "";	
-			if(isApiAir) {
-				json = apiServicesAir.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap);
-			}else {
-				json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap);
 			}
 			
 			ApiMrnDto obj = new ObjectMapper().readValue(json, ApiMrnDto.class);
