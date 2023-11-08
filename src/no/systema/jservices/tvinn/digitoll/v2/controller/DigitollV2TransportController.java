@@ -3,6 +3,10 @@ package no.systema.jservices.tvinn.digitoll.v2.controller;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -31,7 +35,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
-import no.systema.jservices.tvinn.digitoll.v2.controller.service.ControllerService;
+import no.systema.jservices.tvinn.digitoll.v2.controller.service.ApiControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
@@ -125,7 +129,7 @@ public class DigitollV2TransportController {
 	private ApiServicesAir apiServicesAir; 
 	
 	@Autowired
-	private ControllerService controllerService;
+	private ApiControllerService apiControllerService;
 	
 	@Autowired
 	private SadmologLogger sadmologLogger;	
@@ -167,6 +171,7 @@ public class DigitollV2TransportController {
 		dtoResponse.setRequestMethodApi("POST");
 		boolean apiStatusAlreadyUpdated = false;
 		boolean isApiAir = false;
+		ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor();
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -235,28 +240,23 @@ public class DigitollV2TransportController {
 										sadmotfService.setRequestIdBupSadmotf(serverRoot, user, dtoResponseBup);
 									}
 								}
-								
-								//Delay 3-10 seconds for the mrn (could be more in production)
-								logger.warn(PrettyLoggerOutputer.FRAME);
-								logger.warn("START of delay: "+ new Date());
-								Thread.sleep(GET_MRN_DELAY_MILLISECONDS); 
-								logger.warn("END of delay: "+ new Date());
-								logger.warn(PrettyLoggerOutputer.FRAME);
-								
-								
+								//=====================
 								//(2) get mrn from API
 								//PROD-->
-								
-								//use the first requestId until we get the MRN (only for getMRN)
-								//we are expecting the user to SEND until the MRN is returned
+								//=====================
+								//Use the first requestId until we get the MRN (only for getMRN)
+								//We are expecting the user to SEND until the MRN is returned
+								//This will happened only in special occasions in which the MRN did not arrive in the first try (despite the loop of 1-minute below...
 								if(StringUtils.isNotEmpty(dto.getEtuuid_own()) && StringUtils.isEmpty(dto.getEtmid_own()) ){
 									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEtuuid_own());
 									requestIdForMrn = dto.getEtuuid_own();
 								}
-								String mrn = controllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.TRANSPORT.toString()); 
+								//GET MRN right here...
+								String mrn = apiControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.TRANSPORT.toString()); 
 								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
 								
 								
+								//(3) at this point we take actions depending on the mrn be or not to be
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");

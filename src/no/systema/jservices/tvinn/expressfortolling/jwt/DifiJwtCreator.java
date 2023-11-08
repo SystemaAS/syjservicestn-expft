@@ -141,7 +141,7 @@ public class DifiJwtCreator {
 	 * @return
 	 */
 	public String createRequestMovementAirJwt() {
-
+		logger.info("Inside createRequestMovementAirJwt");
 		String encodedCertificate;
 		PrivateKey privateKey;
 
@@ -160,7 +160,7 @@ public class DifiJwtCreator {
 	    
 	}
 	public String createRequestMovementEntryJwt() {
-
+		logger.info("Inside:createRequestMovementEntryJwt" );
 		String encodedCertificate; 
 		PrivateKey privateKey;
 
@@ -285,6 +285,9 @@ public class DifiJwtCreator {
 					logger.error("createRequestJwt: null ??? --> ERROR towards Difi Jwt ...") ;
 				}
     			//for debugging purposes at customer site
+				//logger.info("audience:" + audience);
+				logger.info("scope:" + scopeParam);
+				
     			jwtUtils.showJWTTimeParamsOnRequest(issuedAt, expiration, issuer);
 	
     			return result;

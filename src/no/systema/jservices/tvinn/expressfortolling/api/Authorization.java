@@ -194,7 +194,7 @@ public class Authorization {
      * @throws RestClientException
      */
     public TokenResponseDto accessTokenRequestPostMovementEntry() throws RestClientException {
-    	logger.info("accessTokenRequestPostMovementAir()");
+    	logger.info("accessTokenRequestPostMovementEntry()");
     	
     	//reset for proxy if needed
     	logger.info(this.proxyIsUsed);

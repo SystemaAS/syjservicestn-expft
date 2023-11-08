@@ -26,7 +26,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
-import no.systema.jservices.tvinn.digitoll.v2.controller.service.ControllerService;
+import no.systema.jservices.tvinn.digitoll.v2.controller.service.ApiControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.MasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
@@ -117,7 +117,7 @@ public class DigitollV2MasterConsignmentController {
 	private ApiServicesAir apiServicesAir;
 	
 	@Autowired
-	private ControllerService controllerService;
+	private ApiControllerService apiControllerService;
 	
 	@Autowired
 	private SadmologLogger sadmologLogger;	
@@ -246,25 +246,22 @@ public class DigitollV2MasterConsignmentController {
 										sadmomfService.setRequestIdBupSadmomf(serverRoot, user, dtoResponseBup);
 									}
 								}
-								//Delay 6-10 seconds
-								logger.warn(PrettyLoggerOutputer.FRAME);
-								logger.warn("START of delay: "+ new Date());
-								Thread.sleep(GET_MRN_DELAY_MILLISECONDS); 
-								logger.warn("END of delay: "+ new Date());
-								logger.warn(PrettyLoggerOutputer.FRAME);
-								
+								//=====================
 								//(2) get mrn from API
 								//PROD-->
-								//use the first requestId until we get the MRN (only for getMRN)
-								//we are expecting the user to SEND until the MRN is returned
+								//=====================
+								//Use the first requestId until we get the MRN (only for getMRN)
+								//We are expecting the user to SEND until the MRN is returned
+								//This will happened only in special occasions in which the MRN did not arrive in the first try (despite the loop of 1-minute below...
 								if(StringUtils.isNotEmpty(dto.getEmuuid_own()) && StringUtils.isEmpty(dto.getEmmid_own()) ){
 									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEmuuid_own());
 									requestIdForMrn = dto.getEmuuid_own();
 								}
-								String mrn = controllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.MASTER.toString());
+								//GET MRN right here...
+								String mrn = apiControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.MASTER.toString());
 								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
 								
-								
+								//(3) at this point we take actions depending on the mrn be or not to be
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());
 									dtoResponse.setErrMsg("");
