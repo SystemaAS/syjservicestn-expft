@@ -1013,7 +1013,7 @@ public class ApiServicesAir {
 	 */
 	public String getRoutingHouseConsignmentDigitollV2() throws Exception {
 		
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementEntry();
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRouting();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
@@ -1027,7 +1027,7 @@ public class ApiServicesAir {
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
-		String path = UriComponentsBuilder.fromPath(this.basePathMovementStatusAirVersion + "/house-consignment").build().toUriString();
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment").build().toUriString();
 		System.out.println(path);
 		logger.warn(path);
 		
@@ -1062,8 +1062,7 @@ public class ApiServicesAir {
         return tmpResponse;
         		
 	}
-	
-	
+
 	
 	/**
 	 * Only for Air and testing requirement end-point
@@ -1072,7 +1071,7 @@ public class ApiServicesAir {
 	 */
 	public String getRoutingTransportDigitollV2() throws Exception {
 		
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementEntry();
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRouting();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());

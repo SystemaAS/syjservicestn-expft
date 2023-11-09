@@ -1113,10 +1113,15 @@ public class ApiServices {
         return tmpResponse;
         		
 	}
-	
-public String getEntryDigitollV2(String mrn) throws Exception {
+	/**
+	 * 
+	 * @param mrn
+	 * @return
+	 * @throws Exception
+	 */
+	public String getMovementRoadEntryDigitollV2(String mrn) throws Exception {
 		
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementEntry();
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoadEntry();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
@@ -1129,8 +1134,13 @@ public String getEntryDigitollV2(String mrn) throws Exception {
         
 		Object postBody = null; //Not in use
 		
-        //https://api-test.toll.no/api/movement/entry/status/{mrn}
-		String path = UriComponentsBuilder.fromPath( "/movement/entry/status/" + mrn).build().toUriString();
+        //https://api-test.toll.no/api/????/entry/status/{mrn}
+		//basePathMovementStatusRoadVersion
+		//basePathMovementRoadVersion
+		
+		//movement/road/entry/status
+		//movement/road/status/v2/entry/status
+		String path = UriComponentsBuilder.fromPath( "/movement/road" + "/entry/status/" + mrn).build().toUriString();
 		System.out.println(path);
 		logger.warn(path);
 		

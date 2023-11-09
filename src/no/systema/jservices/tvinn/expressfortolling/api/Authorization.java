@@ -193,8 +193,8 @@ public class Authorization {
      * @return
      * @throws RestClientException
      */
-    public TokenResponseDto accessTokenRequestPostMovementEntry() throws RestClientException {
-    	logger.info("accessTokenRequestPostMovementEntry()");
+    public TokenResponseDto accessTokenRequestPostMovementRouting() throws RestClientException {
+    	logger.info("accessTokenRequestPostMovementRouting()");
     	
     	//reset for proxy if needed
     	logger.info(this.proxyIsUsed);
@@ -206,7 +206,49 @@ public class Authorization {
     	Object postBody = null;  //Not in use
     	
     	TokenRequestDto tokenRequest = new TokenRequestDto();
-    	tokenRequest.setAssertion(difiJwtCreator.createRequestMovementEntryJwt());
+    	tokenRequest.setAssertion(difiJwtCreator.createRequestMovementRoutingJwt());
+        
+        String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
+        
+        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+        final HttpHeaders headerParams = new HttpHeaders();
+        final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
+        
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "grant_type", tokenRequest.getGrantType()));       
+        formParams.putAll(apiClient.parameterToMultiObjectValueMap(CollectionFormat.MULTI, "assertion", tokenRequest.getAssertion()));       
+        
+        final String[] accepts = { 
+            "application/json", "text/json"
+        };
+        final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
+        final String[] contentTypes = { 
+        	"application/x-www-form-urlencoded"
+        };
+        final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
+
+        ParameterizedTypeReference<TokenResponseDto> returnType = new ParameterizedTypeReference<TokenResponseDto>() {};
+        
+        
+        apiClient.setBasePath(difiTokenAudienceUrl); 
+        
+        return apiClient.invokeAPI(path, HttpMethod.POST, queryParams, postBody, headerParams, formParams, accept, contentType, returnType);
+    }	
+    
+    
+    public TokenResponseDto accessTokenRequestPostMovementRoadEntry() throws RestClientException {
+    	logger.info("accessTokenRequestPostMovementRoadEntry()");
+    	
+    	//reset for proxy if needed
+    	logger.info(this.proxyIsUsed);
+        if(Boolean.parseBoolean(proxyIsUsed)) {
+        	apiClient.resetRestTemplateWithProxy(this.proxyHost, this.proxyPort);
+        }
+        
+        
+    	Object postBody = null;  //Not in use
+    	
+    	TokenRequestDto tokenRequest = new TokenRequestDto();
+    	tokenRequest.setAssertion(difiJwtCreator.createRequestMovementRoadEntryJwt());
         
         String path = UriComponentsBuilder.fromPath("/token").build().toUriString();
         
