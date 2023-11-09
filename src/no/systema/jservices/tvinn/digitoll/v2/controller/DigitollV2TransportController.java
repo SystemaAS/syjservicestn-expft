@@ -35,7 +35,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
-import no.systema.jservices.tvinn.digitoll.v2.controller.service.ApiControllerService;
+import no.systema.jservices.tvinn.digitoll.v2.controller.service.PoolExecutorControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
@@ -129,7 +129,7 @@ public class DigitollV2TransportController {
 	private ApiServicesAir apiServicesAir; 
 	
 	@Autowired
-	private ApiControllerService apiControllerService;
+	private PoolExecutorControllerService poolExecutorControllerService;
 	
 	@Autowired
 	private SadmologLogger sadmologLogger;	
@@ -229,7 +229,7 @@ public class DigitollV2TransportController {
 								
 							}else {
 								//(1) we have the requestId at this point. We must go an API-round trip again to get the MRN
-								String requestIdForMrn = obj.getRequestId();
+								// requestIdForMrn = obj.getRequestId();
 								dtoResponse.setRequestId(obj.getRequestId());
 								
 								//set RequestId-BUP (only once and only here) since the mrn could be lost as first-timer (Kakfa-queue not returning MRN in time sometimes)
@@ -244,17 +244,16 @@ public class DigitollV2TransportController {
 								//(2) get mrn from API
 								//PROD-->
 								//=====================
-								//Use the first requestId until we get the MRN (only for getMRN)
-								//We are expecting the user to SEND until the MRN is returned
-								//This will happened only in special occasions in which the MRN did not arrive in the first try (despite the loop of 1-minute below...
-								if(StringUtils.isNotEmpty(dto.getEtuuid_own()) && StringUtils.isEmpty(dto.getEtmid_own()) ){
-									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEtuuid_own());
-									requestIdForMrn = dto.getEtuuid_own();
-								}
+								//In FAILURE-occasions before getting the MRN, it could be several possibilities to create an error  since the requestId is a moving target
+								/*if(StringUtils.isNotEmpty(dto.getEtuuid_own()) && StringUtils.isEmpty(dto.getEtmid_own()) ){
+									if(!dto.getEtuuid_own().equals(dto.getEtuuid())) {
+										logger.info("Using current UUID until we get the MRN..." + dto.getEtuuid());
+										requestIdForMrn = dto.getEtuuid();
+									}
+								}*/
 								//GET MRN right here...
-								String mrn = apiControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.TRANSPORT.toString()); 
-								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
-								
+								String mrn = poolExecutorControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, dtoResponse.getRequestId(), dto.getEtuuid_own(), tollTokenMap, isApiAir, EnumControllerMrnType.TRANSPORT.toString()); 
+								logger.info("####### MRN (TRANSPORT):" + mrn + "#######");
 								
 								//(3) at this point we take actions depending on the mrn be or not to be
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){

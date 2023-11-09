@@ -38,11 +38,14 @@ import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType
  * 
  */
 @Service
-public class ApiControllerService {
-	private static Logger logger = LoggerFactory.getLogger(ApiControllerService.class.getName());
+public class PoolExecutorControllerService {
+	private static Logger logger = LoggerFactory.getLogger(PoolExecutorControllerService.class.getName());
 	
 	@Value("${expft.getmrn.timeout.milliseconds}")
     private Integer GET_MRN_DELAY_MILLISECONDS;
+	
+	@Value("${expft.getmrn.timeout.numberof.iterations}")
+	private Integer GET_MRN_DELAY_NUMBER_OF_ITERATIONS;
 	
 	@Autowired
 	private ApiServices apiServices; 
@@ -57,16 +60,19 @@ public class ApiControllerService {
 	 * This happens ONLY in a POST. Which is the nature of the mrn.
 	 * 
 	 * @param dtoResponse
-	 * @param lrn
+	 * @param requestIdCurrent
+	 * @param requestIdFirst
 	 * @param tollTokenMap
 	 * @param isApiAir
 	 * @param controller
 	 * @return
 	 */
-	public String getMrnPOSTDigitollV2FromApi( GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir, String controller) {
+	public String getMrnPOSTDigitollV2FromApi( GenericDtoResponse dtoResponse, String requestIdCurrent, String requestIdFirst, Map tollTokenMap, boolean isApiAir, String controller) {
 		String mrn = "";
+		String controllerNameForDebug = getControllNameForDebug(controller);
 		
-		int UPPER_LIMIT_ITERATIONS = 6; 
+				
+		//int UPPER_LIMIT_ITERATIONS = 6; 
 		
 		//just in case in order to go out of the loop if the system is down
 		ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor();
@@ -80,14 +86,15 @@ public class ApiControllerService {
 				
 				//SLEEP and loop again
 				logger.warn(PrettyLoggerOutputer.FRAME);
-				logger.warn("START of delay: "+ new Date());
+				logger.warn("START of delay: "+ new Date() + " counter-loop:" + counter);
+				logger.warn("CONTROLLER:" + controllerNameForDebug + " << " + requestIdCurrent + " >>");
 				ScheduledFuture<String> schedule = pool.schedule(()-> "own sleep", GET_MRN_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS);
 				logger.warn(schedule.get());
 				logger.warn("END of delay: "+ new Date());
 				logger.warn(PrettyLoggerOutputer.FRAME);
 				
 				//in case the mrn never appeared...
-				if(counter > UPPER_LIMIT_ITERATIONS) {
+				if(counter > GET_MRN_DELAY_NUMBER_OF_ITERATIONS) {
 					break;
 				}
 	
@@ -100,13 +107,13 @@ public class ApiControllerService {
 					
 					if(controller != null) {
 						if (controller.equals(EnumControllerMrnType.TRANSPORT.toString())) {
-							json = getValidationStatusTransportDigitollV2(lrn, tollTokenMap, isApiAir);
+							json = getValidationStatusTransportDigitollV2(requestIdCurrent, tollTokenMap, isApiAir);
 							
 						}else if (controller.equals(EnumControllerMrnType.MASTER.toString())) {
-							json = getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap, isApiAir);
+							json = getValidationStatusMasterConsignmentDigitollV2(requestIdCurrent, tollTokenMap, isApiAir);
 							
 						}else if (controller.equals(EnumControllerMrnType.HOUSE.toString())) {
-							json = getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap, isApiAir);
+							json = getValidationStatusHouseConsignmentDigitollV2(requestIdCurrent, tollTokenMap, isApiAir);
 							
 						}
 					}
@@ -122,12 +129,22 @@ public class ApiControllerService {
 							mrn = obj.getMrn();
 							
 						}else {
-							//One or more transport documents are already submitted
+							//check for error type
 							dtoResponse.setErrMsg(json);
-							if("FAILURE".equals(obj.getStatus())&& this.isValidLoopBreakerFailure(json)) {
-								logger.warn("FAILURE ... breaking the loop");
-								//break the loop since there is no point further...
-								break;
+							//this error signals that the current lrn is not good. Lets hope that the first one saved can help ...
+							if("FAILURE".equals(obj.getStatus()) && this.isAlreadyInUseFailure(json)) {
+								logger.warn("FAILURE (already in use) ... changine uuid to uuid_own");
+								//then will continue the loop with the first lrn saved ...
+								if(StringUtils.isNotEmpty(requestIdFirst)) {
+									logger.warn("Changing uuid:" + requestIdCurrent + "to first uuid_own:" + requestIdFirst);
+									requestIdCurrent = requestIdFirst;
+									
+								}else {
+									//insert other types of FAILURES ...
+									break;
+								}
+							}else {
+								//continue...
 							}
 		
 						}
@@ -174,14 +191,12 @@ public class ApiControllerService {
 	 * @param json
 	 * @return
 	 */
-	private boolean isValidLoopBreakerFailure(String json) {
+	private boolean isAlreadyInUseFailure(String json) {
 		boolean retval = false;
 		//One or more transport documents are already submitted
 		//json.contains("is already in use")) {
 		if(json!=null) {
-			if(json.contains("One or more transport documents are already submitted")) {
-				retval = true;
-			}else if (json.contains("is already in use")) {
+			if (json.contains("is already in use")) {
 				retval = true;
 				
 			}
@@ -191,11 +206,67 @@ public class ApiControllerService {
 		return retval;
 		
 	}
+
+	/**
+	 * 
+	 * @param lrn
+	 * @param tollTokenMap
+	 * @param isApiAir
+	 * @return
+	 * @throws Exception
+	 */
+	private String getValidationStatusTransportDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
+		String json = "";
+		
+		
+		if(isApiAir) {
+			json = apiServicesAir.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+		}else {
+			json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+		}
+		
+		return json;
+	}
+	
+	private String getValidationStatusMasterConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
+		String json = "";
+		
+		if(isApiAir) {
+			json = apiServicesAir.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
+		}else {
+			json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
+		}
+		
+		return json;
+	}
+	private String getValidationStatusHouseConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
+		String json = "";
+		
+		if(isApiAir) {
+			json = apiServicesAir.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
+		}else {
+			json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
+		}
+		
+		return json;
+	}
+	
+	private String getControllNameForDebug(String controllerValue) {
+		String result = "";
+		if(controllerValue.equals(EnumControllerMrnType.TRANSPORT.toString())){
+			result = EnumControllerMrnType.TRANSPORT.name();
+		}else if(controllerValue.equals(EnumControllerMrnType.MASTER.toString())){
+			result = EnumControllerMrnType.MASTER.name();
+		}else if(controllerValue.equals(EnumControllerMrnType.HOUSE.toString())){
+			result = EnumControllerMrnType.HOUSE.name();
+		}
+		return result;
+	}
+	
 	public String getMrnPOSTDigitollV2FromApiTest( GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir, String controller) {
 		String mrn = "";
 		
 		int UPPER_LIMIT_ITERATIONS = 6; 
-		int WAIT_SLEEP_MILLISECONDS = 8000;
 		
 		//just in case in order to go out of the loop if the system is down
 		ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor();
@@ -265,55 +336,5 @@ public class ApiControllerService {
 		return mrn;
 	}
 	
-	
-	/**
-	 * 
-	 * @param lrn
-	 * @param tollTokenMap
-	 * @param isApiAir
-	 * @return
-	 * @throws Exception
-	 */
-	private String getValidationStatusTransportDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) {
-		String json = "";
-		
-		try {
-			if(isApiAir) {
-				json = apiServicesAir.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
-			}else {
-				json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		return json;
-	}
-	
-	private String getValidationStatusMasterConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
-		String json = "";
-		try {
-			if(isApiAir) {
-				json = apiServicesAir.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
-			}else {
-				json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		return json;
-	}
-	private String getValidationStatusHouseConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
-		String json = "";
-		try {
-			if(isApiAir) {
-				json = apiServicesAir.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
-			}else {
-				json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
-			}
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
-		return json;
-	}
 	
 }

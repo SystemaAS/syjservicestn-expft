@@ -32,7 +32,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
-import no.systema.jservices.tvinn.digitoll.v2.controller.service.ApiControllerService;
+import no.systema.jservices.tvinn.digitoll.v2.controller.service.PoolExecutorControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
@@ -130,7 +130,7 @@ public class DigitollV2HouseConsignmentController {
 	private ApiServicesAir apiServicesAir; 
 	
 	@Autowired
-	private ApiControllerService apiControllerService;
+	private PoolExecutorControllerService poolExecutorControllerService;
 	
 	
 	@Autowired
@@ -264,16 +264,16 @@ public class DigitollV2HouseConsignmentController {
 								//(2) get mrn from API
 								//PROD-->
 								//=====================
-								//Use the first requestId until we get the MRN (only for getMRN)
+								/*//Use the first requestId until we get the MRN (only for getMRN)
 								//We are expecting the user to SEND until the MRN is returned
 								//This will happened only in special occasions in which the MRN did not arrive in the first try (despite the loop of 1-minute below...
 								if(StringUtils.isNotEmpty(dto.getEhuuid_own()) && StringUtils.isEmpty(dto.getEhmid_own()) ){
 									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEhuuid_own());
 									requestIdForMrn = dto.getEhuuid_own();
-								}
+								}*/
 								//GET MRN right here...
-								String mrn = apiControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, requestIdForMrn, tollTokenMap, isApiAir, EnumControllerMrnType.HOUSE.toString());
-								logger.info("MRN:" + mrn + " with requestId:" + requestIdForMrn);
+								String mrn = poolExecutorControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, dtoResponse.getRequestId(), dto.getEhuuid_own(), tollTokenMap, isApiAir, EnumControllerMrnType.HOUSE.toString());
+								logger.info("####### MRN (HOUSE):" + mrn + " #######");
 								
 								//(3) at this point we take actions depending on the mrn be or not to be
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
@@ -906,10 +906,10 @@ public class DigitollV2HouseConsignmentController {
 	 * @param mrn
 	 * @return
 	 */
-	@RequestMapping(value="/digitollv2/getEntryComplete.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@RequestMapping(value="/digitollv2/getMovementRoadEntry.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getEntryCompleteDigitollV2FromApi(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, @RequestParam(value = "mrn", required = true) String mrn) {
-		
+	public GenericDtoResponse getMovementRoadEntryDigitollV2FromApi(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, @RequestParam(value = "mrn", required = true) String mrn) {
+		logger.info("Inside: getMovementRoadEntryDigitollV2FromApi");
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
@@ -927,7 +927,7 @@ public class DigitollV2HouseConsignmentController {
 					
 				
 					String json = "";
-					json = apiServices.getEntryDigitollV2(mrn);
+					json = apiServices.getMovementRoadEntryDigitollV2(mrn);
 					logger.warn("JSON = " + json);
 					EntryDto[] obj = new ObjectMapper().readValue(json, EntryDto[].class);
 					//DEBUG
