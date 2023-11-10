@@ -250,17 +250,29 @@ public class DigitollV2MasterConsignmentController {
 								//(2) get mrn from API
 								//PROD-->
 								//=====================
-								/*//Use the first requestId until we get the MRN (only for getMRN)
-								//We are expecting the user to SEND until the MRN is returned
-								//This will happened only in special occasions in which the MRN did not arrive in the first try (despite the loop of 1-minute below...
-								if(StringUtils.isNotEmpty(dto.getEmuuid_own()) && StringUtils.isEmpty(dto.getEmmid_own()) ){
-									logger.info("Using first UUID_OWN until we get the MRN..." + dto.getEmuuid_own());
-									requestIdForMrn = dto.getEmuuid_own();
-								}*/
+								StringBuilder errorCode = new StringBuilder();
 								//GET MRN right here...
-								String mrn = poolExecutorControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, dtoResponse.getRequestId(), dto.getEmuuid_own(), tollTokenMap, isApiAir, EnumControllerMrnType.MASTER.toString());
+								String mrn = poolExecutorControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, dtoResponse.getRequestId(), dto.getEmuuid_own(), tollTokenMap, isApiAir, 
+																										EnumControllerMrnType.MASTER.toString(), errorCode);
 								logger.info("####### MRN (MASTER):" + mrn + "#######");
 								
+								//(2.1) save a uuid_own BUP(back-up) of the first requestId, if applicable
+								//set RequestId-BUP (only once and only here) since the mrn could be lost as first-timer (Kafka-queue not returning MRN in time sometimes)
+								if(StringUtils.isNotEmpty(dtoResponse.getRequestId()) ) {
+									if(StringUtils.isEmpty(dto.getEmuuid_own()) ){
+										if(StringUtils.isNotEmpty(mrn)) {
+											//this will happen only once (populate the fall-back uuid_own)
+											GenericDtoResponse dtoResponseBup = dtoResponse;
+											sadmomfService.setRequestIdBupSadmomf(serverRoot, user, dtoResponseBup);
+										}else {
+											if(StringUtils.isNotEmpty(errorCode.toString())&& "404".equals(errorCode.toString())) {
+												//this will make sure that the current requestId is certainly a valid request that only had a http-communicaiton error and will wait for the next SEND
+												GenericDtoResponse dtoResponseBup = dtoResponse;
+												sadmomfService.setRequestIdBupSadmomf(serverRoot, user, dtoResponseBup);
+											}
+										}
+									}
+								}
 								//(3) at this point we take actions depending on the mrn be or not to be
 								if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 									errMsg.append(dtoResponse.getErrMsg());

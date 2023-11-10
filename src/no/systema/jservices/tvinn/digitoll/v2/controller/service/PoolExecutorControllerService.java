@@ -67,7 +67,7 @@ public class PoolExecutorControllerService {
 	 * @param controller
 	 * @return
 	 */
-	public String getMrnPOSTDigitollV2FromApi( GenericDtoResponse dtoResponse, String requestIdCurrent, String requestIdFirst, Map tollTokenMap, boolean isApiAir, String controller) {
+	public String getMrnPOSTDigitollV2FromApi( GenericDtoResponse dtoResponse, String requestIdCurrent, String requestIdFirst, Map tollTokenMap, boolean isApiAir, String controller, StringBuilder httpErrorCode) {
 		String mrn = "";
 		String controllerNameForDebug = getControllNameForDebug(controller);
 		
@@ -132,14 +132,14 @@ public class PoolExecutorControllerService {
 							//check for error type
 							dtoResponse.setErrMsg(json);
 							//this error signals that the current lrn is not good. Lets hope that the first one saved can help ...
-							if("FAILURE".equals(obj.getStatus()) && this.isAlreadyInUseFailure(json)) {
+							if("FAILURE".equals(obj.getStatus())) {
 								
 								if(this.isAlreadyInUseFailure(json)) {
 									//Special case
 									logger.warn("FAILURE (already in use) ... changine uuid to uuid_own");
 									//then will continue the loop with the first lrn saved ...
 									if(StringUtils.isNotEmpty(requestIdFirst)) {
-										logger.warn("Changing uuid:" + requestIdCurrent + "to first uuid_own:" + requestIdFirst);
+										logger.warn("Changing uuid:" + requestIdCurrent + "to first valid uuid_own:" + requestIdFirst);
 										requestIdCurrent = requestIdFirst;
 										
 									}else {
@@ -163,6 +163,14 @@ public class PoolExecutorControllerService {
 					
 				}catch(Exception e) {
 					logger.error(e.getMessage());
+					if(StringUtils.isNotEmpty(e.getMessage())) {
+						if(e.getMessage().contains("404 Not Found")){
+							//This error is specific for the fact that the MRN has not yet been released at the back-end but it will be at some point
+							//Therefore the reason to implement this whole PoolExcutor-mechanism and the signal to keep going with the loop until we get it or try again in another SEND
+							httpErrorCode.append("404");
+						}
+					}
+					
 					//e.printStackTrace();
 					//Get out stackTrace to the response (errMsg)
 					StringWriter sw = new StringWriter();
