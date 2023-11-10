@@ -835,20 +835,6 @@ public class DigitollV2TransportController {
 	
 	/**
 	 * 
-	 * @param user
-	 * @return
-	 */
-	private boolean checkUser(String user) {
-		boolean retval = true;
-		if (!bridfDaoService.userNameExist(user)) {
-			retval = false;
-			//throw new RuntimeException("ERROR: parameter, user, is not valid!");
-		}
-		return retval;
-	}
-	
-	/**
-	 * 
 	 * To get the final status when the carrier has passed the border
 	 * Movement Road V2
 	 * 
@@ -1099,4 +1085,17 @@ public class DigitollV2TransportController {
 		return retval;
 	}
 	
+	/**
+	 * 
+	 * @param user
+	 * @return
+	 */
+	private boolean checkUser(String user) {
+		boolean retval = true;
+		if (!bridfDaoService.userNameExist(user)) {
+			retval = false;
+			//throw new RuntimeException("ERROR: parameter, user, is not valid!");
+		}
+		return retval;
+	}
 }
