@@ -38,8 +38,9 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
 import no.systema.jservices.tvinn.digitoll.v2.controller.service.PoolExecutorControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
-import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.entrymovementroad.EntryMovRoadDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.routing.EntryRoutingDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
@@ -837,7 +838,96 @@ public class DigitollV2TransportController {
 		return retval;
 	}
 	
+	/**
+	 * 
+	 * To get the final status when the carrier has passed the border
+	 * Movement Road V2
+	 * 
+	 * {
+	 *	  "validEntry": false,
+	 *	  "customsOfficeOfEntry": "NO01018C",
+	 *	  "timeOfEntry": "2022-04-08T11:51:00Z",
+	 *	  "mrn": "22NO4TU2HUD59UCBT8"
+	 * }
+	 * 
+	 * @param request
+	 * @param user
+	 * @param mrn
+	 * @return
+	 */
+	@RequestMapping(value="/digitollv2/getMovementRoadEntry.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse getMovementRoadEntryDigitollV2FromApi(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, @RequestParam(value = "mrn", required = true) String mrn) {
+		logger.info("Inside: getMovementRoadEntryDigitollV2FromApi");
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setRequestMethodApi("GET");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName );
+		try {
+			if(checkUser(user)) {
+					
+				
+					String json = "";
+					String testOS = System.getProperty("os.name");
+					if(testOS!=null && testOS.startsWith("Mac")) {
+						//Test playground is not working therefore we fake...
+						json = getFakeEntry();
+					}else {
+						//PROD
+						json = apiServices.getMovementRoadEntryDigitollV2(mrn);
+					}
+					logger.warn("JSON = " + json);
+					EntryMovRoadDto obj = new ObjectMapper().readValue(json, EntryMovRoadDto.class);
+					//DEBUG
+					/*for (EntryDto dto: obj) {
+						logger.warn(dto.getEntrySummaryDeclarationMRN());
+						logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
+						logger.warn(dto.getRoutingResult().getId());
+					}*/
+					dtoResponse.setEntryMovementRoad(obj);
+				
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA - log in db before std-output
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		return dtoResponse;
+	}
 	
+	private String getFakeEntry () {
+		String fakeResult = "{\"validEntry\":true,\"customsOfficeOfEntry\":\"NO372001\",\"timeOfEntry\":\"2023-11-08T14:32:40.235Z\",\"mrn\":\"23NO7YJ9DT2BRJFBT7\"}";
+		return fakeResult;
+	}
+	/**
+	 * This belongs to another USE-CASE for ICS2 and not movement road. It works but it is not like the above
+	 * 
+	 * @param request
+	 * @param user
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value="/digitollv2/getRoutingTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getRoutingTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user) throws Exception {
@@ -862,7 +952,7 @@ public class DigitollV2TransportController {
 					json = apiServicesAir.getRoutingTransportDigitollV2();
 					logger.warn("JSON = " + json);
 					
-					EntryDto[] obj = new ObjectMapper().readValue(json, EntryDto[].class);
+					EntryRoutingDto[] obj = new ObjectMapper().readValue(json, EntryRoutingDto[].class);
 					/*DEBUG
 					/*for (EntryDto dto: obj) {
 						logger.warn(dto.getEntrySummaryDeclarationMRN());

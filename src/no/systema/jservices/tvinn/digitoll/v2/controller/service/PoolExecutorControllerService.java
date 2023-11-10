@@ -133,16 +133,24 @@ public class PoolExecutorControllerService {
 							dtoResponse.setErrMsg(json);
 							//this error signals that the current lrn is not good. Lets hope that the first one saved can help ...
 							if("FAILURE".equals(obj.getStatus()) && this.isAlreadyInUseFailure(json)) {
-								logger.warn("FAILURE (already in use) ... changine uuid to uuid_own");
-								//then will continue the loop with the first lrn saved ...
-								if(StringUtils.isNotEmpty(requestIdFirst)) {
-									logger.warn("Changing uuid:" + requestIdCurrent + "to first uuid_own:" + requestIdFirst);
-									requestIdCurrent = requestIdFirst;
+								
+								if(this.isAlreadyInUseFailure(json)) {
+									//Special case
+									logger.warn("FAILURE (already in use) ... changine uuid to uuid_own");
+									//then will continue the loop with the first lrn saved ...
+									if(StringUtils.isNotEmpty(requestIdFirst)) {
+										logger.warn("Changing uuid:" + requestIdCurrent + "to first uuid_own:" + requestIdFirst);
+										requestIdCurrent = requestIdFirst;
+										
+									}else {
+										break;
+									}
 									
-								}else {
-									//insert other types of FAILURES ...
-									break;
+								}else if(this.isSomeKnownCustomsRelatedFailure(json)) {
+									break;	
+						
 								}
+								
 							}else {
 								//continue...
 							}
@@ -206,6 +214,23 @@ public class PoolExecutorControllerService {
 		return retval;
 		
 	}
+	
+	private boolean isSomeKnownCustomsRelatedFailure(String json) {
+		boolean retval = false;
+		//One or more transport documents are already submitted
+		//json.contains("is already in use")) {
+		if(json!=null) {
+			if (json.contains("Customs declaration is not valid")) {
+				retval = true;
+				
+			}
+			//PUT more here ...	
+		}
+		
+		return retval;
+		
+	}
+	
 
 	/**
 	 * 

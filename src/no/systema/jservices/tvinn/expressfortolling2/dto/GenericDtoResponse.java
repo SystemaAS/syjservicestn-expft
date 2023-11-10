@@ -5,7 +5,8 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
-import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.entrymovementroad.EntryMovRoadDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.routing.EntryRoutingDto;
 
 @Data
 /**
@@ -53,8 +54,9 @@ public class GenericDtoResponse {
 	
 	
 	private List<Object> list = new ArrayList<Object>();
-	
+	//for entry movement road
+	private EntryMovRoadDto entryMovementRoad = new EntryMovRoadDto();
 	//for routing - entry
-	private List<EntryDto> entryList = new ArrayList<EntryDto>();
+	private List<EntryRoutingDto> entryList = new ArrayList<EntryRoutingDto>();
 	
 }

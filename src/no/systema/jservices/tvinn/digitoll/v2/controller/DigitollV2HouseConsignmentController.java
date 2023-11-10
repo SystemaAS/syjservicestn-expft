@@ -35,9 +35,9 @@ import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
 import no.systema.jservices.tvinn.digitoll.v2.controller.service.PoolExecutorControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
-import no.systema.jservices.tvinn.digitoll.v2.dto.EntryDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.routing.EntryRoutingDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmohfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
@@ -858,7 +858,7 @@ public class DigitollV2HouseConsignmentController {
 					String json = "";
 					json = apiServicesAir.getRoutingHouseConsignmentDigitollV2();
 					logger.warn("JSON = " + json);
-					EntryDto[] obj = new ObjectMapper().readValue(json, EntryDto[].class);
+					EntryRoutingDto[] obj = new ObjectMapper().readValue(json, EntryRoutingDto[].class);
 					//DEBUG
 					/*for (EntryDto dto: obj) {
 						logger.warn(dto.getEntrySummaryDeclarationMRN());
@@ -890,75 +890,6 @@ public class DigitollV2HouseConsignmentController {
 	}
 	
 
-	/**
-	 * 
-	 * To get the final status when the carrier has passed the border
-	 * 
-	 * {
-	 *	  "validEntry": false,
-	 *	  "customsOfficeOfEntry": "NO01018C",
-	 *	  "timeOfEntry": "2022-04-08T11:51:00Z",
-	 *	  "mrn": "22NO4TU2HUD59UCBT8"
-	 * }
-	 * 
-	 * @param request
-	 * @param user
-	 * @param mrn
-	 * @return
-	 */
-	@RequestMapping(value="/digitollv2/getMovementRoadEntry.do", method={RequestMethod.GET, RequestMethod.POST}) 
-	@ResponseBody
-	public GenericDtoResponse getMovementRoadEntryDigitollV2FromApi(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, @RequestParam(value = "mrn", required = true) String mrn) {
-		logger.info("Inside: getMovementRoadEntryDigitollV2FromApi");
-		String serverRoot = ServerRoot.getServerRoot(request);
-		GenericDtoResponse dtoResponse = new GenericDtoResponse();
-		dtoResponse.setUser(user);
-		dtoResponse.setRequestMethodApi("GET");
-		StringBuilder errMsg = new StringBuilder("ERROR ");
-		
-		String methodName = new Object() {}
-	      .getClass()
-	      .getEnclosingMethod()
-	      .getName();
-		
-		logger.warn("Inside " + methodName );
-		try {
-			if(checkUser(user)) {
-					
-				
-					String json = "";
-					json = apiServices.getMovementRoadEntryDigitollV2(mrn);
-					logger.warn("JSON = " + json);
-					EntryDto[] obj = new ObjectMapper().readValue(json, EntryDto[].class);
-					//DEBUG
-					/*for (EntryDto dto: obj) {
-						logger.warn(dto.getEntrySummaryDeclarationMRN());
-						logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
-						logger.warn(dto.getRoutingResult().getId());
-					}*/
-					dtoResponse.setEntryList(Arrays.asList(obj));
-				
-											
-			}else {
-				errMsg.append(" invalid user " + user + " " + methodName);
-				dtoResponse.setErrMsg(errMsg.toString());
-			}
-			
-		}catch(Exception e) {
-			//e.printStackTrace();
-			//Get out stackTrace to the response (errMsg)
-			StringWriter sw = new StringWriter();
-			e.printStackTrace(new PrintWriter(sw));
-			dtoResponse.setErrMsg(sw.toString());
-		}
-		
-		//NA - log in db before std-output
-		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
-		//log in log file
-		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
-		
-		return dtoResponse;
-	}
 	
 	private boolean checkUser(String user) {
 		boolean retval = true;

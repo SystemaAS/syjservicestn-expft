@@ -1140,7 +1140,7 @@ public class ApiServices {
 		
 		//movement/road/entry/status
 		//movement/road/status/v2/entry/status
-		String path = UriComponentsBuilder.fromPath( "/movement/road" + "/entry/status/" + mrn).build().toUriString();
+		String path = UriComponentsBuilder.fromPath( "/movement/road/status/v2" + "/entry/status/" + mrn).build().toUriString();
 		System.out.println(path);
 		logger.warn(path);
 		

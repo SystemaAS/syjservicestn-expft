@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.digitoll.v2.dto;
+package no.systema.jservices.tvinn.digitoll.v2.dto.routing;
 
 import java.util.List;
 

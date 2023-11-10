@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.digitoll.v2.dto;
+package no.systema.jservices.tvinn.digitoll.v2.dto.routing;
 
 import java.util.List;
 
@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class EntryDto {
+public class EntryRoutingDto {
 	private String entrySummaryDeclarationMRN;
 	private String estimatedTimeOfArrival;
 	private EntryTranspDocDto transportDocumentHouseLevel;
