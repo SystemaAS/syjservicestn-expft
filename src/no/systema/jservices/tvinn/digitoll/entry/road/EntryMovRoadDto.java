@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.digitoll.v2.dto.entrymovementroad;
+package no.systema.jservices.tvinn.digitoll.entry.road;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

@@ -5,7 +5,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Data;
-import no.systema.jservices.tvinn.digitoll.v2.dto.entrymovementroad.EntryMovRoadDto;
+import no.systema.jservices.tvinn.digitoll.entry.road.EntryMovRoadDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.routing.EntryRoutingDto;
 
 @Data
