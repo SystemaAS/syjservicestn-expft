@@ -1,13 +1,19 @@
 package no.systema.jservices.tvinn.digitoll.entry.road;
 
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,27 +34,38 @@ public class MovRoadEntrySchedulerController {
 	
 	@Autowired
 	MovRoadEntryScheduler movRoadEntryScheduler;
+		
 	
-	@RequestMapping(value="/digitollv2/scheduler.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	
+	
+	/**
+	 * With this method we can stop and restart the scheduler with the task
+	 * @param request
+	 * @return
+	 * @throws Exception
+	 */
+	
+	@RequestMapping(value="/digitollv2/scheduler/start", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public String jsonTest(HttpServletRequest request ) throws Exception {
-		String retval = "init";
-		String action = request.getParameter("action");
+	public String movRoadEntryEngineStart() throws Exception {
+		String action = "start";
+		logger.info(action);
+		movRoadEntryScheduler.run();
 		
-		if(StringUtils.isNotEmpty(action)) {
-			if(action.equals("start")) {
-				retval = "START";
-				logger.info(retval);
-				movRoadEntryScheduler.run(retval);
-			}else if (action.equals("stop")) {
-				retval = "STOP";
-				movRoadEntryScheduler.shutdown(retval);
-			}
-		}
-	
-		
-		return retval;
+		return action;
 	}
+	
+	@RequestMapping(value="/digitollv2/scheduler/stop", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public String movRoadEntryEngineStop() throws Exception {
+		String action = "stop";
+		logger.info(action);
+		movRoadEntryScheduler.shutdown(action);
+		
+		return action;
+	}
+	
+	
 	
 	
 }

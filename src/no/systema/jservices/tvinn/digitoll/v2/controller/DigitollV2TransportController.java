@@ -874,21 +874,22 @@ public class DigitollV2TransportController {
 					String testOS = System.getProperty("os.name");
 					if(testOS!=null && testOS.startsWith("Mac")) {
 						//Test playground is not working therefore we fake...
-						json = getFakeEntry();
+						json = getFakeEntry(mrn);
 					}else {
 						//PROD
 						json = apiServices.getMovementRoadEntryDigitollV2(mrn);
 					}
 					logger.warn("JSON = " + json);
-					EntryMovRoadDto obj = new ObjectMapper().readValue(json, EntryMovRoadDto.class);
-					//DEBUG
-					/*for (EntryDto dto: obj) {
-						logger.warn(dto.getEntrySummaryDeclarationMRN());
-						logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
-						logger.warn(dto.getRoutingResult().getId());
-					}*/
-					dtoResponse.setEntryMovementRoad(obj);
-				
+					if(StringUtils.isNotEmpty(json)) {
+						EntryMovRoadDto obj = new ObjectMapper().readValue(json, EntryMovRoadDto.class);
+						//DEBUG
+						/*for (EntryDto dto: obj) {
+							logger.warn(dto.getEntrySummaryDeclarationMRN());
+							logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
+							logger.warn(dto.getRoutingResult().getId());
+						}*/
+						dtoResponse.setEntryMovementRoad(obj);
+					}
 											
 			}else {
 				errMsg.append(" invalid user " + user + " " + methodName);
@@ -911,8 +912,11 @@ public class DigitollV2TransportController {
 		return dtoResponse;
 	}
 	
-	private String getFakeEntry () {
-		String fakeResult = "{\"validEntry\":true,\"customsOfficeOfEntry\":\"NO372001\",\"timeOfEntry\":\"2023-11-08T14:32:40.235Z\",\"mrn\":\"23NO7YJ9DT2BRJFBT7\"}";
+	private String getFakeEntry (String mrn) {
+		String fakeResult = "";
+		if(mrn.equals("23NO7LCOADR1DZSBT0")) {
+			fakeResult = "{\"validEntry\":true,\"customsOfficeOfEntry\":\"NO372001\",\"timeOfEntry\":\"2023-11-08T14:32:40.235Z\",\"mrn\":\"23NO7LCOADR1DZSBT0\"}";
+		}
 		return fakeResult;
 	}
 	/**

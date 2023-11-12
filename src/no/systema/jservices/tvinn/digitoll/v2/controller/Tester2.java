@@ -11,20 +11,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import no.systema.jservices.common.util.DateTimeManager;
+
 
 public class Tester2  {
 
 	
 	public static void main(String[] args) {
-		StringBuilder x = new StringBuilder();
-		test(x);
-		System.out.println(x.toString());
+		
+		
 	}
 	
 	
-	private static void test(StringBuilder str) {
-		str.append("whatever");
-	}
+	
+	
 
 }
 
