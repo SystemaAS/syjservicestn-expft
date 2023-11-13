@@ -167,7 +167,9 @@ public class PoolExecutorControllerService {
 						if(e.getMessage().contains("404 Not Found")){
 							//This error is specific for the fact that the MRN has not yet been released at the back-end but it will be at some point
 							//Therefore the reason to implement this whole PoolExcutor-mechanism and the signal to keep going with the loop until we get it or try again in another SEND
-							httpErrorCode.append("404");
+							if(StringUtils.isEmpty(httpErrorCode.toString()) ){
+								httpErrorCode.append("404");
+							}
 						}
 					}
 					
