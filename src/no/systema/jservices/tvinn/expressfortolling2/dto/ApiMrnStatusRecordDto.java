@@ -12,5 +12,6 @@ public class ApiMrnStatusRecordDto {
 	private String documentNumber;
 	private String type;
 	private Boolean received;
+	private String documentStatus;
 	
 }

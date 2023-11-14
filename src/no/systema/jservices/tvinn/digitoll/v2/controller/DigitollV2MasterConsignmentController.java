@@ -818,7 +818,6 @@ public class DigitollV2MasterConsignmentController {
 	 * @return
 	 * @throws Exception
 	 */
-	
 	@RequestMapping(value="/digitollv2/getDocsRecMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponse getDocsReceivedMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
