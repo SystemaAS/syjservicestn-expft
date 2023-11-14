@@ -36,6 +36,7 @@ import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseLight;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperMasterConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
@@ -820,11 +821,11 @@ public class DigitollV2MasterConsignmentController {
 	 */
 	@RequestMapping(value="/digitollv2/getDocsRecMasterConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getDocsReceivedMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+	public GenericDtoResponseLight getDocsReceivedMasterConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
 																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
-		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		GenericDtoResponseLight dtoResponse = new GenericDtoResponseLight();
 		dtoResponse.setUser(user);
 		dtoResponse.setTdn("0"); //dummy
 		dtoResponse.setMrn(mrn);

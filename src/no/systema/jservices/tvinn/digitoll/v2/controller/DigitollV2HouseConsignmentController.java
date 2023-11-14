@@ -42,7 +42,10 @@ import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmohfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmomfStatus2;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnHouseQueryRecordDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseLightHouse;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperHouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
@@ -912,6 +915,65 @@ public class DigitollV2HouseConsignmentController {
 		}
 		return retval;
 	}	
+	
+	
+	@RequestMapping(value="/digitollv2/getDocsRecHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponseLightHouse getDocsReceivedHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		GenericDtoResponseLightHouse dtoResponse = new GenericDtoResponseLightHouse();
+		dtoResponse.setUser(user);
+		dtoResponse.setTdn("0"); //dummy
+		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("GET info in HOUSE-level at toll.no");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServices.getDocsReceivedHouseConsignmentDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnHouseQueryRecordDto obj = new ObjectMapper().readValue(json, ApiMrnHouseQueryRecordDto.class);
+					if(obj!=null) {
+						dtoResponse.setHouseQuery(obj);
+						
+					}
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
 	
 	
 	/**
