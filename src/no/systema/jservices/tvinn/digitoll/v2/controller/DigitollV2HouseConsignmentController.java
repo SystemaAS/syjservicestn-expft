@@ -223,6 +223,7 @@ public class DigitollV2HouseConsignmentController {
 							//logger.debug(GenericJsonStringPrinter.debug(hc));
 							//API
 							
+							
 							Map tollTokenMap = new HashMap();
 							//Check if we are using MO-Air and not road...
 							if(dto.getTransportDto()!=null) {
@@ -375,6 +376,7 @@ public class DigitollV2HouseConsignmentController {
 			}
 			//log in log file
 			sadmologLogger.doLog(serverRoot, user, dtoResponse);
+			
 		}
 
 		//std output (browser)

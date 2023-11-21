@@ -154,6 +154,8 @@ public class MapperHouseConsignment {
 					prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
 					prevDocsList.add(prevDocs);
 				}
+				//populate extras if any
+				this.populateTransit2_10(dto, prevDocsList);
 				chl.setPreviousDocuments(prevDocsList);
 			}
 		}
@@ -173,6 +175,8 @@ public class MapperHouseConsignment {
 				exportFromEU.setTypeOfExport(dto.getEhetypt2());
 				exportFromEUList.add(exportFromEU);
 			}
+			//populate extras if any
+			this.populateExportFromEU3_10(dto, exportFromEUList);
 			chl.setExportFromEU(exportFromEUList);
 		}
 		
@@ -295,6 +299,126 @@ public class MapperHouseConsignment {
 		
 		
 		return chl;
+		
+	}
+	//Populate list if needed
+	private void populateExportFromEU3_10(SadmohfDto dto, List exportFromEUList) {
+		
+		if(StringUtils.isNotEmpty(dto.getEheid3())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid3());
+			exportFromEU.setTypeOfExport(dto.getEhetypt3());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid4())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid4());
+			exportFromEU.setTypeOfExport(dto.getEhetypt4());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid5())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid5());
+			exportFromEU.setTypeOfExport(dto.getEhetypt5());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid6())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid6());
+			exportFromEU.setTypeOfExport(dto.getEhetypt6());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid7())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid7());
+			exportFromEU.setTypeOfExport(dto.getEhetypt7());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid8())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid8());
+			exportFromEU.setTypeOfExport(dto.getEhetypt8());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid9())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid9());
+			exportFromEU.setTypeOfExport(dto.getEhetypt9());
+			exportFromEUList.add(exportFromEU);
+		}
+		if(StringUtils.isNotEmpty(dto.getEheid10())) {
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setExportId(dto.getEheid10());
+			exportFromEU.setTypeOfExport(dto.getEhetypt10());
+			exportFromEUList.add(exportFromEU);
+		}
+	}
+	
+	//Populate extra tranist-list if needed
+	private void populateTransit2_10(SadmohfDto dto, List prevDocsList ) {
+		if(StringUtils.isNotEmpty(dto.getEhtrnr2())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty2());
+			prevDocs.setReferenceNumber(dto.getEhtrnr2());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr3())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty3());
+			prevDocs.setReferenceNumber(dto.getEhtrnr3());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr4())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty4());
+			prevDocs.setReferenceNumber(dto.getEhtrnr4());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr5())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty5());
+			prevDocs.setReferenceNumber(dto.getEhtrnr5());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr6())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty6());
+			prevDocs.setReferenceNumber(dto.getEhtrnr6());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr7())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty7());
+			prevDocs.setReferenceNumber(dto.getEhtrnr7());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr8())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty8());
+			prevDocs.setReferenceNumber(dto.getEhtrnr8());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr9())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty9());
+			prevDocs.setReferenceNumber(dto.getEhtrnr9());
+			prevDocsList.add(prevDocs);
+
+		}
+		if(StringUtils.isNotEmpty(dto.getEhtrnr10())){
+			PreviousDocuments prevDocs = new PreviousDocuments();
+			prevDocs.setTypeOfReference(dto.getEhtrty10());
+			prevDocs.setReferenceNumber(dto.getEhtrnr10());
+			prevDocsList.add(prevDocs);
+
+		}
 		
 	}
 	/*
