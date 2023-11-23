@@ -45,6 +45,7 @@ import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseLight;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
 import no.systema.jservices.tvinn.digitoll.v2.services.AsynchTransportService;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
@@ -824,6 +825,92 @@ public class DigitollV2TransportController {
 		}
 		
 		//NA --> log in db before std-output -- since this is a help method to be executed from the browser only ...
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
+	
+	@RequestMapping(value="/digitollv2/getDocsRecTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponseLight getDocsReceivedTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponseLight dtoResponse = new GenericDtoResponseLight();
+		dtoResponse.setUser(user);
+		dtoResponse.setTdn("0"); //dummy
+		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("GET all documentNumbers in TRANSPORT-level at toll.no");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServices.getDocsReceivedTransportDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnStatusRecordDto[] obj = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
+					if(obj!=null) {
+						List<Object> list = Arrays.asList(obj);
+						logger.warn("List = " + list);
+						
+						//Check for OK or Error in order to proceed
+						if(list!=null && !list.isEmpty()){
+							dtoResponse.setList(list);
+							
+							//(1)Proceed with every documentNumber and match with its respective house
+							//This stage is necessary only to change a house status3 on whether it exist in Master at toll.no or not
+							/*for (Object record: list) {
+								//(2)Update now the status-3 (SADEXHF.ehst3) on the valid house-documentNumber (SADEXHF.ehdkh)
+								ApiMrnStatusRecordDto apiDto = (ApiMrnStatusRecordDto)record;
+								String MODE_STATUS3 = "US3";
+								if(apiDto.getReceived()) {
+									dtoResponse.setDb_st3(EnumSadexhfStatus3.T.toString());
+								}else {
+									dtoResponse.setDb_st3(EnumSadexhfStatus3.F.toString());
+								}
+								logger.warn("documentNumber:" + apiDto.getDocumentNumber());
+								logger.warn("status3:" + dtoResponse.getDb_st3());
+								//TODO or OBSOLETE talk with CHANG regarding status3 ...
+								//sadexhfService.updateStatus3Sadexhf(serverRoot, user, apiDto.getDocumentNumber(), dtoResponse.getDb_st3(), MODE_STATUS3);
+								
+							}*/
+						}else {
+							errMsg.append(methodName + " -->MRN not existent ?? <json raw>: " + json);
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+					}
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
 		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
 		//log in log file
 		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
