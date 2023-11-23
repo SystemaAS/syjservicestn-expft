@@ -34,5 +34,6 @@ public class GenericDtoResponseLight {
 	private String errMsg = "";
 	//
 	private List<Object> list = new ArrayList<Object>();
+	private List<Object> listAux = new ArrayList<Object>();
 	
 }

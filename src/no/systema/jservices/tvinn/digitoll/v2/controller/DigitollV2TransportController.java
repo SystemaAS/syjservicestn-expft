@@ -869,24 +869,18 @@ public class DigitollV2TransportController {
 						//Check for OK or Error in order to proceed
 						if(list!=null && !list.isEmpty()){
 							dtoResponse.setList(list);
-							
-							//(1)Proceed with every documentNumber and match with its respective house
-							//This stage is necessary only to change a house status3 on whether it exist in Master at toll.no or not
-							/*for (Object record: list) {
-								//(2)Update now the status-3 (SADEXHF.ehst3) on the valid house-documentNumber (SADEXHF.ehdkh)
-								ApiMrnStatusRecordDto apiDto = (ApiMrnStatusRecordDto)record;
-								String MODE_STATUS3 = "US3";
-								if(apiDto.getReceived()) {
-									dtoResponse.setDb_st3(EnumSadexhfStatus3.T.toString());
-								}else {
-									dtoResponse.setDb_st3(EnumSadexhfStatus3.F.toString());
+							//now try-further with house-ref and fill the list even more
+							json = apiServices.getDocsHousesReceivedTransportDigitollV2(mrn);
+							ApiMrnStatusRecordDto[] objHouses = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
+							if(objHouses!=null) {
+								logger.info("Prepare list of houses..." + objHouses.toString());
+								List<Object> listHouses = Arrays.asList(objHouses);
+								if(listHouses!=null && !listHouses.isEmpty()) {
+									logger.info("list of houses-size:" + listHouses.size());
+									dtoResponse.setListAux(listHouses);
 								}
-								logger.warn("documentNumber:" + apiDto.getDocumentNumber());
-								logger.warn("status3:" + dtoResponse.getDb_st3());
-								//TODO or OBSOLETE talk with CHANG regarding status3 ...
-								//sadexhfService.updateStatus3Sadexhf(serverRoot, user, apiDto.getDocumentNumber(), dtoResponse.getDb_st3(), MODE_STATUS3);
 								
-							}*/
+							}
 						}else {
 							errMsg.append(methodName + " -->MRN not existent ?? <json raw>: " + json);
 							dtoResponse.setErrMsg(errMsg.toString());
