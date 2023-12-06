@@ -354,13 +354,23 @@ public class MapperHouseConsignment {
 		}
 	}
 	
-	//Populate extra tranist-list if needed
+	/**
+	 * Populates extra transits as needed ...
+	 * Each transit belongs to the one-and-only parent Declaration
+	 * @param dto
+	 * @param prevDocsList
+	 */
 	private void populateTransit2_10(SadmohfDto dto, List prevDocsList ) {
+		
 		if(StringUtils.isNotEmpty(dto.getEhtrnr2())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty2());
 			prevDocs.setReferenceNumber(dto.getEhtrnr2());
 			prevDocsList.add(prevDocs);
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/* ? if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr3())){
@@ -368,59 +378,101 @@ public class MapperHouseConsignment {
 			prevDocs.setTypeOfReference(dto.getEhtrty3());
 			prevDocs.setReferenceNumber(dto.getEhtrnr3());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/* if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr4())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty4());
 			prevDocs.setReferenceNumber(dto.getEhtrnr4());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr5())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty5());
 			prevDocs.setReferenceNumber(dto.getEhtrnr5());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr6())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty6());
 			prevDocs.setReferenceNumber(dto.getEhtrnr6());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr7())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty7());
 			prevDocs.setReferenceNumber(dto.getEhtrnr7());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr8())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty8());
 			prevDocs.setReferenceNumber(dto.getEhtrnr8());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr9())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty9());
 			prevDocs.setReferenceNumber(dto.getEhtrnr9());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		if(StringUtils.isNotEmpty(dto.getEhtrnr10())){
 			PreviousDocuments prevDocs = new PreviousDocuments();
 			prevDocs.setTypeOfReference(dto.getEhtrty10());
 			prevDocs.setReferenceNumber(dto.getEhtrnr10());
 			prevDocsList.add(prevDocs);
-
+			//Parent Tolldekl (often CUDE). The CUDE is valid for all transit above (
+			/*if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
+				prevDocsList.add(this.getTollDeklParent(dto));
+			}*/
 		}
 		
 	}
+	/**
+	 * 
+	 * @param dto
+	 * @return
+	 */
+	private PreviousDocuments getTollDeklParent(SadmohfDto dto) {
+		DateUtils dateUtils = new DateUtils("yyyyMMdd", "yyyy-MM-dd");
+		
+		PreviousDocuments prevDocsTollDekl = new PreviousDocuments();
+		prevDocsTollDekl.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+		prevDocsTollDekl.setDeclarantNumber(dto.getEhrg());
+		prevDocsTollDekl.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
+		prevDocsTollDekl.setSequenceNumber(String.valueOf(dto.getEh0068b()));
+		
+		return prevDocsTollDekl;
+	}
+	
+	
 	/*
 	private List<TransportEquipment> populateTransportEquipment(SadmohfDto dto) {
 		List<TransportEquipment> listTranspEquip = new ArrayList<>();

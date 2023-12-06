@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.config.Task;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,7 +43,7 @@ public class PoolExecutorControllerService {
 	private static Logger logger = LoggerFactory.getLogger(PoolExecutorControllerService.class.getName());
 	
 	@Value("${expft.getmrn.timeout.milliseconds}")
-    private Integer GET_MRN_DELAY_MILLISECONDS;
+    private Long GET_MRN_DELAY_MILLISECONDS;
 	
 	@Value("${expft.getmrn.timeout.numberof.iterations}")
 	private Integer GET_MRN_DELAY_NUMBER_OF_ITERATIONS;
@@ -72,11 +73,10 @@ public class PoolExecutorControllerService {
 		String controllerNameForDebug = getControllNameForDebug(controller);
 		
 				
-		//int UPPER_LIMIT_ITERATIONS = 6; 
-		
 		//just in case in order to go out of the loop if the system is down
 		ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor();
-		
+		//ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+		ScheduledFuture<String> schedule; 
 
 		int counter = 1;
 		try {
@@ -84,13 +84,15 @@ public class PoolExecutorControllerService {
 			//As long as we do not get the mrn...
 			while (StringUtils.isEmpty(mrn)) {
 				
+				
 				//SLEEP and loop again
 				logger.warn(PrettyLoggerOutputer.FRAME);
-				logger.warn("START of delay: "+ new Date() + " counter-loop:" + counter);
+				logger.warn("START of delay: " + controllerNameForDebug + " " + new Date() + " counter-loop:" + counter);
 				logger.warn("CONTROLLER:" + controllerNameForDebug + " << " + requestIdCurrent + " >>");
-				ScheduledFuture<String> schedule = pool.schedule(()-> "own sleep", GET_MRN_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS);
-				logger.warn(schedule.get());
-				logger.warn("END of delay: "+ new Date());
+				schedule = pool.schedule(()-> "own sleep", GET_MRN_DELAY_MILLISECONDS, TimeUnit.MILLISECONDS);
+				logger.warn(schedule.get().toString());
+				schedule.cancel(true);
+				logger.warn("END of delay: " + controllerNameForDebug + " " + new Date());
 				logger.warn(PrettyLoggerOutputer.FRAME);
 				
 				//in case the mrn never appeared...
@@ -204,6 +206,7 @@ public class PoolExecutorControllerService {
 		
 		return mrn;
 	}
+
 	/**
 	 * 
 	 * @param json
@@ -297,7 +300,7 @@ public class PoolExecutorControllerService {
 		}
 		return result;
 	}
-	
+	/*
 	public String getMrnPOSTDigitollV2FromApiTest( GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir, String controller) {
 		String mrn = "";
 		
@@ -305,7 +308,7 @@ public class PoolExecutorControllerService {
 		
 		//just in case in order to go out of the loop if the system is down
 		ScheduledExecutorService pool = Executors.newSingleThreadScheduledExecutor();
-		
+		//ScheduledExecutorService pool = Executors.newScheduledThreadPool(10);
 
 		int counter = 1;
 		//As long as we do not get the mrn...
@@ -354,7 +357,7 @@ public class PoolExecutorControllerService {
 					System.out.println(schedule.get());
 					
 				}
-				*/
+				
 			}catch(Exception e) {
 				e.toString();
 				
@@ -370,6 +373,7 @@ public class PoolExecutorControllerService {
 		
 		return mrn;
 	}
+	*/
 	
 	
 }
