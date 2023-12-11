@@ -148,9 +148,12 @@ public class PoolExecutorControllerService {
 										break;
 									}
 									
+								//this might be removed with time when we know more about the FAILURE-types...	
 								}else if(this.isSomeKnownCustomsRelatedFailure(json)) {
 									break;	
 						
+								}else {
+									break;
 								}
 								
 							}else {
@@ -219,15 +222,17 @@ public class PoolExecutorControllerService {
 		if(json!=null) {
 			if (json.contains("is already in use")) {
 				retval = true;
-				
 			}
-				
 		}
 		
 		return retval;
 		
 	}
-	
+	/**
+	 * 
+	 * @param json
+	 * @return
+	 */
 	private boolean isSomeKnownCustomsRelatedFailure(String json) {
 		boolean retval = false;
 		//One or more transport documents are already submitted
@@ -237,6 +242,15 @@ public class PoolExecutorControllerService {
 				retval = true;
 				
 			}
+			if (json.contains("N820 contains a referenceNumber in wrong state")) {
+				retval = true;
+				
+			}
+			if (json.contains("TimeOfArrival has already passed")) {
+				retval = true;
+				
+			}
+			
 			//PUT more here ...	
 		}
 		
