@@ -1,9 +1,13 @@
 package no.systema.jservices.tvinn.digitoll.external.house;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Receiver;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Sender;
+import no.systema.jservices.tvinn.digitoll.v2.controller.DigitollV2ExternalHouseController;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -15,7 +19,8 @@ import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
  * 
  */
 public class MapperMessageOutbound {
-
+	private static Logger logger = LoggerFactory.getLogger(MapperMessageOutbound.class.getName());
+	
 	
 	public MessageOutbound mapMessageOutbound(SadmomfDto masterRecord, String receiverName, String receiverOrgnr) {
 		MessageOutbound msg = new MessageOutbound();

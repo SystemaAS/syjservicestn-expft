@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
+import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
@@ -44,23 +45,7 @@ import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 public class DigitollV2ExternalHouseController {
 	private static Logger logger = LoggerFactory.getLogger(DigitollV2ExternalHouseController.class.getName());
 	
-	
-	@Value("${expft.external.house.file.outbound.prefix}")
-	private String filePrefix;
-	
-	@Value("${expft.external.house.file.outbound.suffix.timestamp.mask}")
-	private String fileTimestampMask;
-	
-	@Value("${expft.external.house.file.outbound.type}")
-	private String fileType;
-	
-	@Value("${expft.external.house.file.outbound.output.dir.edi}")
-	private String fileOutboundDir;
-	
-	@Value("${expft.external.house.file.outbound.output.dir.edi.backup}")
-	private String fileOutboundDirBackup;
-	
-	
+
 	@Autowired
 	private BridfDaoService bridfDaoService;	
 	
@@ -68,6 +53,9 @@ public class DigitollV2ExternalHouseController {
 	private SadmomfService sadmomfService;
 	@Autowired
 	private SadmotfService sadmotfService;
+	
+	@Autowired
+	private FilenameService filenameService;
 	
 	/**
 	 * 
@@ -102,19 +90,21 @@ public class DigitollV2ExternalHouseController {
 					  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 					  String json = ow.writeValueAsString(msg);
 					  logger.info(json);
-					  //(3) write to file (if needed)
-					  Calendar now = Calendar.getInstance();
-				      SimpleDateFormat formatter = new SimpleDateFormat(this.fileTimestampMask);
-				      String suffix = formatter.format(now.getTime()) + "_" + msg.getDocumentID() ;
-				      
-				      String sFile = this.fileOutboundDir + this.filePrefix + suffix + this.fileType;
-				      String sFileBup = this.fileOutboundDir + fileOutboundDirBackup + this.filePrefix + suffix + this.fileType;
-				      logger.info(sFile);
-					  ow.writeValue(new File(sFile), msg);
-					  ow.writeValue(new File(sFileBup), msg);
+					  
+					  //
+					  filenameService.writeToDisk(msg);
 					  
 					  
-					 break; //Only first record in the list 
+					  /*
+					  //(3) check what type of communication channel (FTP or email)
+					  if(true) {
+						  //(3.1) write to file (if needed)
+						  filenameService.writeToDisk(msg);
+					  }else {
+						  //TODO web-services
+					  }
+					  */
+					  break; //Only first record in the list 
 				  }
 			  }
 		  }catch(Exception e) {
