@@ -3,8 +3,10 @@ package no.systema.jservices.tvinn.digitoll.v2.controller;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +74,7 @@ public class DigitollV2ExternalHouseController {
 		
 		  String serverRoot = ServerRoot.getServerRoot(request);
 		  String result = "";
+		  boolean isFtpChannel = false;
 		  logger.info("Inside sendMasterIdToPart");
 		  logger.info("emlnrt:" + emlnrt);
 		  logger.info("emlnrm:" + emlnrm);
@@ -80,31 +83,34 @@ public class DigitollV2ExternalHouseController {
 		  
 		  try {
 			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(emlnrt) && StringUtils.isNotEmpty(emlnrm)) {
-				  //(1) get the master Dao record from Db
-				  List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
-				  for (SadmomfDto masterDto: list) {
-					  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
-					  logger.trace(masterDto.toString());
-					  //(2) Map to MessageOutbound
-					  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
-					  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-					  String json = ow.writeValueAsString(msg);
-					  logger.info(json);
-					  
-					  //
-					  filenameService.writeToDisk(msg);
-					  
-					  
-					  /*
-					  //(3) check what type of communication channel (FTP or email)
-					  if(true) {
-						  //(3.1) write to file (if needed)
-						  filenameService.writeToDisk(msg);
-					  }else {
-						  //TODO web-services
+				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the communication type)
+				  Map<String, String> commMap = new HashMap<String, String>();
+				  if(partyExists(receiverOrgnr, commMap)) {
+					  if(commMap!=null && commMap.get("ftp").equals("1")) {
+						  isFtpChannel = true; 
 					  }
-					  */
-					  break; //Only first record in the list 
+					  //(1) get the master Dao record from Db
+					  List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
+					  for (SadmomfDto masterDto: list) {
+						  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
+						  logger.trace(masterDto.toString());
+						  //(2) Map to MessageOutbound
+						  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
+						  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+						  String json = ow.writeValueAsString(msg);
+						  logger.info(json);
+						    
+						  //(3) check what type of communication channel (FTP or email) that requires serialization
+						  if(isFtpChannel) {
+							  //(3.1) write to file (if needed)
+							  filenameService.writeToDisk(msg);
+						  }else {
+							 //(4) no serialization is required 
+							  //TODO web-services
+						  }
+						  
+						  break; //Only first record in the list 
+					  }
 				  }
 			  }
 		  }catch(Exception e) {
@@ -120,6 +126,19 @@ public class DigitollV2ExternalHouseController {
 		  
 	  }
 	
+	/**
+	 * 
+	 * @param orgnr
+	 * @param commMap
+	 * @return
+	 */
+	private boolean partyExists (String orgnr, Map<String, String> commMap) {
+		boolean retval = true;
+		//TODO ask db-SADMOCF for commType ...
+		
+		commMap.put("ftp", "1"); //when yes
+		return retval;
+	}
 	
 	
 }
