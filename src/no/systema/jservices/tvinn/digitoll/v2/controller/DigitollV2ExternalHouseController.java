@@ -29,7 +29,10 @@ import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfCommtype;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmocfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
@@ -57,6 +60,9 @@ public class DigitollV2ExternalHouseController {
 	private SadmotfService sadmotfService;
 	
 	@Autowired
+	private SadmocfService sadmocfService;
+	
+	@Autowired
 	private FilenameService filenameService;
 	
 	/**
@@ -73,8 +79,11 @@ public class DigitollV2ExternalHouseController {
 			  						@RequestParam String emlnrm, @RequestParam String receiverName, @RequestParam String receiverOrgnr ) {
 		
 		  String serverRoot = ServerRoot.getServerRoot(request);
-		  String result = "";
+		  StringBuilder result = new StringBuilder();
 		  boolean isFtpChannel = false;
+		  boolean isEmailChannel = false;
+		  boolean isWebServiceChannel = false;
+		  
 		  logger.info("Inside sendMasterIdToPart");
 		  logger.info("emlnrt:" + emlnrt);
 		  logger.info("emlnrm:" + emlnrm);
@@ -84,45 +93,56 @@ public class DigitollV2ExternalHouseController {
 		  try {
 			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(emlnrt) && StringUtils.isNotEmpty(emlnrm)) {
 				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the communication type)
-				  Map<String, String> commMap = new HashMap<String, String>();
-				  if(partyExists(receiverOrgnr, commMap)) {
-					  if(commMap!=null && commMap.get("ftp").equals("1")) {
-						  isFtpChannel = true; 
-					  }
-					  //(1) get the master Dao record from Db
-					  List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
-					  for (SadmomfDto masterDto: list) {
-						  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
-						  logger.trace(masterDto.toString());
-						  //(2) Map to MessageOutbound
-						  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
-						  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-						  String json = ow.writeValueAsString(msg);
-						  logger.info(json);
-						    
-						  //(3) check what type of communication channel (FTP or email) that requires serialization
-						  if(isFtpChannel) {
-							  //(3.1) write to file (if needed)
-							  filenameService.writeToDisk(msg);
-						  }else {
-							 //(4) no serialization is required 
-							  //TODO web-services
+				  SadmocfDto dto = new SadmocfDto();
+				  if(partyExists(serverRoot, user, receiverOrgnr, receiverName, dto)) {
+					  if(dto!=null) { 
+						  if(dto.getCommtype().equalsIgnoreCase((EnumSadmocfCommtype.ftp.toString())) ){
+							  isFtpChannel = true;
+						  }else if (dto.getCommtype().equalsIgnoreCase((EnumSadmocfCommtype.ws.toString())) ){
+							  isWebServiceChannel = true;
+						  }else if (dto.getCommtype().equalsIgnoreCase((EnumSadmocfCommtype.email.toString())) ){
+							  isEmailChannel = true;
 						  }
-						  
-						  break; //Only first record in the list 
+						  //(1) get the master Dao record from Db
+						  List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
+						  for (SadmomfDto masterDto: list) {
+							  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
+							  logger.trace(masterDto.toString());
+							  //(2) Map to MessageOutbound
+							  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
+							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+							  String json = ow.writeValueAsString(msg);
+							  logger.info(json);
+							    
+							  //(3) check what type of communication channel (FTP or email) that requires serialization
+							  if(isFtpChannel || isEmailChannel) {
+								  //(3.1) write to file (if needed)
+								  filenameService.writeToDisk(msg);
+								  result.append("OK " + dto.getCommtype());
+							  }else {
+								 if(isWebServiceChannel) { 
+									 //(4) no serialization is required 
+									 //TODO web-services implementation per party, email, other
+								 }
+							  }
+							  
+							  break; //Only first record in the list 
+						  }
 					  }
+				  }else {
+					  result.append("ERROR. Partneren-orgnr er ikke registrert for send (sadmocf)");
 				  }
 			  }
 		  }catch(Exception e) {
 			  logger.error(e.toString());
-			  result = "ERROR";
+			  result.append("ERROR" + e.getMessage());
 		  }
 	      //
-		  if(result.isEmpty()) {
-			  result = "OK";
+		  if(result.toString().isEmpty()) {
+			  result.append("OK");
 		  }
 		  
-		  return result;
+		  return result.toString();
 		  
 	  }
 	
@@ -132,11 +152,19 @@ public class DigitollV2ExternalHouseController {
 	 * @param commMap
 	 * @return
 	 */
-	private boolean partyExists (String orgnr, Map<String, String> commMap) {
-		boolean retval = true;
-		//TODO ask db-SADMOCF for commType ...
+	private boolean partyExists (String serverRoot, String user, String orgnr, String name, SadmocfDto dto) {
+		boolean retval = false;
+		List<SadmocfDto> list = this.sadmocfService.getSadmocf(serverRoot, user, orgnr, name);
+		if(list!=null && !list.isEmpty()) {
+			for (SadmocfDto tmpDto : list) {
+				dto.setOrgnr(tmpDto.getOrgnr());
+				dto.setName(tmpDto.getName());
+				dto.setCommtype(tmpDto.getCommtype());
+				retval = true;
+			}
+		}
 		
-		commMap.put("ftp", "1"); //when yes
+		
 		return retval;
 	}
 	

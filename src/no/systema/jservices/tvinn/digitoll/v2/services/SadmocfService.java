@@ -33,7 +33,7 @@ public class SadmocfService {
 	
 	
 	
-	public List<SadmocfDto> getSadmocf(String serverRoot, String user, String orgnr, String name, String commtype) {
+	public List<SadmocfDto> getSadmocf(String serverRoot, String user, String orgnr, String name) {
 		List<SadmocfDto> result = new ArrayList<SadmocfDto>();
 		
 		logger.warn("USER:" + user);
@@ -44,7 +44,7 @@ public class SadmocfService {
 				.queryParam("user", user)
 				.queryParam("orgnr", orgnr)
 				.queryParam("name", name)
-				.queryParam("commtype", commtype)
+				//.queryParam("commtype", commtype)
 				.build()
 				.encode()
 				.toUri();
