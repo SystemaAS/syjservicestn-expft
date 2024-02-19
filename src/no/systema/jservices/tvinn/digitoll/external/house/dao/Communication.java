@@ -8,10 +8,9 @@ import lombok.Data;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class Sender {
-	private String name;
-	private String identificationNumber;
-	//contact info
-	private Communication communication;
+public class Communication {
+	private String emailAddress;
+	private String telephoneNumber;
+	
 	
 }

@@ -130,7 +130,7 @@ public class DigitollV2ExternalHouseController {
 						  }
 					  }
 				  }else {
-					  result.append("ERROR. Partneren-orgnr er ikke registrert for send (sadmocf)");
+					  result.append("ERROR. Setup-error: Partneren-orgnr er ikke registrert (sadmocf) for send av: masterId ");
 				  }
 			  }
 		  }catch(Exception e) {

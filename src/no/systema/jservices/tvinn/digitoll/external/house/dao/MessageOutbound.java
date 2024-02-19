@@ -22,6 +22,11 @@ public class MessageOutbound {
 	//Message parties
 	private Sender sender;
 	private Receiver receiver;
+	//Customs office
+	private CustomsOfficeOfFirstEntry customsOfficeOfFirstEntry;
+	//private String estimatedDateAndTimeOfArrival;
+	
+	private ConsignmentMasterLevel consignmentMasterLevel;
 	//Merchand parties
 	private Consignor consignor;
 	private Consignee consignee;
