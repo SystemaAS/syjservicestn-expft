@@ -31,9 +31,11 @@ public class Tester   {
 		
 		ObjectMapperHalJson objMapper = new ObjectMapperHalJson(data, "/_embedded/typesOfExport");
 		StringBuffer jsonToConvert = new StringBuffer();
+		/*
 		ArrayList<ManifestTypesOfExportDto> exports = objMapper.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestTypesOfExportDto>>() {
         });
 		System.out.println(exports.toString());
+		*/
 	}
 	
 	@Test

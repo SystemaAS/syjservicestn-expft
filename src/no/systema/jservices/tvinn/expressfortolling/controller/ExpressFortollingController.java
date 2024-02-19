@@ -145,12 +145,13 @@ public class ExpressFortollingController {
 				ManifestPlaceOfEntryDto placeOfEntryDto = objMapper_PE.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<ManifestPlaceOfEntryDto>() {});
 				manifestDto.setPlaceOfEntry(placeOfEntryDto);
 			}
+			/*
 			//Cargo lines
 			if(objMapper_CargoLines.isValidTargetNode()){
 				jsonToConvert.delete(0, jsonToConvert.length());
 				ArrayList<ManifestCargoLinesDto> cargoList = objMapper_CargoLines.getObjectMapper(jsonToConvert).readValue(jsonToConvert.toString(), new TypeReference<List<ManifestCargoLinesDto>>() {});
 				manifestDto.setCargoLines(cargoList);
-			}
+			}*/
 			return manifestDto;
 			
 		}catch(Exception e){

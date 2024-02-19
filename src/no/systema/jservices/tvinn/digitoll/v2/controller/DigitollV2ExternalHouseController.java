@@ -1,6 +1,9 @@
 package no.systema.jservices.tvinn.digitoll.v2.controller;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -10,7 +13,15 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +32,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -119,6 +133,55 @@ public class DigitollV2ExternalHouseController {
 								  //(3.1) write to file (if needed)
 								  filenameService.writeToDisk(msg);
 								  result.append("OK " + dto.getCommtype());
+								  
+								  /*
+								  //(3.2) wrap it in PEPPOL XML (when applicable)
+								  byte[] bytesEncoded = Base64.encodeBase64(json.getBytes());
+								  logger.info("Encoded value is " + new String(bytesEncoded));
+								  */
+								  /*
+								  // Decode data on other side, by processing encoded data
+								  byte[] valueDecoded = Base64.decodeBase64(bytesEncoded);
+								  logger.info("Decoded value is " + new String(valueDecoded));
+								  */
+								  
+								  DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+								  docFactory.setNamespaceAware(true);
+							        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+							        // root elements
+							        Document doc = docBuilder.newDocument();
+							        doc.setXmlStandalone(true);
+							        Element rootElement = doc.createElement("company");
+							        //OK rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "ns0:UserRequest");
+							        rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader");
+							        doc.appendChild(rootElement);
+
+							        Element staff = doc.createElement("staff");
+							        staff.setTextContent("hello");
+							        rootElement.appendChild(staff);
+
+							        //...create XML elements, and others...
+
+							        // write dom document to a file
+							        try (FileOutputStream output = new FileOutputStream("/Users/oscardelatorre/staff-dom.xml")) {
+							            writeXml(doc, output);
+							        } catch (Exception e) {
+							            e.printStackTrace();
+							        }
+
+								  
+								  
+								    
+								  /*
+								  final byte[] data = xmlMapper.writeValueAsBytes(xmlDao);
+								  String payload = new String(data, "UTF-8");
+								  	
+								  //DEBUG
+								  logger.info("### XML payload A:" + payload);
+								  */
+								  
+								  
 							  }else {
 								 if(isWebServiceChannel) { 
 									 //(4) no serialization is required 
@@ -145,6 +208,18 @@ public class DigitollV2ExternalHouseController {
 		  return result.toString();
 		  
 	  }
+	
+	// write doc to output stream
+    private  void writeXml(Document doc, OutputStream output) throws TransformerException {
+
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        DOMSource source = new DOMSource(doc);
+        StreamResult result = new StreamResult(output);
+
+        transformer.transform(source, result);
+
+    }
 	
 	/**
 	 * 
