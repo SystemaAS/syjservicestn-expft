@@ -54,6 +54,7 @@ public class PeppolXmlService {
 		  //add to header
 		  rootElement.appendChild(header);
 		  
+		  
 		  //add to root - json payload as binary
 		  Element binaryContent = doc.createElement("BinaryContent");
 		  binaryContent.setTextContent(new String (bytesBase64Encoded));
