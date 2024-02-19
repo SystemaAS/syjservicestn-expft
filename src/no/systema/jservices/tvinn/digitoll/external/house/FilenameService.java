@@ -57,5 +57,45 @@ public class FilenameService {
 			logger.error(e.toString());
 		}
 	}
-	
+	/**
+	 * 
+	 * @param msg
+	 * @return
+	 */
+	public String writeToString(MessageOutbound msg) {
+		String retval = "";
+		ObjectWriter ow = new ObjectMapper().writer();
+		
+		try {
+			retval = ow.writeValueAsString(msg);
+			
+		}catch(Exception e) {
+			logger.error(e.toString());
+		}
+		return retval;
+	}
+	/**
+	 * 
+	 * @param msg
+	 * @return
+	 */
+	public String getFileNameXml(MessageOutbound msg) {
+		String fileTypeXml = ".xml";
+		String retval = "";
+		try {
+			  
+			Calendar now = Calendar.getInstance();
+			SimpleDateFormat formatter = new SimpleDateFormat(this.fileTimestampMask);
+			String suffix = formatter.format(now.getTime()) + "_" + msg.getDocumentID()+ "_" + msg.getReceiver().getIdentificationNumber() ;
+			  
+			String sFile = this.fileOutboundDir + this.filePrefix + suffix + fileTypeXml;
+			logger.info(sFile);
+			
+			retval = sFile;
+			
+		}catch(Exception e) {
+			logger.error(e.toString());
+		}
+		return retval;
+	}
 }

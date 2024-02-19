@@ -42,10 +42,12 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
+import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlService;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfCommtype;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfFormat;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmocfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
@@ -79,8 +81,15 @@ public class DigitollV2ExternalHouseController {
 	@Autowired
 	private FilenameService filenameService;
 	
+	@Autowired
+	private PeppolXmlService peppolXmlService;
+	
 	/**
+	 * This method delivers a serialize file.
+	 * The method deals with the construction of the correct file to deliver to an external system.
+	 * The actual sending does not takes place here (either FTP, WS or EMAIL are the responsibility of another system)
 	 * 
+	 * The db-table with configuration parameters is: SADMOCF
 	 * @param request
 	 * @param applicationUser
 	 * @param emlnrt
@@ -94,9 +103,6 @@ public class DigitollV2ExternalHouseController {
 		
 		  String serverRoot = ServerRoot.getServerRoot(request);
 		  StringBuilder result = new StringBuilder();
-		  boolean isFtpChannel = false;
-		  boolean isEmailChannel = false;
-		  boolean isWebServiceChannel = false;
 		  
 		  logger.info("Inside sendMasterIdToPart");
 		  logger.info("emlnrt:" + emlnrt);
@@ -106,18 +112,11 @@ public class DigitollV2ExternalHouseController {
 		  
 		  try {
 			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(emlnrt) && StringUtils.isNotEmpty(emlnrm)) {
-				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the communication type)
-				  SadmocfDto dto = new SadmocfDto();
-				  if(partyExists(serverRoot, user, receiverOrgnr, receiverName, dto)) {
-					  if(dto!=null) { 
-						  if(dto.getCommtype().equalsIgnoreCase((EnumSadmocfCommtype.ftp.toString())) ){
-							  isFtpChannel = true;
-						  }else if (dto.getCommtype().equalsIgnoreCase((EnumSadmocfCommtype.ws.toString())) ){
-							  isWebServiceChannel = true;
-						  }else if (dto.getCommtype().equalsIgnoreCase((EnumSadmocfCommtype.email.toString())) ){
-							  isEmailChannel = true;
-						  }
-						  //(1) get the master Dao record from Db
+				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the format type (json or xml-peppol)
+				  SadmocfDto dtoConfig = new SadmocfDto();
+				  if(partyExists(serverRoot, user, receiverOrgnr, receiverName, dtoConfig)) {
+					  if(dtoConfig!=null) {
+						  //(1) get the master Dao record from Db (ALWAYS no matter what format)
 						  List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
 						  for (SadmomfDto masterDto: list) {
 							  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
@@ -127,66 +126,47 @@ public class DigitollV2ExternalHouseController {
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
 							  logger.info(json);
-							    
-							  //(3) check what type of communication channel (FTP or email) that requires serialization
-							  if(isFtpChannel || isEmailChannel) {
-								  //(3.1) write to file (if needed)
-								  filenameService.writeToDisk(msg);
-								  result.append("OK " + dto.getCommtype());
-								  
-								  /*
-								  //(3.2) wrap it in PEPPOL XML (when applicable)
-								  byte[] bytesEncoded = Base64.encodeBase64(json.getBytes());
-								  logger.info("Encoded value is " + new String(bytesEncoded));
-								  */
-								  /*
-								  // Decode data on other side, by processing encoded data
-								  byte[] valueDecoded = Base64.decodeBase64(bytesEncoded);
-								  logger.info("Decoded value is " + new String(valueDecoded));
-								  */
-								  
-								  DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-								  docFactory.setNamespaceAware(true);
-							        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-
-							        // root elements
-							        Document doc = docBuilder.newDocument();
-							        doc.setXmlStandalone(true);
-							        Element rootElement = doc.createElement("company");
-							        //OK rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "ns0:UserRequest");
-							        rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader");
-							        doc.appendChild(rootElement);
-
-							        Element staff = doc.createElement("staff");
-							        staff.setTextContent("hello");
-							        rootElement.appendChild(staff);
-
-							        //...create XML elements, and others...
-
-							        // write dom document to a file
-							        try (FileOutputStream output = new FileOutputStream("/Users/oscardelatorre/staff-dom.xml")) {
-							            writeXml(doc, output);
-							        } catch (Exception e) {
-							            e.printStackTrace();
-							        }
-
-								  
-								  
-								    
-								  /*
-								  final byte[] data = xmlMapper.writeValueAsBytes(xmlDao);
-								  String payload = new String(data, "UTF-8");
-								  	
-								  //DEBUG
-								  logger.info("### XML payload A:" + payload);
-								  */
-								  
+							  logger.info(dtoConfig.toString());  
+							  //(3) check what format to serialize (xml or json)
+							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
+								  //(3.1) wrap json in correct xml format (peppol will act as an envelope...)
+								  if(dtoConfig.getXmlxsd().toLowerCase().contains("peppol")) {
+									  
+									  //filenameService.writeToDisk(msg);
+									  String jsonPayload = filenameService.writeToString(msg);
+									  logger.info(jsonPayload);
+									  logger.info(result.toString());
+									  
+									  //(3.2) wrap it in PEPPOL XML (when applicable)
+									  byte[] bytesEncoded = Base64.encodeBase64(json.getBytes());
+									  logger.trace("Encoded value is " + new String(bytesEncoded));
+									  
+									  /*
+									  // Decode data on other side, by processing encoded data
+									  byte[] valueDecoded = Base64.decodeBase64(bytesEncoded);
+									  logger.info("Decoded value is " + new String(valueDecoded));
+									  */
+									  try {
+										  this.peppolXmlService.writeFileOnDisk(msg, bytesEncoded);
+										  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+									  }catch(Exception e) {
+										  result.append("ERROR. peppolXmlService " + e.toString());
+									  }
+									  
+								 
+								  }else {
+									  //when a particular xml has not been implemented
+									  result.append("ERROR. xmlxsd-error: " + dtoConfig.getXmlxsd() + " not implemented... "); 
+								  }
 								  
 							  }else {
-								 if(isWebServiceChannel) { 
-									 //(4) no serialization is required 
-									 //TODO web-services implementation per party, email, other
-								 }
+								  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.json.toString())) {
+									  filenameService.writeToDisk(msg);
+									  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+								  }else {
+									  result.append("ERROR. format-error: " + dtoConfig.getFormat() + " not implemented... ");
+								  }
+								 
 							  }
 							  
 							  break; //Only first record in the list 
@@ -209,22 +189,15 @@ public class DigitollV2ExternalHouseController {
 		  
 	  }
 	
-	// write doc to output stream
-    private  void writeXml(Document doc, OutputStream output) throws TransformerException {
-
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(output);
-
-        transformer.transform(source, result);
-
-    }
+	
 	
 	/**
 	 * 
+	 * @param serverRoot
+	 * @param user
 	 * @param orgnr
-	 * @param commMap
+	 * @param name
+	 * @param dto
 	 * @return
 	 */
 	private boolean partyExists (String serverRoot, String user, String orgnr, String name, SadmocfDto dto) {
@@ -235,6 +208,8 @@ public class DigitollV2ExternalHouseController {
 				dto.setOrgnr(tmpDto.getOrgnr());
 				dto.setName(tmpDto.getName());
 				dto.setCommtype(tmpDto.getCommtype());
+				dto.setFormat(tmpDto.getFormat());
+				dto.setXmlxsd(tmpDto.getXmlxsd());
 				retval = true;
 			}
 		}
