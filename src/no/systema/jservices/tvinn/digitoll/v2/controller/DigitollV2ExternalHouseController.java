@@ -136,18 +136,9 @@ public class DigitollV2ExternalHouseController {
 									  String jsonPayload = filenameService.writeToString(msg);
 									  logger.info(jsonPayload);
 									  logger.info(result.toString());
-									  
-									  //(3.2) wrap it in PEPPOL XML (when applicable)
-									  byte[] bytesEncoded = Base64.encodeBase64(json.getBytes());
-									  logger.trace("Encoded value is " + new String(bytesEncoded));
-									  
-									  /*
-									  // Decode data on other side, by processing encoded data
-									  byte[] valueDecoded = Base64.decodeBase64(bytesEncoded);
-									  logger.info("Decoded value is " + new String(valueDecoded));
-									  */
 									  try {
-										  this.peppolXmlService.writeFileOnDisk(msg, bytesEncoded);
+										  //(3.2) wrap it in PEPPOL XML (when applicable)
+										  this.peppolXmlService.writeFileOnDisk(msg, jsonPayload);
 										  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
 									  }catch(Exception e) {
 										  result.append("ERROR. peppolXmlService " + e.toString());

@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
+import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 @Service
 public class PeppolXmlService {
@@ -32,8 +33,10 @@ public class PeppolXmlService {
 	 * 
 	 * @param msg
 	 */
-	public void writeFileOnDisk(MessageOutbound msg, byte[] bytesBase64Encoded) {
+	public void writeFileOnDisk(MessageOutbound msg, String jsonPayload) {
 		try {
+		
+		  //logger.info(( msg.toString());	
 		  DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		  docFactory.setNamespaceAware(true);
 		  DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -51,18 +54,75 @@ public class PeppolXmlService {
 		  Element headerVersion = doc.createElement("HeaderVersion");
 		  headerVersion.setTextContent("1.0");
 		  header.appendChild(headerVersion);
-		  //add to header
+		  //Sender
+		  Element sender = doc.createElement("Sender");
+		  Element senderIdentifier = doc.createElement("Identifier");
+		  senderIdentifier.setAttribute("Authority", "iso6523-actorid-upis");
+		  senderIdentifier.setTextContent("0088:" + msg.getSender().getIdentificationNumber()); //from the json-payload
+		  sender.appendChild(senderIdentifier);
+		  header.appendChild(sender);
+		  //Receiver
+		  Element receiver = doc.createElement("Receiver");
+		  Element receiverIdentifier = doc.createElement("Identifier");
+		  receiverIdentifier.setAttribute("Authority", "iso6523-actorid-upis");
+		  receiverIdentifier.setTextContent("0088:" + msg.getReceiver().getIdentificationNumber()); //from the json-payload
+		  receiver.appendChild(receiverIdentifier);
+		  header.appendChild(receiver);
+		  //
+		  //DocumentIdentification
+		  Element documentIdentification = doc.createElement("DocumentIdentification");
+		  //<Standard>urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2</Standard>
+		  Element standard = doc.createElement("Standard");
+		  standard.setTextContent("urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2");
+		  documentIdentification.appendChild(standard);
+		  //<TypeVersion>2.3</TypeVersion>
+		  Element typeVersion = doc.createElement("TypeVersion");
+		  typeVersion.setTextContent("2.3");
+		  documentIdentification.appendChild(typeVersion);
+		  //<InstanceIdentifier>UNIQUE ID xxxx</TypeVersion>
+		  Element instanceIdentifier = doc.createElement("InstanceIdentifier");
+		  instanceIdentifier.setTextContent(msg.getDocumentID() + "_" + msg.getReceiver().getIdentificationNumber());
+		  documentIdentification.appendChild(instanceIdentifier);
+		  //<Type>TransportationStatus</Type>
+		  Element type = doc.createElement("Type");
+		  type.setTextContent("TransportationStatus");
+		  documentIdentification.appendChild(type);
+		  //<CreationDateAndTime>2023-12-04T15:42:10Z</CreationDateAndTime>  
+		  Element creationDateAndTime = doc.createElement("CreationDateAndTime");
+		  creationDateAndTime.setTextContent(msg.getMessageIssueDate());
+		  documentIdentification.appendChild(creationDateAndTime);
+		  //add Doc.Ident. to header
+		  header.appendChild(documentIdentification);
+		  
+		  
+		  //BusinessScope
+		  Element businessScope = doc.createElement("BusinessScope");
+		  this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2::TransportationStatus##urn:fdc:peppol.eu:logistics:trns:transportation_status:1::2.3");
+		  this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:transportation_status_only:1");
+		  //add BusinessScope to header
+		  header.appendChild(businessScope);
+		  
+		  //add header to root
 		  rootElement.appendChild(header);
 		  
-		  
-		  //add to root - json payload as binary
+		  //=====================================
+		  //add to root - json payload as Base64
+		  //=====================================
+		  byte[] bytesEncoded = Base64.encodeBase64(jsonPayload.getBytes());
+		  logger.trace("Encoded value is " + new String(bytesEncoded));
+		  /* to test decode
+		  // Decode data on other side, by processing encoded data
+		  byte[] valueDecoded = Base64.decodeBase64(bytesEncoded);
+		  logger.info("Decoded value is " + new String(valueDecoded));
+		  */
 		  Element binaryContent = doc.createElement("BinaryContent");
-		  binaryContent.setTextContent(new String (bytesBase64Encoded));
+		  binaryContent.setAttribute("xmlns", "http://peppol.eu/xsd/ticc/envelope/1.0");
+		  binaryContent.setAttribute("mimeType", "application/json");
+		  binaryContent.setAttribute("encoding", "Base64Binary");
+		  binaryContent.setTextContent(new String (bytesEncoded));
+		  //add base64 to root
 		  rootElement.appendChild(binaryContent);
 		  
-		  
-		  //...create XML elements, and others...
-		
 		  // write dom document to a file
 		  FileOutputStream output = new FileOutputStream(this.filenameService.getFileNameXml(msg)); 
 		  writeXml(doc, output);
@@ -72,6 +132,20 @@ public class PeppolXmlService {
 		}
 	}
 	
+	private void addScopeElement(Document doc, Element parent, String typeValue, String idValue) {
+		Element scope = doc.createElement("Scope");
+		//Type
+		Element type = doc.createElement("Type");
+		type.setTextContent(typeValue);
+		scope.appendChild(type);
+		//InstanceIdentifier
+		Element instanceIdentifier = doc.createElement("InstanceIdentifier");
+		instanceIdentifier.setTextContent(idValue);
+		scope.appendChild(instanceIdentifier);
+		//add to parent
+		parent.appendChild(scope);
+		
+	}
 	// write doc to output stream
     private  void writeXml(Document doc, OutputStream output) throws TransformerException {
 
