@@ -25,7 +25,7 @@ public class MessageOutbound {
 	private Receiver receiver;
 	//Customs office
 	private CustomsOfficeOfFirstEntry customsOfficeOfFirstEntry;
-	//private String estimatedDateAndTimeOfArrival;
+	private String estimatedDateAndTimeOfArrival;
 	
 	private ConsignmentMasterLevel consignmentMasterLevel;
 	//Merchand parties

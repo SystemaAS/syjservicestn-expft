@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.digitoll.external.house;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -14,8 +15,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 
 @Service
-public class FilenameService {
-	private static Logger logger = LoggerFactory.getLogger(FilenameService.class.getName());
+public class JsonWriterService {
+
+	private static Logger logger = LoggerFactory.getLogger(JsonWriterService.class.getName());
 	
 	@Value("${expft.external.house.file.outbound.prefix}")
 	private String filePrefix;
@@ -28,47 +30,27 @@ public class FilenameService {
 	
 	@Value("${expft.external.house.file.outbound.output.dir.edi}")
 	private String fileOutboundDir;
-	
-	
-	
 	/**
-	 * 
-	 * @param msg
-	 * @return
-	 */
-	public String writeToString(MessageOutbound msg) {
-		String retval = "";
+     * 
+     * @param msg
+     */
+    public int writeFileOnDisk(MessageOutbound msg) {
 		ObjectWriter ow = new ObjectMapper().writer();
-		
-		try {
-			retval = ow.writeValueAsString(msg);
-			
-		}catch(Exception e) {
-			logger.error(e.toString());
-		}
-		return retval;
-	}
-	/**
-	 * 
-	 * @param msg
-	 * @return
-	 */
-	public String getFileNameXml(MessageOutbound msg) {
-		String fileTypeXml = ".xml";
-		String retval = "";
+		int retval = 0;
 		try {
 			  
 			Calendar now = Calendar.getInstance();
 			SimpleDateFormat formatter = new SimpleDateFormat(this.fileTimestampMask);
 			String suffix = formatter.format(now.getTime()) + "_" + msg.getDocumentID()+ "_" + msg.getReceiver().getIdentificationNumber() ;
 			  
-			String sFile = this.fileOutboundDir + this.filePrefix + suffix + fileTypeXml;
+			String sFile = this.fileOutboundDir + this.filePrefix + suffix + this.fileType;
+			//String sFileBup = this.fileOutboundDir + fileOutboundDirBackup + this.filePrefix + suffix + this.fileType;
 			logger.info(sFile);
-			
-			retval = sFile;
-			
+			ow.writeValue(new File(sFile), msg);
+			//ow.writeValue(new File(sFileBup), msg);
 		}catch(Exception e) {
 			logger.error(e.toString());
+			retval = -1;
 		}
 		return retval;
 	}

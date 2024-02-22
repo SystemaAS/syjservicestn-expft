@@ -5,13 +5,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import no.systema.jservices.tvinn.digitoll.external.house.controller.DigitollV2ExternalHouseController;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ConsignmentMasterLevel;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.CustomsOfficeOfFirstEntry;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Receiver;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Sender;
-import no.systema.jservices.tvinn.digitoll.v2.controller.DigitollV2ExternalHouseController;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -66,8 +66,7 @@ public class MapperMessageOutbound {
 		custOffice.setReferenceNumber(masterRecord.getTransportDto().getEttsd());
 		//Since we do not have seconds in time we must add this to the integer: 1000(HHmm) will be 100000(HHmmss)
 		Integer etaTime = masterRecord.getTransportDto().getEtetat() * 100;
-		custOffice.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
-		//msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
+		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
 		msg.setCustomsOfficeOfFirstEntry(custOffice);
 		
 		//Carrier Id (Orgnr)

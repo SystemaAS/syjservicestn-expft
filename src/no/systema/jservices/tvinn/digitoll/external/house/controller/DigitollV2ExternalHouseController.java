@@ -1,4 +1,4 @@
-package no.systema.jservices.tvinn.digitoll.v2.controller;
+package no.systema.jservices.tvinn.digitoll.external.house.controller;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -41,8 +41,9 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
+import no.systema.jservices.tvinn.digitoll.external.house.JsonWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
-import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlService;
+import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
@@ -82,7 +83,11 @@ public class DigitollV2ExternalHouseController {
 	private FilenameService filenameService;
 	
 	@Autowired
-	private PeppolXmlService peppolXmlService;
+	private PeppolXmlWriterService peppolXmlWriterService;
+	
+	@Autowired
+	private JsonWriterService jsonWriterService;
+	
 	
 	/**
 	 * This method delivers a serialize file.
@@ -138,22 +143,23 @@ public class DigitollV2ExternalHouseController {
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  this.peppolXmlService.writeFileOnDisk(msg, jsonPayload);
+										  this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload);
 										  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
 									  }catch(Exception e) {
-										  result.append("ERROR. peppolXmlService " + e.toString());
+										  result.append("ERROR. peppolXmlWriterService " + e.toString());
 									  }
 									  
-								 
 								  }else {
 									  //when a particular xml has not been implemented
 									  result.append("ERROR. xmlxsd-error: " + dtoConfig.getXmlxsd() + " not implemented... "); 
 								  }
-								  
 							  }else {
 								  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.json.toString())) {
-									  filenameService.writeToDisk(msg);
-									  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+									  if(jsonWriterService.writeFileOnDisk(msg) == 0) {
+										  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+									  }else {
+										  result.append("ERROR. jsonWriterService ..." );
+									  }
 								  }else {
 									  result.append("ERROR. format-error: " + dtoConfig.getFormat() + " not implemented... ");
 								  }

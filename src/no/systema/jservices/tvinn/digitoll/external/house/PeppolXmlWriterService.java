@@ -23,8 +23,8 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 @Service
-public class PeppolXmlService {
-	private static Logger logger = LoggerFactory.getLogger(PeppolXmlService.class.getName());
+public class PeppolXmlWriterService {
+	private static Logger logger = LoggerFactory.getLogger(PeppolXmlWriterService.class.getName());
 	
 	@Autowired
 	private FilenameService filenameService;

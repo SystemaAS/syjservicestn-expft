@@ -10,7 +10,6 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CustomsOfficeOfFirstEntry {
 	private String referenceNumber;
-	private String estimatedDateAndTimeOfArrival;
 	
 	
 }
