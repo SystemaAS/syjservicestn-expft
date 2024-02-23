@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.digitoll.external.house.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -14,6 +15,9 @@ import lombok.Data;
 //we need this line in order to follow the order as in the properties. 
 //@JsonPropertyOrder({"documentIssueDate", "representative", "consignmentHouseLevel"})
 public class MessageOutbound {
+	@JsonIgnore
+	private String uuid;
+	
 	//Mandatory*
 	private String messageType;
 	private String version;

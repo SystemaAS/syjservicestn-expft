@@ -81,7 +81,7 @@ public class PeppolXmlWriterService {
 		  documentIdentification.appendChild(typeVersion);
 		  //<InstanceIdentifier>UNIQUE ID xxxx</TypeVersion>
 		  Element instanceIdentifier = doc.createElement("InstanceIdentifier");
-		  instanceIdentifier.setTextContent(msg.getDocumentID() + "_" + msg.getReceiver().getIdentificationNumber());
+		  instanceIdentifier.setTextContent(msg.getUuid());
 		  documentIdentification.appendChild(instanceIdentifier);
 		  //<Type>TransportationStatus</Type>
 		  Element type = doc.createElement("Type");

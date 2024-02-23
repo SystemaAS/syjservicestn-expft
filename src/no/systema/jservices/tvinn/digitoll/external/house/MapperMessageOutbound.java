@@ -1,6 +1,9 @@
 package no.systema.jservices.tvinn.digitoll.external.house;
 
 
+import java.util.Calendar;
+import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +33,9 @@ public class MapperMessageOutbound {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOMaster");
 		msg.setVersion("1.0");
-		msg.setMessageNumber(masterRecord.getEmlnrt() + "-" + masterRecord.getTransportDto().getEtrgt());
+		String uuid = UUID.randomUUID().toString();
+		msg.setMessageNumber(uuid);
+		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
 		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		msg.setDocumentID(masterRecord.getEmdkm());
 		//Sender

@@ -20,7 +20,7 @@ public class SadmocfDto   {
 	private String ftpuser  = "";//     tegn      35  
 	private String ftppwd  = "";//      tegn      70  
 	private String ftpdir  = "";//      tegn      70  
+	private String ftpbupdir  = ""; //ftpbupdir char(70)
+	private String wsendpoint  = ""; //wsendpoint char(200) 
 	
-	
-
 }
