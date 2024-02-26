@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumPeppolID;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 @Service
@@ -58,14 +59,14 @@ public class PeppolXmlWriterService {
 		  Element sender = doc.createElement("Sender");
 		  Element senderIdentifier = doc.createElement("Identifier");
 		  senderIdentifier.setAttribute("Authority", "iso6523-actorid-upis");
-		  senderIdentifier.setTextContent("0088:" + msg.getSender().getIdentificationNumber()); //from the json-payload
+		  senderIdentifier.setTextContent(EnumPeppolID.Norway_Orgnr.toString() + ":" + msg.getSender().getIdentificationNumber()); //from the json-payload
 		  sender.appendChild(senderIdentifier);
 		  header.appendChild(sender);
 		  //Receiver
 		  Element receiver = doc.createElement("Receiver");
 		  Element receiverIdentifier = doc.createElement("Identifier");
 		  receiverIdentifier.setAttribute("Authority", "iso6523-actorid-upis");
-		  receiverIdentifier.setTextContent("0088:" + msg.getReceiver().getIdentificationNumber()); //from the json-payload
+		  receiverIdentifier.setTextContent(EnumPeppolID.Norway_Orgnr.toString() + ":" + msg.getReceiver().getIdentificationNumber()); //from the json-payload
 		  receiver.appendChild(receiverIdentifier);
 		  header.appendChild(receiver);
 		  //
