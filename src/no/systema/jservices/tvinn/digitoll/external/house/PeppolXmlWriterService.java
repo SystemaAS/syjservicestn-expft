@@ -34,7 +34,8 @@ public class PeppolXmlWriterService {
 	 * 
 	 * @param msg
 	 */
-	public void writeFileOnDisk(MessageOutbound msg, String jsonPayload) {
+	public int writeFileOnDisk(MessageOutbound msg, String jsonPayload) {
+		int retval = 0;
 		try {
 		
 		  //logger.info(( msg.toString());	
@@ -107,7 +108,7 @@ public class PeppolXmlWriterService {
 		  rootElement.appendChild(header);
 		  
 		  //=====================================
-		  //add to root - json payload as Base64
+		  //add to BinaryContent - json payload as Base64
 		  //=====================================
 		  byte[] bytesEncoded = Base64.encodeBase64(jsonPayload.getBytes());
 		  logger.trace("Encoded value is " + new String(bytesEncoded));
@@ -116,12 +117,13 @@ public class PeppolXmlWriterService {
 		  byte[] valueDecoded = Base64.decodeBase64(bytesEncoded);
 		  logger.info("Decoded value is " + new String(valueDecoded));
 		  */
+		  //add the base64-string in BinaryContent-tag
 		  Element binaryContent = doc.createElement("BinaryContent");
 		  binaryContent.setAttribute("xmlns", "http://peppol.eu/xsd/ticc/envelope/1.0");
 		  binaryContent.setAttribute("mimeType", "application/json");
 		  binaryContent.setAttribute("encoding", "Base64Binary");
 		  binaryContent.setTextContent(new String (bytesEncoded));
-		  //add base64 to root
+		  //add BinaryContent to root
 		  rootElement.appendChild(binaryContent);
 		  
 		  // write dom document to a file
@@ -129,8 +131,11 @@ public class PeppolXmlWriterService {
 		  writeXml(doc, output);
 		  
 		}catch (Exception e) {
+			retval = -1;
 			logger.error(e.toString());
 		}
+		
+		return retval;
 	}
 	
 	private void addScopeElement(Document doc, Element parent, String typeValue, String idValue) {

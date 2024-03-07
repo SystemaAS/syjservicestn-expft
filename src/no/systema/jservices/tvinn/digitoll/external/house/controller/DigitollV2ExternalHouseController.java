@@ -137,14 +137,17 @@ public class DigitollV2ExternalHouseController {
 								  //(3.1) wrap json in correct xml format (peppol will act as an envelope...)
 								  if(dtoConfig.getXmlxsd().toLowerCase().contains("peppol")) {
 									  
-									  //filenameService.writeToDisk(msg);
+									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
 									  String jsonPayload = filenameService.writeToString(msg);
 									  logger.info(jsonPayload);
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload);
-										  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+											  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+									  	  }else {
+									  		result.append("ERROR. peppolXmlWriterService writeFileOnDisk ???? ");
+									  	  }
 									  }catch(Exception e) {
 										  result.append("ERROR. peppolXmlWriterService " + e.toString());
 									  }
