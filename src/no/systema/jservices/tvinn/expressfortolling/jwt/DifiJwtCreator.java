@@ -66,6 +66,8 @@ public class DifiJwtCreator {
 	String scopeExpftMovementRoad;
 	@Value("${expft.scope.movement.air}")
 	String scopeExpftMovementAir;
+	@Value("${expft.scope.movement.rail}")
+	String scopeExpftMovementRail;
 	//for air/routing
 	@Value("${expft.scope.movement.entry}")
 	String scopeExpftMovementEntry;
@@ -159,6 +161,25 @@ public class DifiJwtCreator {
 		
 	    
 	}
+	public String createRequestMovementRailJwt() {
+		logger.info("Inside createRequestMovementRailJwt");
+		String encodedCertificate;
+		PrivateKey privateKey;
+
+		try {
+			encodedCertificate = certificateManager.getEncodedCertificate();
+			privateKey = certificateManager.getPrivateKey();
+		} catch (Exception e) {
+			String message = "Could not manage X.509 in a correct way!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+		
+		String result = this.getJwtString(this.expiration, this.scopeExpftMovementRail, encodedCertificate, privateKey, this.ISNOT_KURER);
+		return result;
+		
+	    
+	}
 	public String createRequestMovementRoutingJwt() {
 		logger.info("Inside: createRequestMovementRoutingJwt" );
 		String encodedCertificate; 
@@ -196,6 +217,26 @@ public class DifiJwtCreator {
 		//Entry must use MovementRoad and NOT Movement Entry (ref to https://toll.github.io/api/maskinporten.html#scopes)
 		//This Entry belongs to movement-road-query-api-v2
 		String result = this.getJwtString(this.expiration, this.scopeExpftMovementRoad, encodedCertificate, privateKey, this.ISNOT_KURER);
+		return result;
+		
+	    
+	}
+	public String createRequestMovementRailEntryJwt() {
+		logger.info("Inside: createRequestMovementRailEntryJwt" );
+		String encodedCertificate; 
+		PrivateKey privateKey;
+
+		try {
+			encodedCertificate = certificateManager.getEncodedCertificate();
+			privateKey = certificateManager.getPrivateKey();
+		} catch (Exception e) {
+			String message = "Could not manage X.509 in a correct way!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+		//Entry must use MovementRoad and NOT Movement Entry (ref to https://toll.github.io/api/maskinporten.html#scopes)
+		//This Entry belongs to movement-road-query-api-v2
+		String result = this.getJwtString(this.expiration, this.scopeExpftMovementRail, encodedCertificate, privateKey, this.ISNOT_KURER);
 		return result;
 		
 	    

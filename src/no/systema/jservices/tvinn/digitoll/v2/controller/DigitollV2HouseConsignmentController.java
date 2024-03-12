@@ -32,6 +32,7 @@ import com.google.gson.JsonParser;
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
+import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesRail;
 import no.systema.jservices.tvinn.digitoll.v2.controller.service.PoolExecutorControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.HouseConsignment;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
@@ -52,7 +53,7 @@ import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmoifService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
-import no.systema.jservices.tvinn.digitoll.v2.util.ApiAirRecognizer;
+import no.systema.jservices.tvinn.digitoll.v2.util.ApiRecognizer;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadDigitollConstants;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
@@ -131,6 +132,8 @@ public class DigitollV2HouseConsignmentController {
 	private ApiServices apiServices; 
 	@Autowired
 	private ApiServicesAir apiServicesAir; 
+	@Autowired
+	private ApiServicesRail apiServicesRail;
 	
 	@Autowired
 	private PoolExecutorControllerService poolExecutorControllerService;
@@ -187,6 +190,8 @@ public class DigitollV2HouseConsignmentController {
 		dtoResponse.setRequestMethodApi("POST");
 		boolean apiStatusAlreadyUpdated = false;
 		boolean isApiAir = false;
+		boolean isApiRail = false;
+		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -227,11 +232,19 @@ public class DigitollV2HouseConsignmentController {
 							Map tollTokenMap = new HashMap();
 							//Check if we are using MO-Air and not road...
 							if(dto.getTransportDto()!=null) {
-								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp()))  { isApiAir = true; }
+								if(ApiRecognizer.isAir(dto.getTransportDto().getEtktyp()))  { 
+									isApiAir = true; 
+								}else if(ApiRecognizer.isRail(dto.getTransportDto().getEtktyp()))  { 
+									isApiRail = true; 
+								}
 							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.postHouseConsignmentDigitollV2(hc, tollTokenMap);
+								
+							}else if(isApiRail) {
+								json = apiServicesRail.postHouseConsignmentDigitollV2(hc, tollTokenMap);
+								
 							}else {
 								json = apiServices.postHouseConsignmentDigitollV2(hc, tollTokenMap);
 							}
@@ -271,7 +284,7 @@ public class DigitollV2HouseConsignmentController {
 								//=====================
 								StringBuilder errorCode = new StringBuilder();
 								//GET MRN right here...
-								String mrn = poolExecutorControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, dtoResponse.getRequestId(), dto.getEhuuid_own(), tollTokenMap, isApiAir, 
+								String mrn = poolExecutorControllerService.getMrnPOSTDigitollV2FromApi(dtoResponse, dtoResponse.getRequestId(), dto.getEhuuid_own(), tollTokenMap, isApiAir, isApiRail, 
 																										EnumControllerMrnType.HOUSE.toString(), errorCode);
 								logger.info("####### MRN (HOUSE):" + mrn + " #######");
 								
@@ -420,7 +433,7 @@ public class DigitollV2HouseConsignmentController {
 		dtoResponse.setRequestMethodApi("PUT");
 		boolean apiStatusAlreadyUpdated = false;
 		boolean isApiAir = false;
-		
+		boolean isApiRail = false;
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
 		String methodName = new Object() {}
@@ -462,11 +475,17 @@ public class DigitollV2HouseConsignmentController {
 							Map tollTokenMap = new HashMap();
 							//API
 							if(dto.getTransportDto()!=null) {
-								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+								if(ApiRecognizer.isAir(dto.getTransportDto().getEtktyp())) { 
+									isApiAir = true; 
+								}else if(ApiRecognizer.isRail(dto.getTransportDto().getEtktyp())) { 
+									isApiRail = true; 
+								}
 							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.putHouseConsignmentDigitollV2(hc, mrn, tollTokenMap);
+							}else if(isApiRail) {
+								json = apiServicesRail.putHouseConsignmentDigitollV2(hc, mrn, tollTokenMap);
 							}else {
 								json = apiServices.putHouseConsignmentDigitollV2(hc, mrn, tollTokenMap);
 							}
@@ -526,7 +545,7 @@ public class DigitollV2HouseConsignmentController {
 									logger.warn("End of delay: "+ new Date());
 									logger.warn(PrettyLoggerOutputer.FRAME);
 									
-									this.checkLrnValidationStatusHouseConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir);
+									this.checkLrnValidationStatusHouseConsignmentDigitollV2FromApi(dtoResponse, requestId, tollTokenMap, isApiAir, isApiRail);
 									if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())){
 										logger.warn("ERROR: " + dtoResponse.getErrMsg()  + methodName);
 										//Udate ehst2(SADEXHF) with ERROR = M
@@ -632,6 +651,7 @@ public class DigitollV2HouseConsignmentController {
 		dtoResponse.setRequestMethodApi("DELETE");
 		boolean apiStatusAlreadyUpdated = false;
 		boolean isApiAir = false;
+		boolean isApiRail = false;
 		
 		
 		StringBuilder errMsg = new StringBuilder("ERROR ");
@@ -661,11 +681,17 @@ public class DigitollV2HouseConsignmentController {
 							logger.warn("documentIssueDate:" + hc.getDocumentIssueDate());
 							//API
 							if(dto.getTransportDto()!=null) {
-								if(ApiAirRecognizer.isAir(dto.getTransportDto().getEtktyp())) { isApiAir = true; }
+								if(ApiRecognizer.isAir(dto.getTransportDto().getEtktyp())) { 
+									isApiAir = true; 
+								}else if(ApiRecognizer.isRail(dto.getTransportDto().getEtktyp())) { 
+									isApiRail = true; 
+								}
 							}
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.deleteHouseConsignmentDigitollV2(hc, mrn);
+							}else if(isApiRail) {
+								json = apiServicesRail.deleteHouseConsignmentDigitollV2(hc, mrn);
 							}else {
 								json = apiServices.deleteHouseConsignmentDigitollV2(hc, mrn);
 							}
@@ -977,6 +1003,64 @@ public class DigitollV2HouseConsignmentController {
 		return dtoResponse;
 	}
 	
+	@RequestMapping(value="/digitollv2/getDocsRecHouseConsignmentRail.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponseLightHouse getDocsReceivedHouseConsignmentRailDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		GenericDtoResponseLightHouse dtoResponse = new GenericDtoResponseLightHouse();
+		dtoResponse.setUser(user);
+		dtoResponse.setTdn("0"); //dummy
+		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("GET info in HOUSE-level at toll.no");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServicesRail.getDocsReceivedHouseConsignmentDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnHouseQueryRecordDto obj = new ObjectMapper().readValue(json, ApiMrnHouseQueryRecordDto.class);
+					if(obj!=null) {
+						dtoResponse.setHouseQuery(obj);
+						
+					}
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
 	
 	/**
 	 * 
@@ -993,6 +1077,10 @@ public class DigitollV2HouseConsignmentController {
 			String json = "";
 			if(StringUtils.isNotEmpty(apiType) && apiType.equalsIgnoreCase("air")) {
 				json = apiServicesAir.getValidationStatusHouseConsignmentDigitollV2(lrn);
+				
+			}else if(StringUtils.isNotEmpty(apiType) && apiType.equalsIgnoreCase("rail")) {
+				json = apiServicesRail.getValidationStatusHouseConsignmentDigitollV2(lrn);
+				
 			}else {
 				json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn);
 			}
@@ -1027,12 +1115,14 @@ public class DigitollV2HouseConsignmentController {
 	 * @param dtoResponse
 	 * @param lrn
 	 */
-	private void checkLrnValidationStatusHouseConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir) {
+	private void checkLrnValidationStatusHouseConsignmentDigitollV2FromApi(GenericDtoResponse dtoResponse, String lrn, Map tollTokenMap, boolean isApiAir, boolean isApiRail) {
 		
 		try{
 			String json = "";	
 			if(isApiAir) {
 				json = apiServicesAir.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap);
+			}else if(isApiRail) {
+				json = apiServicesRail.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap);
 			}else {
 				json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap);
 			}

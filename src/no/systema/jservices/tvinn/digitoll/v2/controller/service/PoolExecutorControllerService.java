@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServices;
 import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesAir;
+import no.systema.jservices.tvinn.expressfortolling.api.ApiServicesRail;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
@@ -52,7 +53,10 @@ public class PoolExecutorControllerService {
 	private ApiServices apiServices; 
 	
 	@Autowired
-	private ApiServicesAir apiServicesAir; 
+	private ApiServicesAir apiServicesAir;
+	
+	@Autowired
+	private ApiServicesRail apiServicesRail;
 	
 	/**
 	 * The mrn could delay from 5-45 seconds. 
@@ -68,7 +72,7 @@ public class PoolExecutorControllerService {
 	 * @param controller
 	 * @return
 	 */
-	public String getMrnPOSTDigitollV2FromApi( GenericDtoResponse dtoResponse, String requestIdCurrent, String requestIdFirst, Map tollTokenMap, boolean isApiAir, String controller, StringBuilder httpErrorCode) {
+	public String getMrnPOSTDigitollV2FromApi( GenericDtoResponse dtoResponse, String requestIdCurrent, String requestIdFirst, Map tollTokenMap, boolean isApiAir, boolean isApiRail, String controller, StringBuilder httpErrorCode) {
 		String mrn = "";
 		String controllerNameForDebug = getControllNameForDebug(controller);
 		
@@ -109,13 +113,13 @@ public class PoolExecutorControllerService {
 					
 					if(controller != null) {
 						if (controller.equals(EnumControllerMrnType.TRANSPORT.toString())) {
-							json = getValidationStatusTransportDigitollV2(requestIdCurrent, tollTokenMap, isApiAir);
+							json = getValidationStatusTransportDigitollV2(requestIdCurrent, tollTokenMap, isApiAir, isApiRail);
 							
 						}else if (controller.equals(EnumControllerMrnType.MASTER.toString())) {
-							json = getValidationStatusMasterConsignmentDigitollV2(requestIdCurrent, tollTokenMap, isApiAir);
+							json = getValidationStatusMasterConsignmentDigitollV2(requestIdCurrent, tollTokenMap, isApiAir, isApiRail);
 							
 						}else if (controller.equals(EnumControllerMrnType.HOUSE.toString())) {
-							json = getValidationStatusHouseConsignmentDigitollV2(requestIdCurrent, tollTokenMap, isApiAir);
+							json = getValidationStatusHouseConsignmentDigitollV2(requestIdCurrent, tollTokenMap, isApiAir, isApiRail);
 							
 						}
 					}
@@ -267,12 +271,16 @@ public class PoolExecutorControllerService {
 	 * @return
 	 * @throws Exception
 	 */
-	private String getValidationStatusTransportDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
+	private String getValidationStatusTransportDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir, boolean isApiRail) throws Exception {
 		String json = "";
 		
 		
 		if(isApiAir) {
 			json = apiServicesAir.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+			
+		}else if(isApiRail) {
+			json = apiServicesRail.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
+
 		}else {
 			json = apiServices.getValidationStatusTransportDigitollV2(lrn, tollTokenMap );
 		}
@@ -280,22 +288,30 @@ public class PoolExecutorControllerService {
 		return json;
 	}
 	
-	private String getValidationStatusMasterConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
+	private String getValidationStatusMasterConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir, boolean isApiRail) throws Exception {
 		String json = "";
 		
 		if(isApiAir) {
 			json = apiServicesAir.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
+		
+		}else if(isApiRail) {
+			json = apiServicesRail.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
+
 		}else {
 			json = apiServices.getValidationStatusMasterConsignmentDigitollV2(lrn, tollTokenMap );
 		}
 		
 		return json;
 	}
-	private String getValidationStatusHouseConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir) throws Exception {
+	private String getValidationStatusHouseConsignmentDigitollV2(String lrn, Map tollTokenMap, boolean isApiAir, boolean isApiRail) throws Exception {
 		String json = "";
 		
 		if(isApiAir) {
 			json = apiServicesAir.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
+			
+		}else if(isApiRail) {
+			json = apiServicesRail.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
+
 		}else {
 			json = apiServices.getValidationStatusHouseConsignmentDigitollV2(lrn, tollTokenMap );
 		}

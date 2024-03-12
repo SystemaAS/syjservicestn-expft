@@ -32,7 +32,7 @@ import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
-import no.systema.jservices.tvinn.digitoll.v2.util.ApiAirRecognizer;
+import no.systema.jservices.tvinn.digitoll.v2.util.ApiRecognizer;
 import no.systema.jservices.tvinn.digitoll.v2.util.PrettyLoggerOutputer;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadDigitollConstants;
 import no.systema.jservices.tvinn.digitoll.v2.util.SadmologLogger;
@@ -126,7 +126,7 @@ public class AsynchTransportService {
 							//API - PROD
 							Map tollTokenMap = new HashMap(); //will be populated within the put-method
 							//API
-							if(ApiAirRecognizer.isAir(dto.getEtktyp())) { isApiAir = true; }
+							if(ApiRecognizer.isAir(dto.getEtktyp())) { isApiAir = true; }
 							String json = "";
 							if(isApiAir) {
 								json = apiServicesAir.putTransportDigitollV2(transport, mrn, tollTokenMap);
