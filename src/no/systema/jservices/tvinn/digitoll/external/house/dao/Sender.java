@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.digitoll.external.house.dao;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
@@ -12,6 +14,6 @@ public class Sender {
 	private String name;
 	private String identificationNumber;
 	//contact info
-	private Communication communication;
+	private List<Communication> communication;
 	
 }

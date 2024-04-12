@@ -1,7 +1,9 @@
 package no.systema.jservices.tvinn.digitoll.external.house;
 
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,20 +45,24 @@ public class MapperMessageOutbound {
 		sender.setName(masterRecord.getTransportDto().getEtnar());
 		sender.setIdentificationNumber(masterRecord.getTransportDto().getEtrgr());
 		//Communication
+		List commList = new ArrayList();
 		if(masterRecord.getTransportDto().getEtemrt()!=null ){
 			if("EM".equals(masterRecord.getTransportDto().getEtemrt()) ){
 				if(StringUtils.isNotEmpty(masterRecord.getTransportDto().getEtemr())) {
 					Communication comm = new Communication();
 					comm.setEmailAddress(masterRecord.getTransportDto().getEtemr());
-					sender.setCommunication(comm);
+					//sender.setCommunication(comm);
+					commList.add(comm);
 				}
 			}else if ("TE".equals(masterRecord.getTransportDto().getEtemrt()) ){
 				if(StringUtils.isNotEmpty(masterRecord.getTransportDto().getEtemr())) {
 					Communication comm = new Communication();
 					comm.setTelephoneNumber(masterRecord.getTransportDto().getEtemr());
-					sender.setCommunication(comm);
+					//sender.setCommunication(comm);
+					commList.add(comm);
 				}
-			}		
+			}
+			sender.setCommunication(commList);
 		}
 		msg.setSender(sender);
 		
