@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -47,9 +48,15 @@ public class PeppolXmlWriterService {
 		  Document doc = docBuilder.newDocument();
 		  doc.setXmlStandalone(true);
 		  Element rootElement = doc.createElement("StandardBusinessDocument");
-		  //OK rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "ns0:UserRequest");
-		  rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader");
+		  //OLD...rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader");
+		  Attr attr = doc.createAttribute("xmlns");
+		  attr.setValue("http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader");
+		  rootElement.setAttributeNode(attr);
+		  //rootElement.setAttributeNS("http://www.w3.org/2001/XMLSchema-instance", "xs:type", "http://www.unece.org/cefact/namespaces/StandardBusinessDocumentHeader");
+		  rootElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xs", "http://www.w3.org/2001/XMLSchema");
 		  doc.appendChild(rootElement);
+		  
+		  
 		
 		  Element header = doc.createElement("StandardBusinessDocumentHeader");
 		  //staff.setTextContent(new String (bytesBase64Encoded));
@@ -163,4 +170,6 @@ public class PeppolXmlWriterService {
         transformer.transform(source, result);
 
     }
+    
+    
 }
