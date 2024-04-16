@@ -46,10 +46,13 @@ import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmolffDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfCommtype;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfFormat;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmolffStatus;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmocfService;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmolffService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
@@ -78,6 +81,8 @@ public class DigitollV2ExternalHouseController {
 	
 	@Autowired
 	private SadmocfService sadmocfService;
+	@Autowired
+	private SadmolffService sadmolffService;
 	
 	@Autowired
 	private FilenameService filenameService;
@@ -144,7 +149,12 @@ public class DigitollV2ExternalHouseController {
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
 										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
-											  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto(masterDto, msg), "A");
+											  if(tmp!=null && !tmp.isEmpty()) {
+												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  }else {
+												  result.append("ERROR. peppolXmlWriterService logRecordSadmolff ???? ");
+											  }
 									  	  }else {
 									  		result.append("ERROR. peppolXmlWriterService writeFileOnDisk ???? ");
 									  	  }
@@ -156,10 +166,17 @@ public class DigitollV2ExternalHouseController {
 									  //when a particular xml has not been implemented
 									  result.append("ERROR. xmlxsd-error: " + dtoConfig.getXmlxsd() + " not implemented... "); 
 								  }
+								  
 							  }else {
 								  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.json.toString())) {
 									  if(jsonWriterService.writeFileOnDisk(msg) == 0) {
-										  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+										  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto(masterDto, msg), "A");
+										  if(tmp!=null && !tmp.isEmpty()) {
+											  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+										  }else {
+											  result.append("ERROR. jsonWriterService logRecordSadmolff ???? ");
+										  }
+										  
 									  }else {
 										  result.append("ERROR. jsonWriterService ..." );
 									  }
@@ -189,7 +206,26 @@ public class DigitollV2ExternalHouseController {
 		  
 	  }
 	
-	
+	/**
+	 * 
+	 * @param masterDto
+	 * @param msg
+	 * @return
+	 */
+	private SadmolffDto getSadmolffDto(SadmomfDto masterDto, MessageOutbound msg) {
+		
+		SadmolffDto dto = new SadmolffDto();
+		dto.setEmdkm(msg.getDocumentID());
+		dto.setUuid(msg.getUuid());
+		dto.setEmlnrt(String.valueOf(masterDto.getEmlnrt()));
+		dto.setStatus(EnumSadmolffStatus.C.toString());
+		//
+		dto.setAvsid(msg.getSender().getIdentificationNumber());
+		dto.setMotid(msg.getReceiver().getIdentificationNumber());
+		
+		
+		return dto;
+	}
 	
 	/**
 	 * 
