@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import no.systema.jservices.tvinn.digitoll.external.house.controller.DigitollV2ExternalHouseController;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.ActiveBorderTransportMeans;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ConsignmentMasterLevel;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.CustomsOfficeOfFirstEntry;
@@ -40,6 +41,7 @@ public class MapperMessageOutbound {
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
 		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 		msg.setDocumentID(masterRecord.getEmdkm());
+		msg.setNote(masterRecord.getTransportDto().getEtavd() + "-" + masterRecord.getTransportDto().getEtpro());
 		//Sender
 		Sender sender = new Sender();
 		sender.setName(masterRecord.getTransportDto().getEtnar());
@@ -79,6 +81,11 @@ public class MapperMessageOutbound {
 		Integer etaTime = masterRecord.getTransportDto().getEtetat() * 100;
 		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
 		msg.setCustomsOfficeOfFirstEntry(custOffice);
+		ActiveBorderTransportMeans abtranspMeans = new ActiveBorderTransportMeans();
+		abtranspMeans.setIdentificationNumber(masterRecord.getTransportDto().getEtkmrk());
+		abtranspMeans.setTypeOfIdentification(masterRecord.getTransportDto().getEtktyp());
+		abtranspMeans.setCountryCode(masterRecord.getTransportDto().getEtklk());
+		msg.setActiveBorderTransportMeans(abtranspMeans);
 		
 		//Carrier Id (Orgnr)
 		ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();

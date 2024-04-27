@@ -24,12 +24,14 @@ public class MessageOutbound {
 	private String messageNumber;
 	private String messageIssueDate;
 	private String documentID;
+	private String note;
 	//Message parties
 	private Sender sender;
 	private Receiver receiver;
 	//Customs office
 	private CustomsOfficeOfFirstEntry customsOfficeOfFirstEntry;
 	private String estimatedDateAndTimeOfArrival;
+	private ActiveBorderTransportMeans activeBorderTransportMeans;
 	
 	private ConsignmentMasterLevel consignmentMasterLevel;
 	//Merchand parties
