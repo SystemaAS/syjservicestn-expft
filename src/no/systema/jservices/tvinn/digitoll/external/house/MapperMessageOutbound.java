@@ -90,6 +90,8 @@ public class MapperMessageOutbound {
 		//Carrier Id (Orgnr)
 		ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();
 		consignmentMasterLevel.setCarrierIdentificationNumber(masterRecord.getTransportDto().getEtrgt());
+		consignmentMasterLevel.setDocumentNumber(masterRecord.getEmdkm());
+		consignmentMasterLevel.setType(masterRecord.getEmdkmt());
 		
 		msg.setConsignmentMasterLevel(consignmentMasterLevel);
 		
