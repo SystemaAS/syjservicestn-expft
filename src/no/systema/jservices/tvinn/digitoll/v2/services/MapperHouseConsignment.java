@@ -116,11 +116,21 @@ public class MapperHouseConsignment {
 		
 		//(Optional but required anyway -> consignmentMasterLevel but must be in place before the carrier arrives to the border! ergo = required as long as we do not have a ReceptacleIdNumber above
 		if(StringUtils.isEmpty(dto.getEhrecid())) {
+			//check if this house is an external house meaning that the house MUST be sent with an external MasterId/type/carrierOrgNr. Coming from the party owning the Tranport.
+			boolean isExternalHouse = this.isValidExternalHouse(dto);
 			HouseConsignmentMasterLevel consignmentMasterLevel = new HouseConsignmentMasterLevel();
-			consignmentMasterLevel.setCarrierIdentificationNumber(dto.getMasterDto().getEmrgt());
 			TransportDocumentMasterLevel transpDocMasterLevel = new TransportDocumentMasterLevel();
-			transpDocMasterLevel.setDocumentNumber(dto.getMasterDto().getEmdkm());
-			transpDocMasterLevel.setType(dto.getMasterDto().getEmdkmt());
+			if(isExternalHouse) {
+				consignmentMasterLevel.setCarrierIdentificationNumber(dto.getMasterDto().getEmrgt_ff());
+				transpDocMasterLevel.setDocumentNumber(dto.getMasterDto().getEmdkm_ff());
+				transpDocMasterLevel.setType(dto.getMasterDto().getEmdkmt_ff());
+				
+			}else {
+				consignmentMasterLevel.setCarrierIdentificationNumber(dto.getMasterDto().getEmrgt());
+				transpDocMasterLevel.setDocumentNumber(dto.getMasterDto().getEmdkm());
+				transpDocMasterLevel.setType(dto.getMasterDto().getEmdkmt());
+				
+			}
 			consignmentMasterLevel.setTransportDocumentMasterLevel(transpDocMasterLevel);
 			chl.setConsignmentMasterLevel(consignmentMasterLevel);
 		}
@@ -300,6 +310,20 @@ public class MapperHouseConsignment {
 		
 		return chl;
 		
+	}
+	
+	private boolean isValidExternalHouse(SadmohfDto dto) {
+		boolean retval = false;
+		if(dto.getMasterDto()!=null) {
+			if (StringUtils.isNotEmpty(dto.getMasterDto().getEmdkm_ff()) && StringUtils.isNotEmpty(dto.getMasterDto().getEmdkmt_ff()) && StringUtils.isNotEmpty(dto.getMasterDto().getEmrgt_ff())  ) {
+				if (!"null".equals(dto.getMasterDto().getEmdkm_ff()) && !"null".equals(dto.getMasterDto().getEmdkmt_ff()) && !"null".equals(dto.getMasterDto().getEmrgt_ff())  ) {
+					retval = true;
+				}
+			}
+		}
+		
+		
+		return retval;
 	}
 	//Populate list if needed
 	private void populateExportFromEU3_10(SadmohfDto dto, List exportFromEUList) {
