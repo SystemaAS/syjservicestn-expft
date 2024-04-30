@@ -87,6 +87,7 @@ public class SadmomfDto {
 	private String emdkm_ff = "";   //tegn           50   master dokumentnr  
 	private String emdkmt_ff = "";   //tegn           4  master dokumenttype
 	private String emrgt_ff = "";    //tegn           17  org.nr transportør
+	private String emrgr_ff = "";    //tegn           17  org.nr ombud
 	
 	//from transport level
 	private SadmotfDto transportDto;
