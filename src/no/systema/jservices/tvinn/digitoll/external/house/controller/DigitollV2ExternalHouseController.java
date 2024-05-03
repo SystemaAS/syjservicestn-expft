@@ -46,13 +46,17 @@ import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmolffDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmolhffDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfCommtype;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfFormat;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmolffStatus;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmocfService;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmolffService;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmolhffService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
@@ -75,6 +79,8 @@ public class DigitollV2ExternalHouseController {
 	private BridfDaoService bridfDaoService;	
 	
 	@Autowired
+	private SadmohfService sadmohfService;
+	@Autowired
 	private SadmomfService sadmomfService;
 	@Autowired
 	private SadmotfService sadmotfService;
@@ -83,6 +89,8 @@ public class DigitollV2ExternalHouseController {
 	private SadmocfService sadmocfService;
 	@Autowired
 	private SadmolffService sadmolffService;
+	@Autowired
+	private SadmolhffService sadmolhffService;
 	
 	@Autowired
 	private FilenameService filenameService;
@@ -207,6 +215,121 @@ public class DigitollV2ExternalHouseController {
 	  }
 	
 	/**
+	 * Sends the external house to the external party (usually the ombud) responsible for the transport
+	 * @param request
+	 * @param user
+	 * @param ehlnrt
+	 * @param ehlnrm
+	 * @param ehlnrh
+	 * @param receiverName
+	 * @param receiverOrgnr
+	 * @return
+	 */
+	@RequestMapping(value = "/digitollv2/send_externalHouse_toExternalParty.do", method = {RequestMethod.GET, RequestMethod.POST})
+	  public @ResponseBody String sendExternalHouseToParty(HttpServletRequest request, @RequestParam String user, @RequestParam String ehlnrt,
+			  						@RequestParam String ehlnrm, @RequestParam String ehlnrh, @RequestParam String receiverName, @RequestParam String receiverOrgnr ) {
+		
+		  String serverRoot = ServerRoot.getServerRoot(request);
+		  StringBuilder result = new StringBuilder();
+		  
+		  logger.info("Inside sendExternalHouseToParty");
+		  logger.info("ehlnrt:" + ehlnrt);
+		  logger.info("ehlnrm:" + ehlnrm);
+		  logger.info("ehlnrh:" + ehlnrh);
+		  logger.info("file-receiver name:" + receiverName);
+		  logger.info("file-receiver orgNr:" + receiverOrgnr);
+		  
+		  try {
+			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(ehlnrt) 
+				  && StringUtils.isNotEmpty(ehlnrm) && StringUtils.isNotEmpty(ehlnrh) ) {
+				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the format type (json or xml-peppol)
+				  SadmocfDto dtoConfig = new SadmocfDto();
+				  if(partyExists(serverRoot, user, receiverOrgnr, receiverName, dtoConfig)) {
+					  if(dtoConfig!=null) {
+						  //(1) get the master Dao record from Db (ALWAYS no matter what format)
+						  List<SadmohfDto> list = sadmohfService.getSadmohf(serverRoot, user, ehlnrt, ehlnrm, ehlnrh);
+						  //List<SadmomfDto> list = sadmomfService.getSadmomf(serverRoot, user, emlnrt, emlnrm);
+						  for (SadmohfDto houseDto: list) {
+							  houseDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, ehlnrt));
+							  houseDto.setMasterDto(sadmomfService.getSadmomfDto(serverRoot, user, ehlnrt, ehlnrm));
+							  logger.trace(houseDto.toString());
+							  //(2) Map to MessageOutbound
+							  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutboundExternalHouse(dtoConfig, houseDto, receiverName, receiverOrgnr);
+							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+							  String json = ow.writeValueAsString(msg);
+							  logger.info(json);
+							  logger.info(dtoConfig.toString());  
+							  //(3) check what format to serialize (xml or json)
+							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
+								  //(3.1) wrap json in correct xml format (peppol will act as an envelope...)
+								  if(dtoConfig.getXmlxsd().toLowerCase().contains("peppol")) {
+									  
+									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
+									  String jsonPayload = filenameService.writeToString(msg);
+									  logger.info(jsonPayload);
+									  logger.info(result.toString());
+									  try {
+										  //(3.2) wrap it in PEPPOL XML (when applicable)
+										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+											  List tmp = sadmolhffService.insertLogRecord(serverRoot, user, this.getSadmolhffDto(houseDto, msg), "A");
+											  if(tmp!=null && !tmp.isEmpty()) {
+												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  }else {
+												  result.append("ERROR. peppolXmlWriterService logRecordSadmolff ???? ");
+											  }
+									  	  }else {
+									  		result.append("ERROR. peppolXmlWriterService writeFileOnDisk ???? ");
+									  	  }
+									  }catch(Exception e) {
+										  result.append("ERROR. peppolXmlWriterService " + e.toString());
+									  }
+									  
+								  }else {
+									  //when a particular xml has not been implemented
+									  result.append("ERROR. xmlxsd-error: " + dtoConfig.getXmlxsd() + " not implemented... "); 
+								  }
+								  
+							  }else {
+								  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.json.toString())) {
+									  if(jsonWriterService.writeFileOnDisk(msg) == 0) {
+										  List tmp = sadmolhffService.insertLogRecord(serverRoot, user, this.getSadmolhffDto(houseDto, msg), "A");
+										  if(tmp!=null && !tmp.isEmpty()) {
+											  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+										  }else {
+											  result.append("ERROR. jsonWriterService logRecordSadmolhff ???? ");
+										  }
+										  
+									  }else {
+										  result.append("ERROR. jsonWriterService ..." );
+									  }
+								  }else {
+									  result.append("ERROR. format-error: " + dtoConfig.getFormat() + " not implemented... ");
+								  }
+								 
+							  }
+							  
+							  break; //Only first record in the list 
+						  }
+					  }
+				  }else {
+					  result.append("ERROR. Setup-error: Partneren-orgnr er ikke registrert (sadmocf) for send av: masterId ");
+				  }
+			  }
+		  }catch(Exception e) {
+			  e.printStackTrace();
+			  logger.error(e.toString());
+			  result.append("ERROR" + e.getMessage());
+		  }
+	      //
+		  if(result.toString().isEmpty()) {
+			  result.append("OK");
+		  }
+		  
+		  return result.toString();
+		  
+	  }
+	
+	/**
 	 * 
 	 * @param masterDto
 	 * @param msg
@@ -218,6 +341,26 @@ public class DigitollV2ExternalHouseController {
 		dto.setEmdkm(msg.getDocumentID());
 		dto.setUuid(msg.getUuid());
 		dto.setEmlnrt(String.valueOf(masterDto.getEmlnrt()));
+		dto.setStatus(EnumSadmolffStatus.C.toString());
+		//
+		dto.setAvsid(msg.getSender().getIdentificationNumber());
+		dto.setMotid(msg.getReceiver().getIdentificationNumber());
+		
+		
+		return dto;
+	}
+	/**
+	 * 
+	 * @param houseDto
+	 * @param msg
+	 * @return
+	 */
+	private SadmolhffDto getSadmolhffDto(SadmohfDto houseDto, MessageOutbound msg) {
+		
+		SadmolhffDto dto = new SadmolhffDto();
+		dto.setEhdkh(msg.getDocumentID());
+		dto.setUuid(msg.getUuid());
+		dto.setEhlnrt(String.valueOf(houseDto.getEhlnrt()));
 		dto.setStatus(EnumSadmolffStatus.C.toString());
 		//
 		dto.setAvsid(msg.getSender().getIdentificationNumber());
@@ -246,6 +389,8 @@ public class DigitollV2ExternalHouseController {
 				dto.setCommtype(tmpDto.getCommtype());
 				dto.setFormat(tmpDto.getFormat());
 				dto.setXmlxsd(tmpDto.getXmlxsd());
+				dto.setAvsname(tmpDto.getAvsname());
+				dto.setAvsorgnr(tmpDto.getAvsorgnr());
 				retval = true;
 			}
 		}

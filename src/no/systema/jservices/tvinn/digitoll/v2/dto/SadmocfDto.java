@@ -24,5 +24,8 @@ public class SadmocfDto   {
 	private String ftptmp  = "";//      tegn      70  
 	private String ftpbupdir  = ""; //ftpbupdir char(70)
 	private String wsendpoint  = ""; //wsendpoint char(200) 
+	//
+	private String avsorgnr  = "";//      tegn      30     
+	private String avsname  = "";//      tegn      30  
 	
 }

@@ -10,12 +10,12 @@ import lombok.Data;
 //log data to FTP for främmande houses when sending the masterId to the external party that will send the house in his context 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SadmolffDto {
+public class SadmolhffDto {
 
 	private String status = ""; //TEGN 20 status (send, confirmed, dialog, receipt, ok) 
 	private String uuid = ""; //TEGN 36 messageId
-	private String emdkm = ""; //TEGN 50 master doc id
-	private String emlnrt  = "" ;  //TEGN   7 
+	private String ehdkh = ""; //TEGN 50 master doc id
+	private String ehlnrt  = "" ;  //TEGN   7 
 	private String avsid = ""; //TEGN 20 sender Orgnr
 	private String motid = ""; //TEGN 20 receiver Orgnr		
 	

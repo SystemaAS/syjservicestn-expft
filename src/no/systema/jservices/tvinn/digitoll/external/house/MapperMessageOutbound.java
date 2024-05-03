@@ -18,6 +18,8 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.CustomsOfficeOfFir
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Receiver;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Sender;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -94,6 +96,89 @@ public class MapperMessageOutbound {
 		consignmentMasterLevel.setType(masterRecord.getEmdkmt());
 		
 		msg.setConsignmentMasterLevel(consignmentMasterLevel);
+		
+		return msg;  
+	}
+	
+	/**
+	 * Map the external house to be sent to the external party owner of the transport and masterID
+	 * @param houseRecord
+	 * @param receiverName
+	 * @param receiverOrgnr
+	 * @return
+	 */
+	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseRecord, String receiverName, String receiverOrgnr) {
+		MessageOutbound msg = new MessageOutbound();
+		msg.setMessageType("DigitalMOHouse");
+		msg.setVersion("1.0");
+		String uuid = UUID.randomUUID().toString();
+		msg.setMessageNumber(uuid);
+		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
+		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
+	
+		msg.setDocumentID(houseRecord.getEhdkh());
+		/*
+		msg.setNote(masterRecord.getTransportDto().getEtavd() + "-" + masterRecord.getTransportDto().getEtpro());
+		*/
+		//=======
+		//Sender
+		//=======
+		Sender sender = new Sender();
+		sender.setName(dtoConfig.getAvsname());
+		sender.setIdentificationNumber(dtoConfig.getAvsorgnr());
+		//Communication
+		/*
+		List commList = new ArrayList();
+		if(houseRecord.getTransportDto().getEtemrt()!=null ){
+			if("EM".equals(houseRecord.getTransportDto().getEtemrt()) ){
+				if(StringUtils.isNotEmpty(houseRecord.getTransportDto().getEtemr())) {
+					Communication comm = new Communication();
+					comm.setEmailAddress(houseRecord.getTransportDto().getEtemr());
+					//sender.setCommunication(comm);
+					commList.add(comm);
+				}
+			}else if ("TE".equals(houseRecord.getTransportDto().getEtemrt()) ){
+				if(StringUtils.isNotEmpty(houseRecord.getTransportDto().getEtemr())) {
+					Communication comm = new Communication();
+					comm.setTelephoneNumber(houseRecord.getTransportDto().getEtemr());
+					//sender.setCommunication(comm);
+					commList.add(comm);
+				}
+			}
+			sender.setCommunication(commList);
+		}*/
+		msg.setSender(sender);
+		//=========
+		//Receiver
+		//=========
+		Receiver receiver = new Receiver();
+		receiver.setName(receiverName);
+		receiver.setIdentificationNumber(receiverOrgnr);
+		msg.setReceiver(receiver);
+		
+		/*
+		//Customs Office
+		CustomsOfficeOfFirstEntry custOffice = new CustomsOfficeOfFirstEntry();
+		custOffice.setReferenceNumber(masterRecord.getTransportDto().getEttsd());
+		//Since we do not have seconds in time we must add this to the integer: 1000(HHmm) will be 100000(HHmmss)
+		Integer etaTime = masterRecord.getTransportDto().getEtetat() * 100;
+		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
+		msg.setCustomsOfficeOfFirstEntry(custOffice);
+		ActiveBorderTransportMeans abtranspMeans = new ActiveBorderTransportMeans();
+		abtranspMeans.setIdentificationNumber(masterRecord.getTransportDto().getEtkmrk());
+		abtranspMeans.setTypeOfIdentification(masterRecord.getTransportDto().getEtktyp());
+		abtranspMeans.setCountryCode(masterRecord.getTransportDto().getEtklk());
+		msg.setActiveBorderTransportMeans(abtranspMeans);
+		
+		//Carrier Id (Orgnr)
+		ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();
+		consignmentMasterLevel.setCarrierIdentificationNumber(masterRecord.getTransportDto().getEtrgt());
+		consignmentMasterLevel.setDocumentNumber(masterRecord.getEmdkm());
+		consignmentMasterLevel.setType(masterRecord.getEmdkmt());
+		
+		msg.setConsignmentMasterLevel(consignmentMasterLevel);
+		
+		*/
 		
 		return msg;  
 	}
