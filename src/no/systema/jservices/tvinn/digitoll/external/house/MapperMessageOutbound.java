@@ -10,14 +10,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import no.systema.jservices.tvinn.digitoll.external.house.controller.DigitollV2ExternalHouseController;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ActiveBorderTransportMeans;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.Consignee;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.ConsignmentHouseLevel;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ConsignmentMasterLevel;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.Consignor;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.CustomsOfficeOfFirstEntry;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.DeclarantId;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.ExportFromEU;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.PreviousDocuments;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Receiver;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Sender;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.TransportDocumentHouseLevel;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
@@ -156,6 +162,71 @@ public class MapperMessageOutbound {
 		receiver.setIdentificationNumber(receiverOrgnr);
 		msg.setReceiver(receiver);
 		
+		//Consignor-Avsändare
+		Consignor consignor = new Consignor();
+		consignor.setName(houseRecord.getEhnas());
+		msg.setConsignor(consignor);
+		//Consignee-Mottagare
+		Consignee consignee = new Consignee();
+		consignee.setName(houseRecord.getEhnam());
+		msg.setConsignee(consignee);
+		
+		//========================
+		//Consignment house level
+		//========================
+		ConsignmentHouseLevel consignmentHouseLevel = new ConsignmentHouseLevel();
+		consignmentHouseLevel.setTotalGrossMass(houseRecord.getEhvkb());
+		consignmentHouseLevel.setNumberOfPackages(houseRecord.getEhntk());
+		consignmentHouseLevel.setGoodsDescription(houseRecord.getEhvt());
+		//TransportDocumentHouseLevel on consignment house level
+		TransportDocumentHouseLevel transportDocumentHouseLevel = new TransportDocumentHouseLevel();
+		transportDocumentHouseLevel.setDocumentNumber(houseRecord.getEhdkh());
+		transportDocumentHouseLevel.setType(houseRecord.getEhdkht());
+		consignmentHouseLevel.setTransportDocumentHouseLevel(transportDocumentHouseLevel);
+		
+		//Previous documents
+		if(StringUtils.isNotEmpty(houseRecord.getEhtrnr())) {
+			//We should include the other possible 9 transits. This is only the first one
+			List previousDocumentsList = new ArrayList();
+			PreviousDocuments previousDocuments = new PreviousDocuments();
+			previousDocuments.setReferenceNumber(houseRecord.getEhtrnr());
+			previousDocuments.setTypeOfReference("N820");
+			previousDocumentsList.add(previousDocuments);
+			//add
+			consignmentHouseLevel.setPreviousDocuments(previousDocumentsList);
+		}
+		//Export from EU
+		if(StringUtils.isNotEmpty(houseRecord.getEheid())) {
+			List exportFromEUList = new ArrayList();
+			ExportFromEU exportFromEU = new ExportFromEU();
+			exportFromEU.setTypeOfExport(houseRecord.getEhetypt());
+			exportFromEU.setExportId(houseRecord.getEheid());
+			exportFromEUList.add(exportFromEU);
+			//add
+			consignmentHouseLevel.setExportFromEU(exportFromEUList);
+		}
+		//When CUDE and sequence are present
+		if(StringUtils.isNotEmpty(houseRecord.getEhrg()) && houseRecord.getEh0068a()>0 && houseRecord.getEh0068b()>0) {
+			DeclarantId declarantId = new DeclarantId();
+			declarantId.setDeclarantNumber(houseRecord.getEhrg());
+			declarantId.setDeclarationDate(this.getDeclarationDateFormattedISO( houseRecord.getEh0068a()) );
+			declarantId.setSequenceNumber(houseRecord.getEh0068b());
+			//add
+			consignmentHouseLevel.setDeclarantId(declarantId);
+		}
+		
+		//Prosedyr (non existent in the implementation guide but it is mandatory
+		consignmentHouseLevel.setProcedure(houseRecord.getEhprt());
+		
+		//add to message
+		msg.setConsignmentHouseLevel(consignmentHouseLevel);
+		//==========================
+		//END ConsignmentHouseLevel
+		//==========================
+		
+		
+		
+		
 		/*
 		//Customs Office
 		CustomsOfficeOfFirstEntry custOffice = new CustomsOfficeOfFirstEntry();
@@ -181,5 +252,20 @@ public class MapperMessageOutbound {
 		*/
 		
 		return msg;  
+	}
+	
+	private String getDeclarationDateFormattedISO(Integer value) {
+		String retval = null;
+		if(value>0) {
+			String tmp = String.valueOf(value);
+			if(tmp!=null && tmp.length()==8) {
+				String year = tmp.substring(0,4);
+				String month = tmp.substring(4,6);
+				String day = tmp.substring(6,8);
+				retval = year + "-" + month + "-" + day;
+			}
+		}
+		
+		return retval;
 	}
 }

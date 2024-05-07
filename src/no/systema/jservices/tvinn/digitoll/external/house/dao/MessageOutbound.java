@@ -1,5 +1,7 @@
 package no.systema.jservices.tvinn.digitoll.external.house.dao;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -37,6 +39,8 @@ public class MessageOutbound {
 	//Merchand parties
 	private Consignor consignor;
 	private Consignee consignee;
+	//for outbound external house back to the owner of the transport
+	private ConsignmentHouseLevel consignmentHouseLevel;
 	
 	
 }
