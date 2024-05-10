@@ -15,11 +15,11 @@ public class ConsignmentHouseLevel {
 	private Integer numberOfPackages = 0;
 	private String goodsDescription;
 	private TransportDocumentHouseLevel transportDocumentHouseLevel;
-	//TODO previous docs transit
+	private ConsignmentMasterLevel consignmentMasterLevel;
 	private List<ExportFromEU> exportFromEU; 
 	private List<PreviousDocuments> previousDocuments;
 	private DeclarantId declarantId;
-	private String procedure;
+	private String procedure; //this is own
 	
 	
 }

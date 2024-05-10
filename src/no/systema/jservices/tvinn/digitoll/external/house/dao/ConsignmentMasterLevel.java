@@ -13,5 +13,6 @@ public class ConsignmentMasterLevel {
 	private String type;
 	private String carrierIdentificationNumber;
 	
+	private TransportDocumentMasterLevel transportDocumentMasterLevel = new TransportDocumentMasterLevel();
 	
 }

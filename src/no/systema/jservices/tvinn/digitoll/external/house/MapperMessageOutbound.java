@@ -24,6 +24,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.PreviousDocuments;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Receiver;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Sender;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.TransportDocumentHouseLevel;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.TransportDocumentMasterLevel;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
@@ -183,6 +184,17 @@ public class MapperMessageOutbound {
 		transportDocumentHouseLevel.setDocumentNumber(houseRecord.getEhdkh());
 		transportDocumentHouseLevel.setType(houseRecord.getEhdkht());
 		consignmentHouseLevel.setTransportDocumentHouseLevel(transportDocumentHouseLevel);
+		//Master level
+		if(StringUtils.isNotEmpty(houseRecord.getMasterDto().getEmdkm_ff())) {
+			ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();
+			consignmentMasterLevel.setCarrierIdentificationNumber(houseRecord.getMasterDto().getEmrgt_ff());
+			TransportDocumentMasterLevel transportDocumentMasterLevel = new TransportDocumentMasterLevel();
+			transportDocumentMasterLevel.setDocumentNumber(houseRecord.getMasterDto().getEmdkm_ff());
+			transportDocumentMasterLevel.setType(houseRecord.getMasterDto().getEmdkmt_ff());
+			consignmentMasterLevel.setTransportDocumentMasterLevel(transportDocumentMasterLevel);
+			//add
+			consignmentHouseLevel.setConsignmentMasterLevel(consignmentMasterLevel);
+		}
 		
 		//Previous documents
 		if(StringUtils.isNotEmpty(houseRecord.getEhtrnr())) {
