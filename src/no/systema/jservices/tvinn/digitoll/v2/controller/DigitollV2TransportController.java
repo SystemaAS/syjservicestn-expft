@@ -45,8 +45,11 @@ import no.systema.jservices.tvinn.digitoll.v2.dto.routing.EntryRoutingDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusWithDescendantsRecordDto;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseLight;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericWithDescendantsDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
 import no.systema.jservices.tvinn.digitoll.v2.services.AsynchTransportService;
 import no.systema.jservices.tvinn.digitoll.v2.services.MapperTransport;
@@ -910,6 +913,63 @@ public class DigitollV2TransportController {
 							errMsg.append(methodName + " -->MRN not existent ?? <json raw>: " + json);
 							dtoResponse.setErrMsg(errMsg.toString());
 						}
+					}
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
+	
+	@RequestMapping(value="/digitollv2/getDocsRecTransport_withDescendants.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericWithDescendantsDtoContainer getDocsReceivedTransportWithDescendantsDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericWithDescendantsDtoContainer dtoResponse = new GenericWithDescendantsDtoContainer();
+		dtoResponse.setUser(user);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServices.getDocsReceivedTransportWithDescendantsDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnStatusWithDescendantsRecordDto dto = new ObjectMapper().readValue(json, ApiMrnStatusWithDescendantsRecordDto.class);
+					if(dto!=null) {
+						logger.info(dto.toString());
+						dtoResponse.setObject(dto);
 					}
 				}else {
 					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
