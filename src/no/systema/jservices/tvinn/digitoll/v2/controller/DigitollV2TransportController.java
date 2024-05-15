@@ -1422,6 +1422,71 @@ public class DigitollV2TransportController {
 		return dtoResponse;
 	}
 	
+	@RequestMapping(value="/digitollv2/getMovementAirEntry.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponse getMovementAirEntryDigitollV2FromApi(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, @RequestParam(value = "mrn", required = true) String mrn) {
+		logger.info("Inside: getMovementAirEntryDigitollV2FromApi");
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponse dtoResponse = new GenericDtoResponse();
+		dtoResponse.setUser(user);
+		dtoResponse.setRequestMethodApi("GET");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName );
+		try {
+			if(checkUser(user)) {
+					
+					String json = "";
+					/*
+					String testOS = System.getProperty("os.name");
+					if(testOS!=null && testOS.startsWith("Mac")) {
+						//Test playground is not working therefore we fake...
+						json = getFakeEntry(mrn);
+					}else {
+						//PROD
+						json = apiServicesRail.getMovementRailEntryDigitollV2(mrn);
+					}*/
+					
+					json = apiServicesAir.getMovementAirEntryDigitollV2(mrn);
+					
+					logger.warn("JSON = " + json);
+					if(StringUtils.isNotEmpty(json)) {
+						EntryMovRoadDto obj = new ObjectMapper().readValue(json, EntryMovRoadDto.class);
+						//DEBUG
+						/*for (EntryDto dto: obj) {
+							logger.warn(dto.getEntrySummaryDeclarationMRN());
+							logger.warn(dto.getTransportDocumentHouseLevel().getReferenceNumber());
+							logger.warn(dto.getRoutingResult().getId());
+						}*/
+						dtoResponse.setEntryMovementRoad(obj);
+					}
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA - log in db before std-output
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		return dtoResponse;
+	}
+	
 	private String getFakeEntry (String mrn) {
 		String fakeResult = "";
 		if(mrn.equals("23NO7LCOADR1DZSBT0")) {

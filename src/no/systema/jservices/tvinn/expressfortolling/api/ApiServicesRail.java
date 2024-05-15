@@ -624,7 +624,8 @@ public class ApiServicesRail {
 		
 		//movement/road/entry/status
 		//movement/road/status/v2/entry/status
-		String path = UriComponentsBuilder.fromPath( "/movement/rail/status/v1" + "/entry/status/" + mrn).build().toUriString();
+
+		String path = UriComponentsBuilder.fromPath( this.basePathMovementStatusRailVersion + "/entry/status/" + mrn).build().toUriString();
 		System.out.println(path);
 		logger.warn(path);
 		
