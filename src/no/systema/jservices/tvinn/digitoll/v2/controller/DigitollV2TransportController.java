@@ -1442,15 +1442,6 @@ public class DigitollV2TransportController {
 			if(checkUser(user)) {
 					
 					String json = "";
-					/*
-					String testOS = System.getProperty("os.name");
-					if(testOS!=null && testOS.startsWith("Mac")) {
-						//Test playground is not working therefore we fake...
-						json = getFakeEntry(mrn);
-					}else {
-						//PROD
-						json = apiServicesRail.getMovementRailEntryDigitollV2(mrn);
-					}*/
 					
 					json = apiServicesAir.getMovementAirEntryDigitollV2(mrn);
 					
