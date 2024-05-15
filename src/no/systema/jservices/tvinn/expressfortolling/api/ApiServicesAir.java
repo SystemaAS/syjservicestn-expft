@@ -281,7 +281,7 @@ public class ApiServicesAir {
 	
 	public String getDocsReceivedTransportDigitollV2(String mrn) throws Exception {
 		
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementAir();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
@@ -310,7 +310,7 @@ public class ApiServicesAir {
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
         
         headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
-        apiClient.setBasePath(this.basePathMovementStatusAirVersion);
+        apiClient.setBasePath(this.basePathMovementAir);
        
         ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
         String tmpResponse = "";
@@ -384,7 +384,7 @@ public class ApiServicesAir {
 	}
 	public String getDocsHousesReceivedTransportDigitollV2(String mrn) throws Exception {
 		
-		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRoad();
+		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementAir();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
@@ -414,7 +414,7 @@ public class ApiServicesAir {
         final MediaType contentType = apiClient.selectHeaderContentType(contentTypes);
         
         headerParams.add(HttpHeaders.AUTHORIZATION, "Bearer " + tollResponseDto.getAccess_token());
-        apiClient.setBasePath(this.basePathMovementStatusAirVersion);
+        apiClient.setBasePath(this.basePathMovementAir);
        
         ParameterizedTypeReference<String> returnType = new ParameterizedTypeReference<String>() {};
         String tmpResponse = "";
