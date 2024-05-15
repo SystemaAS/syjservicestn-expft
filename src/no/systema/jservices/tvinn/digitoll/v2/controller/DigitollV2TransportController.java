@@ -1078,6 +1078,204 @@ public class DigitollV2TransportController {
 	}
 	
 	
+	@RequestMapping(value="/digitollv2/getDocsRecTransportRail_withDescendants.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericWithDescendantsDtoContainer getDocsReceivedTransportRailWithDescendantsDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericWithDescendantsDtoContainer dtoResponse = new GenericWithDescendantsDtoContainer();
+		dtoResponse.setUser(user);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServicesRail.getDocsReceivedTransportWithDescendantsDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnStatusWithDescendantsRecordDto dto = new ObjectMapper().readValue(json, ApiMrnStatusWithDescendantsRecordDto.class);
+					
+					if(dto!=null) {
+						logger.info(dto.toString());
+						dtoResponse.setObject(dto);
+					}
+					
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
+	@RequestMapping(value="/digitollv2/getDocsRecTransportAir.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponseLight getDocsReceivedTransportAirDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericDtoResponseLight dtoResponse = new GenericDtoResponseLight();
+		dtoResponse.setUser(user);
+		dtoResponse.setTdn("0"); //dummy
+		dtoResponse.setMrn(mrn);
+		dtoResponse.setRequestMethodApi("GET all documentNumbers in TRANSPORT-level at toll.no");
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServicesAir.getDocsReceivedTransportDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnStatusRecordDto[] obj = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
+					if(obj!=null) {
+						List<Object> list = Arrays.asList(obj);
+						logger.warn("List = " + list);
+						
+						//Check for OK or Error in order to proceed
+						if(list!=null && !list.isEmpty()){
+							dtoResponse.setList(list);
+							//now try-further with house-ref and fill the list even more
+							json = apiServicesAir.getDocsHousesReceivedTransportDigitollV2(mrn);
+							ApiMrnStatusRecordDto[] objHouses = new ObjectMapper().readValue(json, ApiMrnStatusRecordDto[].class);
+							if(objHouses!=null) {
+								logger.info("Prepare list of houses..." + objHouses.toString());
+								List<Object> listHouses = Arrays.asList(objHouses);
+								if(listHouses!=null && !listHouses.isEmpty()) {
+									logger.info("list of houses-size:" + listHouses.size());
+									dtoResponse.setListAux(listHouses);
+								}
+								
+							}
+						}else {
+							errMsg.append(methodName + " -->MRN not existent ?? <json raw>: " + json);
+							dtoResponse.setErrMsg(errMsg.toString());
+						}
+					}
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
+	
+	@RequestMapping(value="/digitollv2/getDocsRecTransportAir_withDescendants.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericWithDescendantsDtoContainer getDocsReceivedTransportAirWithDescendantsDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
+																				@RequestParam(value = "mrn", required = true) String mrn ) throws Exception {
+		
+		String serverRoot = ServerRoot.getServerRoot(request);
+		GenericWithDescendantsDtoContainer dtoResponse = new GenericWithDescendantsDtoContainer();
+		dtoResponse.setUser(user);
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- MRNnr: " + mrn );
+		
+		try {
+			if(checkUser(user)) {
+				logger.warn("user OK:" + user);
+				//API - PROD
+				String json = apiServicesAir.getDocsReceivedTransportWithDescendantsDigitollV2(mrn);
+				logger.warn("JSON = " + json);
+				if(StringUtils.isNotEmpty(json)) {
+					ApiMrnStatusWithDescendantsRecordDto dto = new ObjectMapper().readValue(json, ApiMrnStatusWithDescendantsRecordDto.class);
+					
+					if(dto!=null) {
+						logger.info(dto.toString());
+						dtoResponse.setObject(dto);
+					}
+					
+				}else {
+					errMsg.append(methodName + " -->JSON toll.no EMPTY. The MRN does not exists ...? ");
+					dtoResponse.setErrMsg(errMsg.toString());
+				}
+				
+			}else {
+				errMsg.append(methodName + " -->invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output. Only from browser. No logging needed 
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
+	
+	
 	/**
 	 * 
 	 * To get the final status when the carrier has passed the border

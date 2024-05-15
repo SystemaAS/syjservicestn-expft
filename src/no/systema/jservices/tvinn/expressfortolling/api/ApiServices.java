@@ -1703,7 +1703,7 @@ public class ApiServices {
         
 		Object postBody = null; //Not in use
 		
-        //https://api-test.toll.no/api/movement/road/status/v2/master-consignment/23NONJB08UP98SOBT7/transport-document/status
+        //https://api-test.toll.no/api/movement/road/status/v2/master-consignment/23NONJB08UP98SOBT7/status-with-descendants
 		String path = UriComponentsBuilder.fromPath(this.basePathMovementStatusRoadVersion + "/master-consignment/" + mrn + "/status-with-descendants").build().toUriString();
 		System.out.println(path);
 		logger.warn(path);
