@@ -1490,16 +1490,20 @@ public class DigitollV2TransportController {
 	 * 
 	 * @param request
 	 * @param user
+	 * @param uuid: this parameter could exists; if the end-user sends it...(optional)
 	 * @return
 	 * @throws Exception
 	 */
 	@RequestMapping(value="/digitollv2/getRoutingTransport.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getRoutingTransportDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user) throws Exception {
+	public GenericDtoResponse getRoutingTransportDigitollV2(HttpServletRequest request , 
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "uuid", required = true) String uuid) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
 		dtoResponse.setUser(user);
+		dtoResponse.setLrn(uuid);
 		dtoResponse.setRequestMethodApi("GET");
 		StringBuilder errMsg = new StringBuilder("ERROR ");
 		
@@ -1514,7 +1518,7 @@ public class DigitollV2TransportController {
 					
 				
 					String json = "";
-					json = apiServicesAir.getRoutingTransportDigitollV2();
+					json = apiServicesAir.getRoutingTransportDigitollV2(uuid);
 					logger.warn("JSON = " + json);
 					
 					EntryRoutingDto[] obj = new ObjectMapper().readValue(json, EntryRoutingDto[].class);

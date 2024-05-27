@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.*;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -1385,10 +1386,11 @@ public class ApiServicesAir {
 	
 	/**
 	 * Only for Air and testing requirement end-point
+	 * @param uuid
 	 * @return
 	 * @throws Exception
 	 */
-	public String getRoutingTransportDigitollV2() throws Exception {
+	public String getRoutingTransportDigitollV2(String uuid) throws Exception {
 		
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRouting();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
@@ -1404,9 +1406,23 @@ public class ApiServicesAir {
 		Object postBody = null; //Not in use
 		
         //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
-		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport").build().toUriString();
-		System.out.println(path);
-		logger.warn(path);
+		String path = "";
+		if(uuid!=null && !"null".equals(uuid) && StringUtils.isNotEmpty(uuid)) {
+			//uuid = "69bd7e4a-f203-4681-858b-75aa32e7f7e1";
+			//orig-->
+			path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport{*}?marker={*}" + uuid).build().toUriString();
+			//NOT OK path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport?marker=" + uuid).build().toUriString();
+			
+			//path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment{*}?marker={*}" + uuid).build().toUriString();
+			//path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment?marker=" + uuid).build().toUriString();
+			
+			
+			
+		}else {
+			path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport").build().toUriString();
+			System.out.println(path);
+			logger.warn(path);
+		}
 		
         final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
