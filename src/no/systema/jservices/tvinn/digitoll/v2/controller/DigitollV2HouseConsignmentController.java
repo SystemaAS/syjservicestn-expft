@@ -882,7 +882,9 @@ public class DigitollV2HouseConsignmentController {
 	 */
 	@RequestMapping(value="/digitollv2/getRoutingHouseConsignment.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
-	public GenericDtoResponse getRoutingHouseConsignmentDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user) throws Exception {
+	public GenericDtoResponse getRoutingHouseConsignmentDigitollV2(HttpServletRequest request , 
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "uuid", required = true) String uuid) throws Exception {
 		
 		String serverRoot = ServerRoot.getServerRoot(request);
 		GenericDtoResponse dtoResponse = new GenericDtoResponse();
@@ -901,7 +903,7 @@ public class DigitollV2HouseConsignmentController {
 					
 				
 					String json = "";
-					json = apiServicesAir.getRoutingHouseConsignmentDigitollV2();
+					json = apiServicesAir.getRoutingHouseConsignmentDigitollV2(uuid);
 					logger.warn("JSON = " + json);
 					EntryRoutingDto[] obj = new ObjectMapper().readValue(json, EntryRoutingDto[].class);
 					//DEBUG

@@ -1331,7 +1331,7 @@ public class ApiServicesAir {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getRoutingHouseConsignmentDigitollV2() throws Exception {
+	public String getRoutingHouseConsignmentDigitollV2(String uuid) throws Exception {
 		
 		TokenResponseDto maskinPortenResponseDto = authorization.accessTokenRequestPostMovementRouting();
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
@@ -1345,17 +1345,22 @@ public class ApiServicesAir {
         }
         
 		Object postBody = null; //Not in use
-		
-        //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
-		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment").build().toUriString();
-		System.out.println(path);
-		logger.warn(path);
-		
-        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+		final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
         final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
         
         headerParams.add("Accept-Charset", "utf-8");
+        
+        //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment").build().toUriString();
+		if(uuid!=null && !"null".equals(uuid) && StringUtils.isNotEmpty(uuid)) {
+			queryParams.add("marker", uuid);
+			logger.warn("as queryParams--> marker:" + uuid);
+		}	
+		
+		System.out.println(path);
+		logger.warn(path);
+		
         final String[] accepts = { "application/json" };
         final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
         final String[] contentTypes = { };
@@ -1404,31 +1409,22 @@ public class ApiServicesAir {
         }
         
 		Object postBody = null; //Not in use
-		
-        //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
-		String path = "";
-		if(uuid!=null && !"null".equals(uuid) && StringUtils.isNotEmpty(uuid)) {
-			//uuid = "69bd7e4a-f203-4681-858b-75aa32e7f7e1";
-			//orig-->
-			path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport{*}?marker={*}" + uuid).build().toUriString();
-			//NOT OK path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport?marker=" + uuid).build().toUriString();
-			
-			//path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment{*}?marker={*}" + uuid).build().toUriString();
-			//path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment?marker=" + uuid).build().toUriString();
-			
-			
-			
-		}else {
-			path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport").build().toUriString();
-			System.out.println(path);
-			logger.warn(path);
-		}
-		
-        final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
-        final HttpHeaders headerParams = new HttpHeaders();
+		final MultiValueMap<String, String> queryParams = new LinkedMultiValueMap<String, String>();
+		final HttpHeaders headerParams = new HttpHeaders();
         final MultiValueMap<String, Object> formParams = new LinkedMultiValueMap<String, Object>();
-        
         headerParams.add("Accept-Charset", "utf-8");
+        
+        //https://api-test.toll.no/api/movement/routing/v1/houseConsignment -->check the difference against all other end-points that do not have "status" in the path
+		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/transport").build().toUriString();
+		//TEST in playground: String path = UriComponentsBuilder.fromPath(this.basePathMovementRoutingVersion + "/house-consignment").build().toUriString();
+		if(uuid!=null && !"null".equals(uuid) && StringUtils.isNotEmpty(uuid)) {
+			queryParams.add("marker", uuid);
+			logger.warn("as queryParams--> marker:" + uuid);
+		}	
+		System.out.println(path);
+		logger.warn(path);
+		
+		
         final String[] accepts = { "application/json" };
         final List<MediaType> accept = apiClient.selectHeaderAccept(accepts);
         final String[] contentTypes = { };
