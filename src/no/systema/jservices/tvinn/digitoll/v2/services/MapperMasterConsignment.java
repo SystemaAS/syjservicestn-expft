@@ -200,7 +200,7 @@ public class MapperMasterConsignment {
 		
 		//(Optional) Transp.Equipment
 		if(StringUtils.isNotEmpty(dto.getEmc1id())) {
-			cml.setTranportEquipment(this.populateTransportEquipment(dto));
+			cml.setTransportEquipment(this.populateTransportEquipment(dto));
 		}
 		
 	

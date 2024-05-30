@@ -193,8 +193,26 @@ public class DifiJwtCreator {
 			logger.error(message, e);
 			throw new RuntimeException(message, e);
 		}
-		//Entry must use MovementRoad and NOT Movement Entry (ref to https://toll.github.io/api/maskinporten.html#scopes)
-		//This Entry belongs to movement-road-query-api-v2
+		
+		String result = this.getJwtString(this.expiration, this.scopeExpftMovementEntry, encodedCertificate, privateKey, this.ISNOT_KURER);
+		return result;
+		
+	    
+	}
+	public String createRequestMovementPresentationJwt() {
+		logger.info("Inside: createRequestMovementPresentationJwt" );
+		String encodedCertificate; 
+		PrivateKey privateKey;
+
+		try {
+			encodedCertificate = certificateManager.getEncodedCertificate();
+			privateKey = certificateManager.getPrivateKey();
+		} catch (Exception e) {
+			String message = "Could not manage X.509 in a correct way!";
+			logger.error(message, e);
+			throw new RuntimeException(message, e);
+		}
+		logger.info("scope:" + this.scopeExpftMovementEntry);
 		String result = this.getJwtString(this.expiration, this.scopeExpftMovementEntry, encodedCertificate, privateKey, this.ISNOT_KURER);
 		return result;
 		

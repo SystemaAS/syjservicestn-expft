@@ -55,6 +55,6 @@ public class HouseConsignmentConsignmentHouseLevel {
 	private List<GoodsItem> goodsItem;
 	
 	//Optional
-	private List<TransportEquipment> tranportEquipment;
+	private List<TransportEquipment> transportEquipment;
 		
 }

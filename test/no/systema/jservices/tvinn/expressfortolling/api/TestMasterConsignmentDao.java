@@ -156,7 +156,7 @@ public class TestMasterConsignmentDao {
 		te.setContainerIdentificationNumber("1234567SAS");
 		List _l1 = new ArrayList();
 		_l1.add(te);
-		cml.setTranportEquipment(_l1);
+		cml.setTransportEquipment(_l1);
 		
 		TransportDocumentMasterLevel td = new TransportDocumentMasterLevel();
 		td.setDocumentNumber("1111112");

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import no.systema.jservices.common.util.DateTimeManager;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseLight;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmologDto;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmologService;
 
@@ -40,6 +41,57 @@ public class SadmologLogger {
 			dto.setEllnrt(dtoResponse.getEllnrt());
 			dto.setEllnrm(dtoResponse.getEllnrm());
 			dto.setEllnrh(dtoResponse.getEllnrh());
+			//log data
+			//ogger.debug("C-level");
+			dto.setEldate(getLogDate(dtoResponse.getTimestamp()));
+			dto.setEltime(getLogTime(dtoResponse.getTimestamp()));
+			dto.setEltyp(getLogTyp(dtoResponse.getErrMsg()));
+			if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) {
+				//escape reserved chars
+				String tmp = dtoResponse.getErrMsg().replaceAll("\\{", "");
+				tmp = this.wash(tmp, "\\}", "");
+				tmp = this.wash(tmp, "\\[", "");
+				tmp = this.wash(tmp, "\\]", "");
+				tmp = this.wash(tmp, "\t", "");
+						
+				dtoResponse.setErrMsg(tmp);
+				dto.setElltxt(getLogText(dtoResponse.getErrMsg()));
+			}else {
+				dto.setElltxt(dtoResponse.getStatusApi() + " " + dtoResponse.getRequestMethodApi());
+			}
+			//logger.debug("D-level");
+			
+			//create error record
+			logger.trace("Record to log:" + dto.toString());
+			if(StringUtils.isNotEmpty(serverRoot) && StringUtils.isNotEmpty(user)) {
+				sadmologService.insertLogRecord(serverRoot, user, dto, MODE_ADD);
+			}else {
+				logger.error("Mandatory fields for SADMOLOG record missing ... ?");
+			}
+			
+		}catch(Exception e) {
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+			//log to std output and db
+			logger.error(dtoResponse.getErrMsg());
+			
+		}
+	}
+	
+	
+public void doLog(String serverRoot, String user, GenericDtoResponseLight dtoResponse){
+		
+		try {
+			logger.warn("Inside doLog ...");
+			SadmologDto dto = new SadmologDto();
+			//keys
+			//logger.debug("A-level");
+			if(StringUtils.isNotEmpty(dtoResponse.getAvd())) { dto.setElavd(Integer.valueOf(dtoResponse.getAvd())); }
+			if(StringUtils.isNotEmpty(dtoResponse.getPro())) { dto.setElpro(Integer.valueOf(dtoResponse.getPro())); }
+			if(StringUtils.isNotEmpty(dtoResponse.getTdn())) { dto.setEltdn(Integer.valueOf(dtoResponse.getTdn())); }
+			
 			//log data
 			//ogger.debug("C-level");
 			dto.setEldate(getLogDate(dtoResponse.getTimestamp()));

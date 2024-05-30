@@ -268,7 +268,7 @@ public class MapperTransportV2 {
 			te.setContainerIdentificationNumber(sourceDto.getEmcnr());
 			List _l1 = new ArrayList();
 			_l1.add(te);
-			cml.setTranportEquipment(_l1);
+			cml.setTransportEquipment(_l1);
 		}
 		
 		return cml;

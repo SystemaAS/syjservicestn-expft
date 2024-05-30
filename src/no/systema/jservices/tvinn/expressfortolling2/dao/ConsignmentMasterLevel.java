@@ -29,7 +29,7 @@ public class ConsignmentMasterLevel {
 	@JsonProperty("passiveBorderTransportMeans")
 	private PassiveBorderTransportMeans passiveBorderTransportMeans;
 	
-	@JsonProperty("tranportEquipment")
-	private List<TransportEquipment> tranportEquipment;
+	@JsonProperty("transportEquipment")
+	private List<TransportEquipment> transportEquipment;
 
 }

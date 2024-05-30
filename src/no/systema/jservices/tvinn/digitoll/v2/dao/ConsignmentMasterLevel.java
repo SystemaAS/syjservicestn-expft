@@ -13,7 +13,7 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 //we need this line in order to follow the order as in the properties. 
-@JsonPropertyOrder({"containerIndicator", "grossMass", "carrier", "consignee", "consignor", "transportDocumentMasterLevel", "tranportEquipment"})
+@JsonPropertyOrder({"containerIndicator", "grossMass", "carrier", "consignee", "consignor", "transportDocumentMasterLevel", "transportEquipment"})
 public class ConsignmentMasterLevel {
 	
 	
@@ -28,8 +28,8 @@ public class ConsignmentMasterLevel {
 	//Mandatory
 	private TransportDocumentMasterLevel transportDocumentMasterLevel;
 	
-	@JsonProperty("tranportEquipment")
-	private List<TransportEquipment> tranportEquipment;
+	@JsonProperty("transportEquipment")
+	private List<TransportEquipment> transportEquipment;
 	
 	//Optional
 	//Liste over hvilke postsekker som denne forsendelsene består av. Skal kun benyttes for hovedforsendelser som inneholder post
