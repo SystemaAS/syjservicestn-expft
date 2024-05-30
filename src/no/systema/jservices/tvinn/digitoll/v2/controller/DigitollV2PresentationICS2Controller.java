@@ -138,7 +138,8 @@ public class DigitollV2PresentationICS2Controller {
 	@RequestMapping(value="/digitollv2/postEntrySummaryDeclaration.do", method={RequestMethod.GET, RequestMethod.POST}) 
 	@ResponseBody
 	public GenericDtoResponseLight postEntrySummaryDeclarationDigitollV2(HttpServletRequest request , @RequestParam(value = "user", required = true) String user, 
-																				@RequestParam(value = "ensMrn", required = true) String ensMrn) throws Exception {
+																				@RequestParam(value = "ensMrn", required = true) String ensMrn,
+																				@RequestParam(value = "ensRequestId", required = false) String ensRequestId) throws Exception {
 		
 		logger.warn(PrettyLoggerOutputer.FRAME + PrettyLoggerOutputer.FRAME);
 		logger.warn("START of CALL<controller>: "+ new Date());
@@ -174,6 +175,11 @@ public class DigitollV2PresentationICS2Controller {
 				ensDto.setRequestId(UUID.randomUUID().toString());
 				//TEST error since this requestId already exists: ensDto.setRequestId("8935befa-8cea-43fa-b876-c8408f48b4aa");
 				//save requestId in return ---- TODO: sve it in Db
+				
+				//this in case we want to use the last requestId to test the API with error
+				if(StringUtils.isNotEmpty(ensRequestId)) {
+					ensDto.setRequestId(ensRequestId);
+				}
 				dtoResponse.setRequestId(ensDto.getRequestId());
 				
 				ensDto.setCustomsOfficeOfPresentation("NO351001");
