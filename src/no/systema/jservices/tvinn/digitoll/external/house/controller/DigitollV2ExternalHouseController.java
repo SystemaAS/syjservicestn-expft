@@ -156,7 +156,7 @@ public class DigitollV2ExternalHouseController {
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+										  if(this.peppolXmlWriterService.writePeppolFileOnDisk(msg, jsonPayload) == 0) {
 											  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto(masterDto, msg), "A");
 											  if(tmp!=null && !tmp.isEmpty()) {
 												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
@@ -270,7 +270,7 @@ public class DigitollV2ExternalHouseController {
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+										  if(this.peppolXmlWriterService.writePeppolFileOnDisk(msg, jsonPayload) == 0) {
 											  List tmp = sadmolhffService.insertLogRecord(serverRoot, user, this.getSadmolhffDto(houseDto, msg), "A");
 											  if(tmp!=null && !tmp.isEmpty()) {
 												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());

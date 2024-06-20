@@ -60,9 +60,10 @@ public class FilenameService {
 			  
 			Calendar now = Calendar.getInstance();
 			SimpleDateFormat formatter = new SimpleDateFormat(this.fileTimestampMask);
-			String suffix = formatter.format(now.getTime()) + "_" + msg.getDocumentID()+ "_" + msg.getReceiver().getIdentificationNumber() ;
+			String suffix = formatter.format(now.getTime()) ;
 			  
-			String sFile = this.fileOutboundDir + this.filePrefix + suffix + fileTypeXml;
+			//String sFile = this.fileOutboundDir + this.filePrefix + suffix + fileTypeXml;
+			String sFile = this.fileOutboundDir + msg.getSender().getIdentificationNumber() + "_" + suffix + fileTypeXml;
 			logger.info(sFile);
 			
 			retval = sFile;

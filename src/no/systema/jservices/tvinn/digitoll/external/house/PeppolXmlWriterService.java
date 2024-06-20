@@ -35,7 +35,7 @@ public class PeppolXmlWriterService {
 	 * 
 	 * @param msg
 	 */
-	public int writeFileOnDisk(MessageOutbound msg, String jsonPayload) {
+	public int writePeppolFileOnDisk(MessageOutbound msg, String jsonPayload) {
 		int retval = 0;
 		try {
 		
