@@ -82,11 +82,13 @@ public class PeppolXmlWriterService {
 		  Element documentIdentification = doc.createElement("DocumentIdentification");
 		  //<Standard>urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2</Standard>
 		  Element standard = doc.createElement("Standard");
-		  standard.setTextContent("urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2");
+		  //standard.setTextContent("urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2");
+		  standard.setTextContent("urn:fdc:norstella.no:toll:trns:adviseringsmelding:1");
 		  documentIdentification.appendChild(standard);
 		  //<TypeVersion>2.3</TypeVersion>
 		  Element typeVersion = doc.createElement("TypeVersion");
-		  typeVersion.setTextContent("2.3");
+		  //typeVersion.setTextContent("2.3");
+		  typeVersion.setTextContent("1.0");
 		  documentIdentification.appendChild(typeVersion);
 		  //<InstanceIdentifier>UNIQUE ID xxxx</TypeVersion>
 		  Element instanceIdentifier = doc.createElement("InstanceIdentifier");
@@ -94,7 +96,8 @@ public class PeppolXmlWriterService {
 		  documentIdentification.appendChild(instanceIdentifier);
 		  //<Type>TransportationStatus</Type>
 		  Element type = doc.createElement("Type");
-		  type.setTextContent("TransportationStatus");
+		  //type.setTextContent("TransportationStatus");
+		  type.setTextContent("adviseringsmelding");
 		  documentIdentification.appendChild(type);
 		  //<CreationDateAndTime>2023-12-04T15:42:10Z</CreationDateAndTime>  
 		  Element creationDateAndTime = doc.createElement("CreationDateAndTime");
@@ -106,8 +109,12 @@ public class PeppolXmlWriterService {
 		  
 		  //BusinessScope
 		  Element businessScope = doc.createElement("BusinessScope");
-		  this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2::TransportationStatus##urn:fdc:peppol.eu:logistics:trns:transportation_status:1::2.3");
-		  this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:transportation_status_only:1");
+		  //this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2::TransportationStatus##urn:fdc:peppol.eu:logistics:trns:transportation_status:1::2.3");
+		  //this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:transportation_status_only:1");
+		  this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:fdc:norstella.no:toll:trns:adviseringsmelding:1");
+		  this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:norstella.no:toll:bis:advisering:1");
+		  
+		  
 		  //add BusinessScope to header
 		  header.appendChild(businessScope);
 		  
