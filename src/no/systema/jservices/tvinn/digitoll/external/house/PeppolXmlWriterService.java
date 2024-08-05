@@ -113,6 +113,7 @@ public class PeppolXmlWriterService {
 		  //this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:transportation_status_only:1");
 		  this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:fdc:norstella.no:toll:trns:adviseringsmelding:1");
 		  this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:norstella.no:toll:bis:advisering:1");
+		  this.addScopeElement(doc, businessScope, "COUNTRY_C1", "NO");
 		  
 		  
 		  //add BusinessScope to header
