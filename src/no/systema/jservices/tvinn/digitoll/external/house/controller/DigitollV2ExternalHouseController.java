@@ -108,6 +108,8 @@ public class DigitollV2ExternalHouseController {
 	 * The actual sending does not takes place here (either FTP, WS or EMAIL are the responsibility of another system)
 	 * 
 	 * The db-table with configuration parameters is: SADMOCF
+	 * 
+	 * The carrier sends the masterId to an external product owner.
 	 * @param request
 	 * @param applicationUser
 	 * @param emlnrt
@@ -215,7 +217,7 @@ public class DigitollV2ExternalHouseController {
 	  }
 	
 	/**
-	 * Sends the external house to the external party (usually the ombud) responsible for the transport
+	 * Sends the external house to the external party (usually the carrier/representative) responsible for the transport
 	 * @param request
 	 * @param user
 	 * @param ehlnrt

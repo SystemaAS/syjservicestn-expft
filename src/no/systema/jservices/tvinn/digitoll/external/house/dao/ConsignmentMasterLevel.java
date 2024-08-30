@@ -9,9 +9,10 @@ import lombok.Data;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConsignmentMasterLevel {
+	private Integer totalGrossMass;
+	private String carrierIdentificationNumber;
 	private String documentNumber;
 	private String type;
-	private String carrierIdentificationNumber;
 	
 	private TransportDocumentMasterLevel transportDocumentMasterLevel = new TransportDocumentMasterLevel();
 	
