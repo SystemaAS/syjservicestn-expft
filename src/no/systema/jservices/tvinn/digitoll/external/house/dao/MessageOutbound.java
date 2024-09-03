@@ -30,17 +30,19 @@ public class MessageOutbound {
 	//Message parties
 	private Sender sender;
 	private Receiver receiver;
+	//Merchand parties
+	private Consignor consignor;
+	private Consignee consignee;
+		
+	//for outbound external house back to the owner of the transport
+	private ConsignmentHouseLevel consignmentHouseLevel;
+	
 	//Customs office
 	private CustomsOfficeOfFirstEntry customsOfficeOfFirstEntry;
 	private String estimatedDateAndTimeOfArrival;
 	private ActiveBorderTransportMeans activeBorderTransportMeans;
-	
+		
 	private ConsignmentMasterLevel consignmentMasterLevel;
-	//Merchand parties
-	private Consignor consignor;
-	private Consignee consignee;
-	//for outbound external house back to the owner of the transport
-	private ConsignmentHouseLevel consignmentHouseLevel;
 	
 	
 }

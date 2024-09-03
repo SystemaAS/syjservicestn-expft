@@ -14,6 +14,11 @@ public class PreviousDocuments {
 	
 	private String referenceNumber;
 	private String typeOfReference;
+	//in case CUDE
+	private String declarantNumber;
+	private Integer declarationDate;
+	private Integer sequenceNumber;
+	
 	
 
 }

@@ -133,4 +133,7 @@ public class SadmohfDto  {
 	private SadmomfDto masterDto;
 	//from item lines level
 	private List<SadmoifDto> goodsItemList;
+	
+	//
+	private ZadmomlfDto carrierMasterIdDto;
 }

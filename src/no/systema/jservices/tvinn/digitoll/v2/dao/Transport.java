@@ -15,13 +15,15 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 //@JsonPropertyOrder(alphabetic = true)
 //we need this line in order to follow the order as in the properties. For some reason the activeBorderTransportMeans is placed at the end because of the JsonProperty that fucks up the order
-@JsonPropertyOrder({"documentIssueDate", "representative", "activeBorderTransportMeans"})
+//@JsonPropertyOrder({"documentIssueDate", "representative", "activeBorderTransportMeans"})
 public class Transport {
 	
 	//Mandatory*
+	@JsonProperty("documentIssueDate")
 	private String documentIssueDate;
 	
 	//Optional
+	@JsonProperty("representative")
 	private Representative representative;
 	
 	//Mandatory*
@@ -29,15 +31,19 @@ public class Transport {
 	private ActiveBorderTransportMeansTransport activeBorderTransportMeansTransport;
 	
 	//Mandatory*
+	@JsonProperty("carrier")
 	private Carrier carrier;
 	
 	//Mandatory*
+	@JsonProperty("customsOfficeOfFirstEntry")
 	private CustomsOfficeOfFirstEntry customsOfficeOfFirstEntry;
 	
 	//Optional
+	@JsonProperty("estimatedDateAndTimeOfArrival")
 	private String estimatedDateAndTimeOfArrival;
 	
 	//Optional
+	@JsonProperty("estimatedDateAndTimeOfArrival")
 	private String scheduledDateAndTimeOfArrival;
 	
 	//Mandatory*

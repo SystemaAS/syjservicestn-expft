@@ -59,6 +59,7 @@ import no.systema.jservices.tvinn.digitoll.v2.services.SadmolffService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmolhffService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmomfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmotfService;
+import no.systema.jservices.tvinn.digitoll.v2.services.ZadmomlfService;
 import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 
 
@@ -91,6 +92,8 @@ public class DigitollV2ExternalHouseController {
 	private SadmolffService sadmolffService;
 	@Autowired
 	private SadmolhffService sadmolhffService;
+	@Autowired
+	private ZadmomlfService zadmomlfService;
 	
 	@Autowired
 	private FilenameService filenameService;
@@ -254,6 +257,8 @@ public class DigitollV2ExternalHouseController {
 						  for (SadmohfDto houseDto: list) {
 							  houseDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, ehlnrt));
 							  houseDto.setMasterDto(sadmomfService.getSadmomfDto(serverRoot, user, ehlnrt, ehlnrm));
+							  String emdkm_ff = houseDto.getMasterDto().getEmdkm_ff();
+							  houseDto.setCarrierMasterIdDto(zadmomlfService.getZadmomlf(serverRoot, user, emdkm_ff));
 							  logger.trace(houseDto.toString());
 							  //(2) Map to MessageOutbound
 							  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutboundExternalHouse(dtoConfig, houseDto, receiverName, receiverOrgnr);
@@ -277,7 +282,7 @@ public class DigitollV2ExternalHouseController {
 											  if(tmp!=null && !tmp.isEmpty()) {
 												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
 											  }else {
-												  result.append("ERROR. peppolXmlWriterService logRecordSadmolff ???? ");
+												  result.append("ERROR. peppolXmlWriterService logRecordSadmolhff ???? ");
 											  }
 									  	  }else {
 									  		result.append("ERROR. peppolXmlWriterService writeFileOnDisk ???? ");

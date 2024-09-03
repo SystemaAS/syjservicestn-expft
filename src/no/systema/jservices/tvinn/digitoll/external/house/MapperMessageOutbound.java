@@ -115,7 +115,7 @@ public class MapperMessageOutbound {
 	 * @param receiverOrgnr
 	 * @return
 	 */
-	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseRecord, String receiverName, String receiverOrgnr) {
+	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseDto, String receiverName, String receiverOrgnr) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOHouse");
 		msg.setVersion("1.0");
@@ -124,7 +124,7 @@ public class MapperMessageOutbound {
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
 		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 	
-		msg.setDocumentID(houseRecord.getEhdkh());
+		msg.setDocumentID(houseDto.getEhdkh());
 		/*
 		msg.setNote(masterRecord.getTransportDto().getEtavd() + "-" + masterRecord.getTransportDto().getEtpro());
 		*/
@@ -132,29 +132,37 @@ public class MapperMessageOutbound {
 		//Sender
 		//=======
 		Sender sender = new Sender();
-		sender.setName(dtoConfig.getAvsname());
-		sender.setIdentificationNumber(dtoConfig.getAvsorgnr());
+		//default sender = Transport Representative (carrier that is owner of the master ID
+		sender.setName(houseDto.getTransportDto().getEtnar());
+		sender.setIdentificationNumber(houseDto.getTransportDto().getEtrgr());
+		//this thing here was meant to be used in the beginning but probably it will not be used.
+		//leave it as a fall-back from the above in case it will get a revival.
+		if(StringUtils.isNotEmpty(dtoConfig.getAvsname()) && StringUtils.isNotEmpty(dtoConfig.getAvsorgnr())) {
+			sender.setName(dtoConfig.getAvsname());
+			sender.setIdentificationNumber(dtoConfig.getAvsorgnr());
+		}
+		
 		//Communication
-		/*
 		List commList = new ArrayList();
-		if(houseRecord.getTransportDto().getEtemrt()!=null ){
-			if("EM".equals(houseRecord.getTransportDto().getEtemrt()) ){
-				if(StringUtils.isNotEmpty(houseRecord.getTransportDto().getEtemr())) {
-					Communication comm = new Communication();
-					comm.setEmailAddress(houseRecord.getTransportDto().getEtemr());
+		Communication comm = new Communication();
+		if(houseDto.getTransportDto().getEtemrt()!=null ){
+			if("EM".equals(houseDto.getTransportDto().getEtemrt()) ){
+				if(StringUtils.isNotEmpty(houseDto.getTransportDto().getEtemr())) {
+					//Communication comm = new Communication();
+					comm.setEmailAddress(houseDto.getTransportDto().getEtemr());
 					//sender.setCommunication(comm);
 					commList.add(comm);
 				}
-			}else if ("TE".equals(houseRecord.getTransportDto().getEtemrt()) ){
-				if(StringUtils.isNotEmpty(houseRecord.getTransportDto().getEtemr())) {
-					Communication comm = new Communication();
-					comm.setTelephoneNumber(houseRecord.getTransportDto().getEtemr());
+			}else if ("TE".equals(houseDto.getTransportDto().getEtemrt()) ){
+				if(StringUtils.isNotEmpty(houseDto.getTransportDto().getEtemr())) {
+					//Communication comm = new Communication();
+					comm.setTelephoneNumber(houseDto.getTransportDto().getEtemr());
 					//sender.setCommunication(comm);
 					commList.add(comm);
 				}
 			}
 			sender.setCommunication(commList);
-		}*/
+		}
 		msg.setSender(sender);
 		//=========
 		//Receiver
@@ -166,70 +174,73 @@ public class MapperMessageOutbound {
 		
 		//Consignor-Avsändare
 		Consignor consignor = new Consignor();
-		consignor.setName(houseRecord.getEhnas());
+		consignor.setName(houseDto.getEhnas());
 		msg.setConsignor(consignor);
 		//Consignee-Mottagare
 		Consignee consignee = new Consignee();
-		consignee.setName(houseRecord.getEhnam());
+		consignee.setName(houseDto.getEhnam());
 		msg.setConsignee(consignee);
 		
 		//========================
 		//Consignment house level
 		//========================
 		ConsignmentHouseLevel consignmentHouseLevel = new ConsignmentHouseLevel();
-		consignmentHouseLevel.setTotalGrossMass(houseRecord.getEhvkb());
-		consignmentHouseLevel.setNumberOfPackages(houseRecord.getEhntk());
-		consignmentHouseLevel.setGoodsDescription(houseRecord.getEhvt());
+		consignmentHouseLevel.setTotalGrossMass(houseDto.getEhvkb());
+		consignmentHouseLevel.setNumberOfPackages(houseDto.getEhntk());
+		consignmentHouseLevel.setGoodsDescription(houseDto.getEhvt());
 		//TransportDocumentHouseLevel on consignment house level
 		TransportDocumentHouseLevel transportDocumentHouseLevel = new TransportDocumentHouseLevel();
-		transportDocumentHouseLevel.setDocumentNumber(houseRecord.getEhdkh());
-		transportDocumentHouseLevel.setType(houseRecord.getEhdkht());
+		transportDocumentHouseLevel.setDocumentNumber(houseDto.getEhdkh());
+		transportDocumentHouseLevel.setType(houseDto.getEhdkht());
 		consignmentHouseLevel.setTransportDocumentHouseLevel(transportDocumentHouseLevel);
 		//Master level
-		if(StringUtils.isNotEmpty(houseRecord.getMasterDto().getEmdkm_ff())) {
+		if(StringUtils.isNotEmpty(houseDto.getMasterDto().getEmdkm_ff())) {
 			ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();
-			consignmentMasterLevel.setCarrierIdentificationNumber(houseRecord.getMasterDto().getEmrgt_ff());
+			consignmentMasterLevel.setCarrierIdentificationNumber(houseDto.getMasterDto().getEmrgt_ff());
 			TransportDocumentMasterLevel transportDocumentMasterLevel = new TransportDocumentMasterLevel();
-			transportDocumentMasterLevel.setDocumentNumber(houseRecord.getMasterDto().getEmdkm_ff());
-			transportDocumentMasterLevel.setType(houseRecord.getMasterDto().getEmdkmt_ff());
+			transportDocumentMasterLevel.setDocumentNumber(houseDto.getMasterDto().getEmdkm_ff());
+			transportDocumentMasterLevel.setType(houseDto.getMasterDto().getEmdkmt_ff());
 			consignmentMasterLevel.setTransportDocumentMasterLevel(transportDocumentMasterLevel);
 			//add
 			consignmentHouseLevel.setConsignmentMasterLevel(consignmentMasterLevel);
 		}
 		
 		//Previous documents
-		if(StringUtils.isNotEmpty(houseRecord.getEhtrnr())) {
+		if(StringUtils.isNotEmpty(houseDto.getEhtrnr())) {
 			//We should include the other possible 9 transits. This is only the first one
 			List previousDocumentsList = new ArrayList();
-			PreviousDocuments previousDocuments = new PreviousDocuments();
-			previousDocuments.setReferenceNumber(houseRecord.getEhtrnr());
-			previousDocuments.setTypeOfReference("N820");
-			previousDocumentsList.add(previousDocuments);
+			if(StringUtils.isNotEmpty(houseDto.getEhtrnr())) {
+				PreviousDocuments previousDocuments = new PreviousDocuments();
+				previousDocuments.setReferenceNumber(houseDto.getEhtrnr());
+				previousDocuments.setTypeOfReference("N820");
+				previousDocumentsList.add(previousDocuments);
+			}
 			//add
 			consignmentHouseLevel.setPreviousDocuments(previousDocumentsList);
 		}
+		//When CUDE and sequence are present
+		if(StringUtils.isNotEmpty(houseDto.getEhrg()) && houseDto.getEh0068a()>0 && houseDto.getEh0068b()>0) {
+			DeclarantId declarantId = new DeclarantId();
+			declarantId.setDeclarantNumber(houseDto.getEhrg());
+			declarantId.setDeclarationDate(this.getDeclarationDateFormattedISO( houseDto.getEh0068a()) );
+			declarantId.setSequenceNumber(houseDto.getEh0068b());
+			//add
+			consignmentHouseLevel.setDeclarantId(declarantId);
+		}
 		//Export from EU
-		if(StringUtils.isNotEmpty(houseRecord.getEheid())) {
+		if(StringUtils.isNotEmpty(houseDto.getEheid())) {
 			List exportFromEUList = new ArrayList();
 			ExportFromEU exportFromEU = new ExportFromEU();
-			exportFromEU.setTypeOfExport(houseRecord.getEhetypt());
-			exportFromEU.setExportId(houseRecord.getEheid());
+			exportFromEU.setTypeOfExport(houseDto.getEhetypt());
+			exportFromEU.setExportId(houseDto.getEheid());
 			exportFromEUList.add(exportFromEU);
 			//add
 			consignmentHouseLevel.setExportFromEU(exportFromEUList);
 		}
-		//When CUDE and sequence are present
-		if(StringUtils.isNotEmpty(houseRecord.getEhrg()) && houseRecord.getEh0068a()>0 && houseRecord.getEh0068b()>0) {
-			DeclarantId declarantId = new DeclarantId();
-			declarantId.setDeclarantNumber(houseRecord.getEhrg());
-			declarantId.setDeclarationDate(this.getDeclarationDateFormattedISO( houseRecord.getEh0068a()) );
-			declarantId.setSequenceNumber(houseRecord.getEh0068b());
-			//add
-			consignmentHouseLevel.setDeclarantId(declarantId);
-		}
+		
 		
 		//Prosedyr (non existent in the implementation guide but it is mandatory
-		consignmentHouseLevel.setProcedure(houseRecord.getEhprt());
+		consignmentHouseLevel.setProcedure(houseDto.getEhprt());
 		
 		//add to message
 		msg.setConsignmentHouseLevel(consignmentHouseLevel);
@@ -237,17 +248,15 @@ public class MapperMessageOutbound {
 		//END ConsignmentHouseLevel
 		//==========================
 		
-		
-		
-		
-		/*
 		//Customs Office
 		CustomsOfficeOfFirstEntry custOffice = new CustomsOfficeOfFirstEntry();
-		custOffice.setReferenceNumber(masterRecord.getTransportDto().getEttsd());
+		custOffice.setReferenceNumber(houseDto.getCarrierMasterIdDto().getCustoff());
 		//Since we do not have seconds in time we must add this to the integer: 1000(HHmm) will be 100000(HHmmss)
-		Integer etaTime = masterRecord.getTransportDto().getEtetat() * 100;
-		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
+		Integer etaTime = houseDto.getCarrierMasterIdDto().getTime();
+		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(houseDto.getCarrierMasterIdDto().getDate(), etaTime));
 		msg.setCustomsOfficeOfFirstEntry(custOffice);
+		
+		/*
 		ActiveBorderTransportMeans abtranspMeans = new ActiveBorderTransportMeans();
 		abtranspMeans.setIdentificationNumber(masterRecord.getTransportDto().getEtkmrk());
 		abtranspMeans.setTypeOfIdentification(masterRecord.getTransportDto().getEtktyp());
