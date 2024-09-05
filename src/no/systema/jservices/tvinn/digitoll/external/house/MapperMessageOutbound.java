@@ -100,8 +100,10 @@ public class MapperMessageOutbound {
 		ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();
 		consignmentMasterLevel.setTotalGrossMass(masterRecord.getEmvkb());
 		consignmentMasterLevel.setCarrierIdentificationNumber(masterRecord.getTransportDto().getEtrgt());
-		consignmentMasterLevel.setDocumentNumber(masterRecord.getEmdkm());
-		consignmentMasterLevel.setType(masterRecord.getEmdkmt());
+		TransportDocumentMasterLevel transportDocumentMasterLevel = new TransportDocumentMasterLevel();
+		transportDocumentMasterLevel.setDocumentNumber(masterRecord.getEmdkm());
+		transportDocumentMasterLevel.setType(masterRecord.getEmdkmt());
+		consignmentMasterLevel.setTransportDocumentMasterLevel(transportDocumentMasterLevel);
 		
 		msg.setConsignmentMasterLevel(consignmentMasterLevel);
 		
@@ -132,14 +134,15 @@ public class MapperMessageOutbound {
 		//Sender
 		//=======
 		Sender sender = new Sender();
-		//default sender = Transport Representative (carrier that is owner of the master ID
-		sender.setName(houseDto.getTransportDto().getEtnar());
-		sender.setIdentificationNumber(houseDto.getTransportDto().getEtrgr());
-		//this thing here was meant to be used in the beginning but probably it will not be used.
-		//leave it as a fall-back from the above in case it will get a revival.
+		//default
 		if(StringUtils.isNotEmpty(dtoConfig.getAvsname()) && StringUtils.isNotEmpty(dtoConfig.getAvsorgnr())) {
 			sender.setName(dtoConfig.getAvsname());
 			sender.setIdentificationNumber(dtoConfig.getAvsorgnr());
+		}else {
+			//product owner's orgnr (sender of the external house to toll.no)
+			sender.setName("AVSNAME empty ?");
+			sender.setIdentificationNumber("AVSORGNR empty ?");
+			
 		}
 		
 		//Communication
