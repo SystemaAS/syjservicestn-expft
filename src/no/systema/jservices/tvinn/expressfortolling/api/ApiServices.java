@@ -847,14 +847,14 @@ public class ApiServices {
 		//System.out.println("difi-token:" + maskinPortenResponseDto.getAccess_token());
 		TokenResponseDto tollResponseDto = authorization.accessTokenRequestPostToll(maskinPortenResponseDto);
 		//System.out.println("toll-token:" + tollResponseDto.getAccess_token());
-		System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
+		//System.out.println("toll-token expires_in:" + tollResponseDto.getExpires_in());
 		tollTokenMap.put(1, tollResponseDto);
 		
 		//Debug for JSON string
 		try {
 			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 			String json = ow.writeValueAsString(transport);
-			//logger.debug(json);
+			logger.trace(json);
 			
 		}catch(Exception e) {
 			e.toString();
@@ -871,7 +871,7 @@ public class ApiServices {
 		
         //https://api-test.toll.no/api/movement/road/v1/test-auth
 		String path = UriComponentsBuilder.fromPath(this.basePathMovementRoadVersion + "/transport").build().toUriString();
-		System.out.println(path);
+		//System.out.println(path);
 		logger.warn(path);
 		
         
