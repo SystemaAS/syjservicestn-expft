@@ -44,7 +44,7 @@ public class MapperMessageOutbound {
 	public MessageOutbound mapMessageOutbound(SadmomfDto masterRecord, String receiverName, String receiverOrgnr) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOMaster");
-		msg.setVersion("1.0");
+		msg.setVersion(1);
 		String uuid = UUID.randomUUID().toString();
 		msg.setMessageNumber(uuid);
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
@@ -120,7 +120,7 @@ public class MapperMessageOutbound {
 	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseDto, String receiverName, String receiverOrgnr) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOHouse");
-		msg.setVersion("1.0");
+		msg.setVersion(1);
 		String uuid = UUID.randomUUID().toString();
 		msg.setMessageNumber(uuid);
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)

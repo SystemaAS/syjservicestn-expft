@@ -22,7 +22,7 @@ public class MessageOutbound {
 	
 	//Mandatory*
 	private String messageType;
-	private String version;
+	private Integer version;
 	private String messageNumber;
 	private String messageIssueDate;
 	private String documentID;
