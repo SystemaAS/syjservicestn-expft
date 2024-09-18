@@ -105,6 +105,9 @@ public class DigitollV2ExternalHouseController {
 	private JsonWriterService jsonWriterService;
 	
 	
+	@Value("${expft.external.house.spec.version}")
+	private String specVersion;
+	
 	/**
 	 * This method delivers a serialize file.
 	 * The method deals with the construction of the correct file to deliver to an external system.
@@ -145,7 +148,7 @@ public class DigitollV2ExternalHouseController {
 							  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
 							  logger.trace(masterDto.toString());
 							  //(2) Map to MessageOutbound
-							  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
+							  MessageOutbound msg = new MapperMessageOutbound(this.specVersion).mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
 							  logger.info(json);
@@ -261,7 +264,7 @@ public class DigitollV2ExternalHouseController {
 							  houseDto.setCarrierMasterIdDto(zadmomlfService.getZadmomlf(serverRoot, user, emdkm_ff));
 							  logger.trace(houseDto.toString());
 							  //(2) Map to MessageOutbound
-							  MessageOutbound msg = new MapperMessageOutbound().mapMessageOutboundExternalHouse(dtoConfig, houseDto, receiverName, receiverOrgnr);
+							  MessageOutbound msg = new MapperMessageOutbound(specVersion).mapMessageOutboundExternalHouse(dtoConfig, houseDto, receiverName, receiverOrgnr);
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
 							  logger.info(json);

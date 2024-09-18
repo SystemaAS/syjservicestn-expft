@@ -39,12 +39,15 @@ import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
  */
 public class MapperMessageOutbound {
 	private static Logger logger = LoggerFactory.getLogger(MapperMessageOutbound.class.getName());
+	private String version = "";
 	
-	
+	public MapperMessageOutbound(String version) {
+		this.version = version;
+	}
 	public MessageOutbound mapMessageOutbound(SadmomfDto masterRecord, String receiverName, String receiverOrgnr) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOMaster");
-		msg.setVersion(1);
+		msg.setVersion(this.version);
 		String uuid = UUID.randomUUID().toString();
 		msg.setMessageNumber(uuid);
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
@@ -120,7 +123,7 @@ public class MapperMessageOutbound {
 	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseDto, String receiverName, String receiverOrgnr) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOHouse");
-		msg.setVersion(1);
+		msg.setVersion(this.version);
 		String uuid = UUID.randomUUID().toString();
 		msg.setMessageNumber(uuid);
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
