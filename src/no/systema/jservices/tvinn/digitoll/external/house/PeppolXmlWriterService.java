@@ -2,6 +2,7 @@ package no.systema.jservices.tvinn.digitoll.external.house;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.StringWriter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -141,9 +142,15 @@ public class PeppolXmlWriterService {
 		  //add BinaryContent to root
 		  rootElement.appendChild(binaryContent);
 		  
+		  // write to logger
+		  logger.info("About to write XML-payload...");
+		  logger.info(this.getStringFromDocument(doc));
+		  
 		  // write dom document to a file
 		  FileOutputStream output = new FileOutputStream(this.filenameService.getFileNameXml(msg)); 
 		  writeXml(doc, output);
+		  
+		 
 		  
 		}catch (Exception e) {
 			retval = -1;
@@ -151,6 +158,16 @@ public class PeppolXmlWriterService {
 		}
 		
 		return retval;
+	}
+	
+	private String getStringFromDocument(Document doc) throws TransformerException {
+	    DOMSource domSource = new DOMSource(doc);
+	    StringWriter writer = new StringWriter();
+	    StreamResult result = new StreamResult(writer);
+	    TransformerFactory tf = TransformerFactory.newInstance();
+	    Transformer transformer = tf.newTransformer();
+	    transformer.transform(domSource, result);
+	    return writer.toString();
 	}
 	
 	private void addScopeElement(Document doc, Element parent, String typeValue, String idValue) {

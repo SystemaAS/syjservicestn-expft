@@ -86,6 +86,16 @@ public class MapperMessageOutbound {
 		receiver.setIdentificationNumber(receiverOrgnr);
 		msg.setReceiver(receiver);
 		
+		//Consignor
+		Consignor consignor = new Consignor();
+		consignor.setName(masterRecord.getEmnas());
+		msg.setConsignor(consignor);
+		//Consignee
+		Consignee consignee = new Consignee();
+		consignee.setName(masterRecord.getEmnam());
+		msg.setConsignee(consignee);
+		
+		
 		//Customs Office
 		CustomsOfficeOfFirstEntry custOffice = new CustomsOfficeOfFirstEntry();
 		custOffice.setReferenceNumber(masterRecord.getTransportDto().getEttsd());
@@ -97,6 +107,7 @@ public class MapperMessageOutbound {
 		abtranspMeans.setIdentificationNumber(masterRecord.getTransportDto().getEtkmrk());
 		abtranspMeans.setTypeOfIdentification(masterRecord.getTransportDto().getEtktyp());
 		abtranspMeans.setCountryCode(masterRecord.getTransportDto().getEtklk());
+		abtranspMeans.setModeOfTransportCode(masterRecord.getTransportDto().getEtktkd());
 		msg.setActiveBorderTransportMeans(abtranspMeans);
 		
 		//Carrier Id (Orgnr)
