@@ -167,8 +167,11 @@ public class MapperMasterConsignment {
 		if(StringUtils.isNotEmpty(dto.getEmnam())) {
 			Consignee consignee = new Consignee();
 			consignee.setName(dto.getEmnam() );
-			consignee.setIdentificationNumber(dto.getEmrgm() );
 			consignee.setTypeOfPerson(dto.getEmtppm()); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
+			
+			if(StringUtils.isNotEmpty(dto.getEmrgm())) {
+				consignee.setIdentificationNumber(dto.getEmrgm() );
+			}
 			if(StringUtils.isNotEmpty(dto.getEmpsm())) {
 				consignee.setAddress(this.setAddress(dto.getEmpsm(), dto.getEmlkm(), dto.getEmpnm(), dto.getEmad1m(), dto.getEmnrm() ));
 			}
@@ -181,8 +184,11 @@ public class MapperMasterConsignment {
 		if(StringUtils.isNotEmpty(dto.getEmnas())) {
 			Consignor consignor = new Consignor();
 			consignor.setName(dto.getEmnas());
-			consignor.setIdentificationNumber(dto.getEmrgs());
 			consignor.setTypeOfPerson(dto.getEmtppm()); //1- Fysisk person , 2-Juridisk person (företag). Add field in db
+			
+			if(StringUtils.isNotEmpty(dto.getEmrgs())) {
+				consignor.setIdentificationNumber(dto.getEmrgs());
+			}
 			if(StringUtils.isNotEmpty(dto.getEmpss())) {
 				consignor.setAddress(this.setAddress(dto.getEmpss(),dto.getEmlks(),dto.getEmpns(),dto.getEmad1s(),dto.getEmnrs()));
 			}

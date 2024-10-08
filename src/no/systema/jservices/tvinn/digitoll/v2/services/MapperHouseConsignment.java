@@ -208,9 +208,12 @@ public class MapperHouseConsignment {
 		//(Mandatory) Consignor
 		Consignor consignor = new Consignor();
 		consignor.setName(dto.getEhnas());
-		consignor.setIdentificationNumber(dto.getEhrgs());
 		consignor.setTypeOfPerson(dto.getEhtpps());
 		
+		//Optional Orgnr
+		if(StringUtils.isNotEmpty(dto.getEhrgs())) {
+			consignor.setIdentificationNumber(dto.getEhrgs());
+		}
 		//(Optional)Address ... this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 		if(StringUtils.isNotEmpty(dto.getEhpss())) {
 			consignor.setAddress(this.setAddress(dto.getEhpss(), dto.getEhlks(), dto.getEhpns(), dto.getEhad1s(), dto.getEhpbs(), dto.getEhnrs()));
@@ -225,9 +228,12 @@ public class MapperHouseConsignment {
 		//(Mandatory) Consignee
 		Consignee consignee = new Consignee();
 		consignee.setName(dto.getEhnam());
-		consignee.setIdentificationNumber(dto.getEhrgm());
 		consignee.setTypeOfPerson(dto.getEhtppm()); //orgnr = 9 siffror, personnumer = 11 siffror ??
 		
+		//Optional Orgnr
+		if(StringUtils.isNotEmpty(dto.getEhrgm())) {
+			consignee.setIdentificationNumber(dto.getEhrgm());
+		}
 		//(Optional) Address
 		if(StringUtils.isNotEmpty(dto.getEhpsm())) { 
 			consignee.setAddress(this.setAddress(dto.getEhpsm(), dto.getEhlkm(), dto.getEhpnm(), dto.getEhad1m(), dto.getEhpbm(), dto.getEhnrm()));
