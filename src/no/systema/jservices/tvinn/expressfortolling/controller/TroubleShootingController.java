@@ -1,6 +1,8 @@
 package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -11,6 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.eori.validation.soap.ws.client.generated.EORIValidation;
+import com.eori.validation.soap.ws.client.generated.EoriResponse;
+import com.eori.validation.soap.ws.client.generated.EoriValidationResult;
+import com.eori.validation.soap.ws.client.generated.Validation;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.util.Log4jUtils;
@@ -64,6 +71,34 @@ public class TroubleShootingController {
 		logger.warn("toll-token:" + tollResponseDto.getAccess_token());
 		StringBuilder sb = new StringBuilder("OK...maskinportToken expires in:" + maskinPortenResponseDto.getExpires_in() + " tollToken expires in:" + tollResponseDto.getExpires_in());
 		sb.append(" maskinporten-scope:" + maskinPortenResponseDto.getScope());
+		session.invalidate();
+		return sb.toString();
+	}
+	
+	@RequestMapping(value = "testEORIValidation.do", method = { RequestMethod.GET })
+	public String testEORIValidation(HttpSession session) throws Exception {
+		StringBuilder sb = new StringBuilder();
+		Validation validation = new Validation();
+		EORIValidation eoriValidation = validation.getEORIValidationImplPort();
+		//TOTEN
+		List<String> eoriList = new ArrayList();
+		eoriList.add("SE4446864193");
+		eoriList.add("YYYYYYYYY");
+		eoriList.add("SE4441976109");
+		
+		
+		EoriValidationResult result = eoriValidation.validateEORI(eoriList);
+		List<EoriResponse> responseList = result.getResult();
+		for (EoriResponse response: responseList ) {
+			//logger.info(response.getEori() + "XXX" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
+			//logger.info(response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
+			//output on browser
+			sb.append("-------------EORI:" + response.getEori() + " Name:" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
+			sb.append(" " + response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
+			
+		}
+		
+		
 		session.invalidate();
 		return sb.toString();
 	}
