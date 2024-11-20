@@ -75,6 +75,24 @@ public class TroubleShootingController {
 		return sb.toString();
 	}
 	
+	/**
+	 * This uses the wsdl generated code from:
+	 * 
+	 * with Java 8 (command line where JAVA_HOME/bin/wsimport...
+	 * >wsimport -s . -keep -p com.eori.validation.soap.ws.client.generated "https://ec.europa.eu/taxation_customs/dds2/eos/validation/services/validation?wsdl"
+	 * 
+	 * As a test for EORI-Validation
+	 * 
+	 * Important: open for firewall on DSV:
+	 * https://ec.europa.eu/taxation_customs/dds2/eos/validation/services/validation?wsdl
+	 * http://eori.ws.eos.dds.s/
+	 * 
+	 * Works fine from http:localhost:8080/... and https://gw.systema.no.8443...
+	 * 
+	 * @param session
+	 * @return
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "testEORIValidation.do", method = { RequestMethod.GET })
 	public String testEORIValidation(HttpSession session) throws Exception {
 		StringBuilder sb = new StringBuilder();
