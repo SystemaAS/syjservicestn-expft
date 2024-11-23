@@ -147,9 +147,12 @@ public class MapperHouseConsignment {
 						if("CUDE".equals(dto.getEhtrty())) {
 							//this case will surely never happen in real life but we must comply for the TestCase...
 							prevDocs.setTypeOfReference("N820");
+						}else if("GONU".equals(dto.getEhtrty())) {
+							//Example 9 - Godsnr
+							prevDocs.setTypeOfReference(dto.getEhtrty());
 						}
 					}else {
-						prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+						prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering, GONU=Godsnummer
 					}
 					prevDocs.setReferenceNumber(dto.getEhtrnr());
 					prevDocsList.add(prevDocs);
@@ -157,12 +160,15 @@ public class MapperHouseConsignment {
 				}
 				//(2)
 				if(StringUtils.isNotEmpty(dto.getEhrg()) && dto.getEh0068b()>0) {
-					PreviousDocuments prevDocs = new PreviousDocuments();
-					prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
-					prevDocs.setDeclarantNumber(dto.getEhrg());
-					prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
-					prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
-					prevDocsList.add(prevDocs);
+					//Valid only for none-GONU
+					if(!"GONU".equals(dto.getEhtrty())) {
+						PreviousDocuments prevDocs = new PreviousDocuments();
+						prevDocs.setTypeOfReference(dto.getEhtrty()); //CUDE=Tolldeklarasjon, RETR=Oppstart transittering
+						prevDocs.setDeclarantNumber(dto.getEhrg());
+						prevDocs.setDeclarationDate(dateUtils.getDate(String.valueOf(dto.getEh0068a())));
+						prevDocs.setSequenceNumber(String.valueOf(dto.getEh0068b()));
+						prevDocsList.add(prevDocs);
+					}
 				}
 				//populate extras if any
 				this.populateTransit2_10(dto, prevDocsList);
