@@ -113,7 +113,7 @@ public class TroubleShootingController {
 			//output on browser
 			sb.append("-------------EORI:" + response.getEori() + " Name:" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
 			sb.append(" " + response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
-			
+			logger.info(sb.toString());
 		}
 		
 		

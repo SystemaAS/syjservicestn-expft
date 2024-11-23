@@ -26,6 +26,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eori.validation.soap.ws.client.generated.EORIValidation;
+import com.eori.validation.soap.ws.client.generated.EoriResponse;
+import com.eori.validation.soap.ws.client.generated.EoriValidationResult;
+import com.eori.validation.soap.ws.client.generated.Validation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.gson.Gson;
@@ -40,6 +44,7 @@ import no.systema.jservices.tvinn.digitoll.entry.road.EntryMovRoadDto;
 import no.systema.jservices.tvinn.digitoll.v2.controller.service.PoolExecutorControllerService;
 import no.systema.jservices.tvinn.digitoll.v2.dao.Transport;
 import no.systema.jservices.tvinn.digitoll.v2.dto.ApiRequestIdDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.EoriValidationDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.routing.EntryRoutingDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmotfStatus2;
@@ -48,6 +53,7 @@ import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.ApiMrnStatusWithDescendantsRecordDto;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponse;
+import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseEORIValidation;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericDtoResponseLight;
 import no.systema.jservices.tvinn.expressfortolling2.dto.GenericWithDescendantsDtoContainer;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumControllerMrnType;
@@ -835,6 +841,108 @@ public class DigitollV2TransportController {
 						
 					}else {
 						errMsg.append("LRN empty ?" + "-->LRN:" + lrn);
+						dtoResponse.setErrMsg(errMsg.toString());
+						
+					}
+											
+			}else {
+				errMsg.append(" invalid user " + user + " " + methodName);
+				dtoResponse.setErrMsg(errMsg.toString());
+			}
+			
+		}catch(Exception e) {
+			//e.printStackTrace();
+			//Get out stackTrace to the response (errMsg)
+			StringWriter sw = new StringWriter();
+			e.printStackTrace(new PrintWriter(sw));
+			dtoResponse.setErrMsg(sw.toString());
+		}
+		
+		//NA --> log in db before std-output -- since this is a help method to be executed from the browser only ...
+		//sadexlogLogger.doLog(serverRoot, user, dtoResponse);
+		//log in log file
+		if(StringUtils.isNotEmpty(dtoResponse.getErrMsg())) { logger.error(dtoResponse.getErrMsg()); }
+		
+		//std output (browser)
+		return dtoResponse;
+	}
+	
+	/**
+	 * /**
+	 * This uses the wsdl generated code from:
+	 * 
+	 * with Java 8 (command line where JAVA_HOME/bin/wsimport...
+	 * >wsimport -s . -keep -p com.eori.validation.soap.ws.client.generated "https://ec.europa.eu/taxation_customs/dds2/eos/validation/services/validation?wsdl"
+	 * 
+	 * As a test for EORI-Validation
+	 * 
+	 * Important: open for firewall on DSV:
+	 * https://ec.europa.eu/taxation_customs/dds2/eos/validation/services/validation?wsdl
+	 * http://eori.ws.eos.dds.s/
+	 * 
+	 * Works fine from http:localhost:8080/... and https://gw.systema.no.8443...
+	 * 
+	 * 
+	 * Client call: http://localhost:8080/syjservicestn-expft/digitollv2/getEORIValidation.do?user=OSCAR&eori=SE4441976109
+	 * @param request
+	 * @param user
+	 * @param eori
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value="/digitollv2/getEORIValidation.do", method={RequestMethod.GET, RequestMethod.POST}) 
+	@ResponseBody
+	public GenericDtoResponseEORIValidation getEORIValidation(HttpServletRequest request , @RequestParam(value = "user", required = true) String user,
+																				@RequestParam(value = "eori", required = true) String eori) throws Exception {
+		
+		GenericDtoResponseEORIValidation dtoResponse = new GenericDtoResponseEORIValidation();
+		dtoResponse.setUser(user);
+		dtoResponse.setEori(eori);
+		
+		StringBuilder errMsg = new StringBuilder("ERROR ");
+		String methodName = new Object() {}
+	      .getClass()
+	      .getEnclosingMethod()
+	      .getName();
+		
+		logger.warn("Inside " + methodName + "- eori: " + eori );
+		
+		try {
+			if(checkUser(user)) {
+					//
+					if(StringUtils.isNotEmpty(eori)) {
+						//(1) add eori to list
+						List<String> eoriList = new ArrayList();
+						eoriList.add(eori);
+						//(2) validate towards external API-EORI-service 
+						Validation validation = new Validation();
+						EORIValidation eoriValidation = validation.getEORIValidationImplPort();
+						EoriValidationResult result = eoriValidation.validateEORI(eoriList);
+						List<EoriResponse> responseList = result.getResult();
+						//(3) got the result now
+						for (EoriResponse response: responseList ) {
+							//DEBUG	
+							logger.info(response.getEori() + "XXX" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
+							logger.info(response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
+							//
+							EoriValidationDto dto = new EoriValidationDto();
+							if(response.getStatus()==0 && StringUtils.isNotEmpty(response.getName())) {
+								dto.setEori(response.getEori());
+								dto.setName(response.getName());
+								dto.setStatus(response.getStatus());
+								dto.setStatusDescr(response.getStatusDescr());
+								dto.setCity(response.getCity());
+								dto.setPostalCode(response.getPostalCode());
+								dto.setCountry(response.getCountry());
+							}
+							//
+							dtoResponse.getList().add(dto);
+							
+						}
+						
+		
+					}else {
+						errMsg.append("EORI empty ?" + "-->EORI:" + eori);
 						dtoResponse.setErrMsg(errMsg.toString());
 						
 					}
