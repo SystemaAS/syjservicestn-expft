@@ -926,7 +926,7 @@ public class DigitollV2TransportController {
 							logger.info(response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
 							//
 							EoriValidationDto dto = new EoriValidationDto();
-							if(response.getStatus()==0 && StringUtils.isNotEmpty(response.getName())) {
+							if(response.getStatus()==0) {
 								dto.setEori(response.getEori());
 								dto.setName(response.getName());
 								dto.setStatus(response.getStatus());
@@ -1690,7 +1690,7 @@ public class DigitollV2TransportController {
 			logger.warn("MRN = " + obj.getMrn());
 			dtoResponse.setStatusApi(obj.getStatus());
 			dtoResponse.setTimestamp(obj.getNotificationDate());
-			
+			dtoResponse.setEoriValidation(obj.getEoriValidation());
 			if(StringUtils.isNotEmpty(obj.getMrn())) {
 				retval = obj.getMrn();
 			}else {
@@ -1737,6 +1737,10 @@ public class DigitollV2TransportController {
 			logger.warn("Status = " + obj.getStatus());
 			logger.warn("requestID = " + obj.getRequestId());
 			logger.warn("notificationDate = " + obj.getNotificationDate());
+			logger.warn("eoriValidation = " + obj.getEoriValidation());
+			if(obj.getEoriValidation() !=null) {
+				logger.warn("eoriValidation = " + obj.getEoriValidation());
+			}
 			if(obj.getValidationErrorList()!=null) {
 				logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
 				logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);

@@ -17,4 +17,6 @@ public class ApiMrnDto {
 	private String mrn;
 	private String requestId;
 	
+	private ApiMrnEoriValidationDto eoriValidation;
+	
 }

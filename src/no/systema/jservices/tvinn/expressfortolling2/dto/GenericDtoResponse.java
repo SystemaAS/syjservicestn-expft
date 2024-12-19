@@ -59,4 +59,6 @@ public class GenericDtoResponse {
 	//for routing - entry
 	private List<EntryRoutingDto> entryList = new ArrayList<EntryRoutingDto>();
 	
+	//for eoriValidation
+	private ApiMrnEoriValidationDto eoriValidation;
 }
