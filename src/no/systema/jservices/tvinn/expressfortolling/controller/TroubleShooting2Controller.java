@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.util.Log4jUtils;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
@@ -28,7 +29,7 @@ import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
  */
 @RestController
 public class TroubleShooting2Controller {
-	private static Logger logger = LoggerFactory.getLogger(TroubleShooting2Controller.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(TroubleShooting2Controller.class);
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	

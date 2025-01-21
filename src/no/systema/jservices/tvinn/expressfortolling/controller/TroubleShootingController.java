@@ -1,18 +1,27 @@
 package no.systema.jservices.tvinn.expressfortolling.controller;
 
 import java.io.IOException;
+import java.net.ProxySelector;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+//import org.apache.cxf.endpoint.Client;
+//import org.apache.cxf.frontend.ClientProxy;
+//import org.apache.cxf.jaxrs.client.WebClient;
+//import org.apache.cxf.transport.http.HTTPConduit;
+//import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
 import org.slf4j.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 
 import com.eori.validation.soap.ws.client.generated.EORIValidation;
 import com.eori.validation.soap.ws.client.generated.EoriResponse;
@@ -21,6 +30,7 @@ import com.eori.validation.soap.ws.client.generated.Validation;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
 import no.systema.jservices.common.util.Log4jUtils;
+import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
 import no.systema.jservices.tvinn.expressfortolling.api.Authorization;
 import no.systema.jservices.tvinn.expressfortolling.api.TokenResponseDto;
 import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
@@ -35,7 +45,7 @@ import no.systema.jservices.tvinn.expressfortolling.jwt.DifiJwtCreator;
  */
 @RestController
 public class TroubleShootingController {
-	private static Logger logger = LoggerFactory.getLogger(TroubleShootingController.class.getName());
+	private static final Logger logger = LoggerFactory.getLogger(TroubleShootingController.class);
 	
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -45,6 +55,15 @@ public class TroubleShootingController {
 	
 	@Autowired
 	Authorization authorization;
+	
+	@Value("${digitoll.access.use.proxy}")
+	String proxyIsUsed;
+	
+	@Value("${digitoll.access.proxy.host}")
+	String proxyHost;
+	
+	@Value("${digitoll.access.proxy.port}")
+	Integer proxyPort;
 	
 	/**
 	 * @Example: http://localhost:8080/syjservicestn-expft/testAccessToken.do
@@ -95,17 +114,84 @@ public class TroubleShootingController {
 	 */
 	@RequestMapping(value = "testEORIValidation.do", method = { RequestMethod.GET })
 	public String testEORIValidation(HttpSession session) throws Exception {
+		logger.info("inside testEORIValidation" );
+		
 		StringBuilder sb = new StringBuilder();
 		Validation validation = new Validation();
+		
+		logger.info("START testEORIValidation" );
 		EORIValidation eoriValidation = validation.getEORIValidationImplPort();
+		logger.info("after implPort");
 		//TOTEN
 		List<String> eoriList = new ArrayList();
 		eoriList.add("SE4446864193");
 		eoriList.add("YYYYYYYYY");
 		eoriList.add("SE4441976109");
 		
-		
+		logger.info("AAA");
 		EoriValidationResult result = eoriValidation.validateEORI(eoriList);
+		logger.info("BBB");
+		List<EoriResponse> responseList = result.getResult();
+		for (EoriResponse response: responseList ) {
+			//logger.info(response.getEori() + "XXX" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
+			//logger.info(response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
+			//output on browser
+			sb.append("-------------EORI:" + response.getEori() + " Name:" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
+			sb.append(" " + response.getCity() + " " + response.getCountry() + " " + response.getPostalCode());
+			logger.info(sb.toString());
+		}
+		
+		
+		session.invalidate();
+		return sb.toString();
+	}
+	
+	
+	/**
+	 * 
+	 * @param session
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping(value = "testEORIValidationCXF.do", method = { RequestMethod.GET })
+	public String testEORIValidationCXF(HttpSession session) throws Exception {
+		logger.info("inside testEORIValidationCXF" );
+		
+		
+		logger.info("START httpProxy " );
+		Validation siri = new Validation();
+		logger.info("AAA" );
+		EORIValidation port = siri.getEORIValidationImplPort();
+		logger.info("BBB" );
+		/*
+		Client client = ClientProxy.getClient(port);
+		logger.info("CCC" );
+		HTTPConduit conduit = (HTTPConduit) client.getConduit();
+		logger.info("DDD" );
+		conduit.getClient().setProxyServer(proxyHost);
+		logger.info("EEE" );
+		conduit.getClient().setProxyServerPort(proxyPort);
+		logger.info("FFF" );
+		logger.info("END httpProxy" );
+		*/
+		
+		
+		
+		StringBuilder sb = new StringBuilder();
+		Validation validation = new Validation();
+		
+		logger.info("START testEORIValidation" );
+		EORIValidation eoriValidation = validation.getEORIValidationImplPort();
+		logger.info("after implPort");
+		//TOTEN
+		List<String> eoriList = new ArrayList();
+		eoriList.add("SE4446864193");
+		eoriList.add("YYYYYYYYY");
+		eoriList.add("SE4441976109");
+		
+		logger.info("AAA");
+		EoriValidationResult result = eoriValidation.validateEORI(eoriList);
+		logger.info("BBB");
 		List<EoriResponse> responseList = result.getResult();
 		for (EoriResponse response: responseList ) {
 			//logger.info(response.getEori() + "XXX" + response.getName() + " Status:" + response.getStatus() + "-" + response.getStatusDescr());
