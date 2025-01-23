@@ -555,6 +555,7 @@ public class DigitollV2HouseConsignmentController {
 									}else {
 										//OK
 										logger.warn("LRN status is OK ... (no errors)");
+										logger.info("dtoResponse:" + dtoResponse.toString());
 										//Update ehst2 (SADEXHF) with OK = C
 										dtoResponse.setDb_st2(EnumSadmohfStatus2.S.toString());
 										List<SadmohfDto> tmp = sadmohfService.updateLrnMrnSadmohf(serverRoot, user, dtoResponse, sendDate, mode);
@@ -1187,6 +1188,13 @@ public class DigitollV2HouseConsignmentController {
 			if(obj.getValidationErrorList()!=null) {
 				logger.warn("validationErrorList = " + obj.getValidationErrorList().toString());
 				logger.warn("validationErrorList.length = " + obj.getValidationErrorList().length);
+			}
+			if(obj.getIncompleteDocumentationReasonList()!=null) {
+				if(obj.getIncompleteDocumentationReasonList().length>0) {
+					String incompleteDocumentation = (String) obj.getIncompleteDocumentationReasonList()[0];
+					logger.warn("incompleteDocumentationReasonList = " + incompleteDocumentation);
+					dtoResponse.setIncompleteDocumentationString(incompleteDocumentation);
+				}
 			}
 			//
 			dtoResponse.setStatusApi(obj.getStatus());

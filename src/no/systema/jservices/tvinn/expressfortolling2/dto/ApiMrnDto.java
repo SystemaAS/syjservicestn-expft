@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.expressfortolling2.dto;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,6 +17,7 @@ public class ApiMrnDto {
 	private Object[] validationErrorList;
 	private String mrn;
 	private String requestId;
+	private Object[] incompleteDocumentationReasonList;
 	
 	private ApiMrnEoriValidationDto eoriValidation;
 	

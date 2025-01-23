@@ -227,7 +227,7 @@ public class SadmohfService {
 		logger.warn("ehst:" + dtoResponse.getDb_st());
 		logger.warn("ehst2:" + dtoResponse.getDb_st2());
 		logger.warn("ehst3:" + dtoResponse.getDb_st3());
-		
+		logger.warn("incompleteDocumentationString:" + dtoResponse.getIncompleteDocumentationString());
 		logger.warn("Start --> update of Lrn and Mrn at SADMOHF_U...");
 		//example
 		//http://localhost:8080/syjservicestn/syjsSADMOHF_U.do?user=NN&ehlnrt=1&ehlnrm=2&ehlnrh=3&mode=UL&ehmid=XX&ehuuid=uuid
@@ -245,6 +245,7 @@ public class SadmohfService {
 				.queryParam("ehst", dtoResponse.getDb_st())
 				.queryParam("ehst2", dtoResponse.getDb_st2())
 				.queryParam("ehst3", dtoResponse.getDb_st3())
+				.queryParam("incltdoc", dtoResponse.getIncompleteDocumentationString())
 				.build()
 				.encode()
 				.toUri();

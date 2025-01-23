@@ -51,6 +51,8 @@ public class GenericDtoResponse {
 	private Integer ellnrh = 0;
 	//aux
 	private String documentIssueDate = "0";
+	//incomplete documentation
+	private String incompleteDocumentationString = "";
 	//
 	//
 	private List<Object> list = new ArrayList<Object>();

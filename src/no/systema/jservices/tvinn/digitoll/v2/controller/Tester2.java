@@ -18,7 +18,8 @@ import no.systema.jservices.common.util.DateTimeManager;
 public class Tester2  {
 	static ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(15); // no
     static ScheduledFuture<?> t;
-
+    
+    
 	
 	public static void main(String[] args) {
 		t = executor.scheduleAtFixedRate(new MyTask(), 1000, 3000, TimeUnit.MILLISECONDS);
