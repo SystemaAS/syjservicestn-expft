@@ -1146,6 +1146,7 @@ public class DigitollV2HouseConsignmentController {
 			
 			if(StringUtils.isNotEmpty(obj.getMrn())) {
 				retval = obj.getMrn();
+				
 			}else {
 				dtoResponse.setErrMsg(json);
 			}

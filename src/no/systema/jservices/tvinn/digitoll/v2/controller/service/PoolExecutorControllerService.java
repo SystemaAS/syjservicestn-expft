@@ -134,6 +134,13 @@ public class PoolExecutorControllerService {
 						if(StringUtils.isNotEmpty(obj.getMrn())) {
 							mrn = obj.getMrn();
 							
+							if(obj.getIncompleteDocumentationReasonList()!=null) {
+								if(obj.getIncompleteDocumentationReasonList().length>0) {
+									String incompleteDocumentation = (String) obj.getIncompleteDocumentationReasonList()[0];
+									logger.warn("incompleteDocumentationReasonList = " + incompleteDocumentation);
+									dtoResponse.setIncompleteDocumentationString(incompleteDocumentation);
+								}
+							}
 						}else {
 							//check for error type
 							dtoResponse.setErrMsg(json);
