@@ -810,6 +810,8 @@ public class ApiUploadClient  {
 		    //Example: -->{"declarationId": "974309742-12102020-698", "documentType": "faktura"}
 		    body.add("metadata", "{\"declarationId\": \"" + declarationId + "\"" + "," +  "\"documentType\": \"" + documentType + "\"}");
 		    body.add("file", partsEntity);
+		    //debug
+		    logger.info("metadata:" + "{\"declarationId\": \"" + declarationId + "\"" + "," +  "\"documentType\": \"" + documentType + "\"}");
 		    
 		    
 		    HttpHeaders headerParams = new HttpHeaders();
