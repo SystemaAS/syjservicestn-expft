@@ -40,6 +40,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import no.systema.jservices.common.dao.services.BridfDaoService;
+import no.systema.jservices.tvinn.digitoll.external.house.EvryXmlWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
 import no.systema.jservices.tvinn.digitoll.external.house.JsonWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
@@ -74,7 +75,8 @@ import no.systema.jservices.tvinn.expressfortolling2.util.ServerRoot;
 @RestController
 public class DigitollV2ExternalHouseController {
 	private static Logger logger = LoggerFactory.getLogger(DigitollV2ExternalHouseController.class.getName());
-	
+	private static String CHANNEL_PEPPOL = "peppol";
+	private static String CHANNEL_EVRY = "evry";
 
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -100,6 +102,9 @@ public class DigitollV2ExternalHouseController {
 	
 	@Autowired
 	private PeppolXmlWriterService peppolXmlWriterService;
+	
+	@Autowired
+	private EvryXmlWriterService evryXmlWriterService;
 	
 	@Autowired
 	private JsonWriterService jsonWriterService;
@@ -156,15 +161,14 @@ public class DigitollV2ExternalHouseController {
 							  //(3) check what format to serialize (xml or json)
 							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
 								  //(3.1) wrap json in correct xml format (peppol will act as an envelope...)
-								  if(dtoConfig.getXmlxsd().toLowerCase().contains("peppol")) {
-									  
+								  if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_PEPPOL)) {
 									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
 									  String jsonPayload = filenameService.writeToString(msg);
 									  logger.info(jsonPayload);
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  if(this.peppolXmlWriterService.writePeppolFileOnDisk(msg, jsonPayload) == 0) {
+										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
 											  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto(masterDto, msg), "A");
 											  if(tmp!=null && !tmp.isEmpty()) {
 												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
@@ -178,6 +182,28 @@ public class DigitollV2ExternalHouseController {
 										  result.append("ERROR. peppolXmlWriterService " + e.toString());
 									  }
 									  
+								  }else if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_EVRY)) {
+									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
+									  String jsonPayload = filenameService.writeToString(msg);
+									  logger.info(jsonPayload);
+									  logger.info(result.toString());
+									  try {
+										  //(3.2) wrap it in EVRY XML (when applicable)
+										  if(this.evryXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+											  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto(masterDto, msg), "A");
+											  if(tmp!=null && !tmp.isEmpty()) {
+												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  }else {
+												  result.append("ERROR. evryXmlWriterService logRecordSadmolff ???? ");
+											  }
+									  	  }else {
+									  		result.append("ERROR. evryXmlWriterService writeFileOnDisk ???? ");
+									  	  }
+									  }catch(Exception e) {
+										  result.append("ERROR. evryXmlWriterService " + e.toString());
+									  }
+								
+								  
 								  }else {
 									  //when a particular xml has not been implemented
 									  result.append("ERROR. xmlxsd-error: " + dtoConfig.getXmlxsd() + " not implemented... "); 
@@ -223,7 +249,7 @@ public class DigitollV2ExternalHouseController {
 	  }
 	
 	/**
-	 * Sends the external house to the external party (usually the carrier/representative) responsible for the transport
+	 * Sends the external house in return to the external party (usually the carrier/representative) responsible for the transport
 	 * @param request
 	 * @param user
 	 * @param ehlnrt
@@ -272,15 +298,14 @@ public class DigitollV2ExternalHouseController {
 							  //(3) check what format to serialize (xml or json)
 							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
 								  //(3.1) wrap json in correct xml format (peppol will act as an envelope...)
-								  if(dtoConfig.getXmlxsd().toLowerCase().contains("peppol")) {
-									  
+								  if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_PEPPOL)) {
 									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
 									  String jsonPayload = filenameService.writeToString(msg);
 									  logger.info(jsonPayload);
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  if(this.peppolXmlWriterService.writePeppolFileOnDisk(msg, jsonPayload) == 0) {
+										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
 											  List tmp = sadmolhffService.insertLogRecord(serverRoot, user, this.getSadmolhffDto(houseDto, msg), "A");
 											  if(tmp!=null && !tmp.isEmpty()) {
 												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
@@ -294,6 +319,28 @@ public class DigitollV2ExternalHouseController {
 										  result.append("ERROR. peppolXmlWriterService " + e.toString());
 									  }
 									  
+								  }else if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_EVRY)) {
+									  //get the real JSON-payload to wrap within the evry-xml-wrapper format;
+									  String jsonPayload = filenameService.writeToString(msg);
+									  logger.info(jsonPayload);
+									  logger.info(result.toString());
+									  try {
+										  //(3.2) wrap it in EVRY XML (when applicable)
+										  if(this.evryXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+											  List tmp = sadmolhffService.insertLogRecord(serverRoot, user, this.getSadmolhffDto(houseDto, msg), "A");
+											  if(tmp!=null && !tmp.isEmpty()) {
+												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  }else {
+												  result.append("ERROR. evryXmlWriterService logRecordSadmolhff ???? ");
+											  }
+									  	  }else {
+									  		result.append("ERROR. evryXmlWriterService writeFileOnDisk ???? ");
+									  	  }
+									  }catch(Exception e) {
+										  result.append("ERROR. evryXmlWriterService " + e.toString());
+									  }
+									  
+								    
 								  }else {
 									  //when a particular xml has not been implemented
 									  result.append("ERROR. xmlxsd-error: " + dtoConfig.getXmlxsd() + " not implemented... "); 

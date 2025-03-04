@@ -26,8 +26,8 @@ import no.systema.jservices.tvinn.digitoll.v2.enums.EnumPeppolID;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 @Service
-public class PeppolXmlWriterService implements XmlWriterInterface {
-	private static Logger logger = LoggerFactory.getLogger(PeppolXmlWriterService.class.getName());
+public class EvryXmlWriterService implements XmlWriterInterface {
+	private static Logger logger = LoggerFactory.getLogger(EvryXmlWriterService.class.getName());
 	
 	@Autowired
 	private FilenameService filenameService;
@@ -36,7 +36,7 @@ public class PeppolXmlWriterService implements XmlWriterInterface {
 	 * 
 	 * @param msg
 	 */
-	public int writeFileOnDisk (MessageOutbound msg, String jsonPayload) {
+	public int writeFileOnDisk(MessageOutbound msg, String jsonPayload) {
 		int retval = 0;
 		try {
 		
