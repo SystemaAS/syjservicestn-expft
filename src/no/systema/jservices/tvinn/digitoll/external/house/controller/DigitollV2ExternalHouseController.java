@@ -1,5 +1,6 @@
 package no.systema.jservices.tvinn.digitoll.external.house.controller;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -22,16 +23,19 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+//import org.springframework.data.util.NullableUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -247,6 +251,31 @@ public class DigitollV2ExternalHouseController {
 		  return result.toString();
 		  
 	  }
+	
+	@RequestMapping(value = "/digitollv2/send_masterId_toExternalPartyXXX.do", method = {RequestMethod.GET, RequestMethod.POST})
+	  public @ResponseBody String testWithMultipartXXX(HttpServletRequest request, @RequestParam String user, @RequestParam String filePath ) {
+		
+		logger.info("Inside: testWithMultipartXXX");
+		logger.info("file-path:" + filePath);
+		//logger.info("file-base64Str:" + base64Str);
+		//byte[] valueDecoded = Base64.decodeBase64(base64Str);
+		//byte[] valueDecoded = java.util.Base64.getDecoder().decode(base64Str);
+		try {
+			logger.info("A");	
+			/*File serverFile = new File(filePath);
+			BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+	        stream.write(FileUtils.readFileToByteArray(serverFile));
+	        stream.close();
+	        logger.info("Server File Location=" + serverFile.getCanonicalPath());
+			*/
+			//OK -->String content = new String(valueDecoded);
+			//OK -->logger.info("file-content:" + content);
+		}catch(Exception e) {
+			logger.error(e.toString());
+		}
+		
+		return "Hej";
+	}
 	
 	/**
 	 * Sends the external house in return to the external party (usually the carrier/representative) responsible for the transport
