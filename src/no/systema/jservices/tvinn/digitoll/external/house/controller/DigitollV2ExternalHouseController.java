@@ -253,10 +253,10 @@ public class DigitollV2ExternalHouseController {
 	  }
 	
 	@RequestMapping(value = "/digitollv2/send_masterId_toExternalPartyXXX.do", method = {RequestMethod.GET, RequestMethod.POST})
-	  public @ResponseBody String testWithMultipartXXX(HttpServletRequest request, @RequestParam String user, @RequestParam String filePath ) {
+	  public @ResponseBody String testWithMultipartXXX(HttpServletRequest request, @RequestParam String user, @RequestParam String files ) {
 		
 		logger.info("Inside: testWithMultipartXXX");
-		logger.info("file-path:" + filePath);
+		logger.info("filesRaw:" + files);
 		//logger.info("file-base64Str:" + base64Str);
 		//byte[] valueDecoded = Base64.decodeBase64(base64Str);
 		//byte[] valueDecoded = java.util.Base64.getDecoder().decode(base64Str);
