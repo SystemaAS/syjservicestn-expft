@@ -30,6 +30,10 @@ public class MessageOutbound {
 	//Message parties
 	private Sender sender;
 	private Receiver receiver;
+	//documents (if applicable)
+	private List<DocumentReferences> documentReferences;
+	private List<Attachments> attachments;
+	
 	//Merchand parties
 	private Consignor consignor;
 	private Consignee consignee;

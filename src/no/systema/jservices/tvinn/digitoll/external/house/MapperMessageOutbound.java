@@ -1,6 +1,9 @@
 package no.systema.jservices.tvinn.digitoll.external.house;
 
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -11,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ActiveBorderTransportMeans;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.Attachments;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Consignee;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ConsignmentHouseLevel;
@@ -18,6 +22,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.ConsignmentMasterL
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Consignor;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.CustomsOfficeOfFirstEntry;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.DeclarantId;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.DocumentReferences;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.ExportFromEU;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.PreviousDocuments;
@@ -44,7 +49,7 @@ public class MapperMessageOutbound {
 	public MapperMessageOutbound(String version) {
 		this.version = version;
 	}
-	public MessageOutbound mapMessageOutbound(SadmomfDto masterRecord, String receiverName, String receiverOrgnr) {
+	public MessageOutbound mapMessageOutbound(SadmomfDto masterRecord, String receiverName, String receiverOrgnr, Boolean attachmentsExist, String attachmentsPath) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOMaster");
 		msg.setVersion(this.version);
@@ -85,6 +90,42 @@ public class MapperMessageOutbound {
 		receiver.setName(receiverName);
 		receiver.setIdentificationNumber(receiverOrgnr);
 		msg.setReceiver(receiver);
+		
+		if(attachmentsExist) {
+			List docReferencesList = new ArrayList();
+			List attachmentList = new ArrayList();
+			//get files previously serialized in the GUI (upload UC)
+			FileAttachmentService fileAttachmentService = new FileAttachmentService(attachmentsPath);
+			List <Path> x = fileAttachmentService.getFileAttachments(masterRecord.getEmdkm(), receiverOrgnr);
+			for (Path file : x) {
+				//System.out.println(file.getFileName().toString());
+				DocumentReferences docReferences = new DocumentReferences();
+				docReferences.setReferenceId(file.getFileName().toString());
+				docReferences.setTypeOfReference("docReference"); //vet inte om det är faktura eller annat...
+				docReferencesList.add(docReferences);
+				try {
+		            String payloadPath = fileAttachmentService.getAttachmentsPath() + File.separator + file.getFileName().toString();
+		            String base64String = fileAttachmentService.convertImageToBase64(payloadPath);
+		            Attachments attachments = new Attachments();
+					attachments.setDocumentName(file.getFileName().toString());
+					attachments.setContent(base64String);
+					attachmentList.add(attachments);
+		        } catch (IOException e) {
+		        	logger.error(e.toString());
+		            e.printStackTrace();
+		        }
+			}
+			if(!docReferencesList.isEmpty()) {
+				msg.setDocumentReferences(docReferencesList);
+			}
+			if(!attachmentList.isEmpty()) {
+				msg.setAttachments(attachmentList);
+			}
+			//clean up and delete files from file system
+			fileAttachmentService.deleteFileAttachments(masterRecord.getEmdkm(), receiverOrgnr);
+		}
+		
+		
 		
 		//Consignor
 		Consignor consignor = new Consignor();

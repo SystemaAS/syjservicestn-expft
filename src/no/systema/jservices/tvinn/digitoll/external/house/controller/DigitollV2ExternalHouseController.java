@@ -117,6 +117,9 @@ public class DigitollV2ExternalHouseController {
 	@Value("${expft.external.house.spec.version}")
 	private String specVersion;
 	
+	@Value("${expft.dir.exthouse.attachm.upload}")
+	private String attachmentsPath;
+	
 	/**
 	 * This method delivers a serialize file.
 	 * The method deals with the construction of the correct file to deliver to an external system.
@@ -134,7 +137,7 @@ public class DigitollV2ExternalHouseController {
 	 */
 	@RequestMapping(value = "/digitollv2/send_masterId_toExternalParty.do", method = {RequestMethod.GET, RequestMethod.POST})
 	  public @ResponseBody String sendMasterIdToPart(HttpServletRequest request, @RequestParam String user, @RequestParam String emlnrt,
-			  						@RequestParam String emlnrm, @RequestParam String receiverName, @RequestParam String receiverOrgnr ) {
+			  						@RequestParam String emlnrm, @RequestParam String receiverName, @RequestParam String receiverOrgnr, @RequestParam Boolean attachmentsExist ) {
 		
 		  String serverRoot = ServerRoot.getServerRoot(request);
 		  StringBuilder result = new StringBuilder();
@@ -144,6 +147,7 @@ public class DigitollV2ExternalHouseController {
 		  logger.info("emlnrm:" + emlnrm);
 		  logger.info("file-receiver name:" + receiverName);
 		  logger.info("file-receiver orgNr:" + receiverOrgnr);
+		  logger.info("attachmentsExist:" + attachmentsExist); //in case there are pdf:s (ZH or other) to send to the receiver
 		  
 		  try {
 			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(emlnrt) && StringUtils.isNotEmpty(emlnrm)) {
@@ -157,7 +161,7 @@ public class DigitollV2ExternalHouseController {
 							  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
 							  logger.trace(masterDto.toString());
 							  //(2) Map to MessageOutbound
-							  MessageOutbound msg = new MapperMessageOutbound(this.specVersion).mapMessageOutbound(masterDto, receiverName, receiverOrgnr);
+							  MessageOutbound msg = new MapperMessageOutbound(this.specVersion).mapMessageOutbound(masterDto, receiverName, receiverOrgnr, attachmentsExist, attachmentsPath);
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
 							  logger.info(json);
@@ -168,7 +172,7 @@ public class DigitollV2ExternalHouseController {
 								  if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_PEPPOL)) {
 									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
 									  String jsonPayload = filenameService.writeToString(msg);
-									  logger.info(jsonPayload);
+									  logger.trace(jsonPayload);
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
@@ -189,7 +193,7 @@ public class DigitollV2ExternalHouseController {
 								  }else if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_EVRY)) {
 									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
 									  String jsonPayload = filenameService.writeToString(msg);
-									  logger.info(jsonPayload);
+									  logger.trace(jsonPayload);
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in EVRY XML (when applicable)
