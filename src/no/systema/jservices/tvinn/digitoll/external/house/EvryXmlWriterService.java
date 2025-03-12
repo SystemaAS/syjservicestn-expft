@@ -167,7 +167,7 @@ public class EvryXmlWriterService implements XmlWriterInterface {
 	    TransformerFactory tf = TransformerFactory.newInstance();
 	    Transformer transformer = tf.newTransformer();
 	    transformer.transform(domSource, result);
-	    return writer.toString().substring(0,800) + "...";
+	    return writer.toString().substring(0,1000) + " ...(truncated for output)";
 	}
 	
 	private void addScopeElement(Document doc, Element parent, String typeValue, String idValue) {
