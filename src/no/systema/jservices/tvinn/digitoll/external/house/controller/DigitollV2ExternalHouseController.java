@@ -164,7 +164,12 @@ public class DigitollV2ExternalHouseController {
 							  MessageOutbound msg = new MapperMessageOutbound(this.specVersion).mapMessageOutbound(masterDto, receiverName, receiverOrgnr, attachmentsExist, attachmentsPath);
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
-							  logger.info(json);
+							  if(json!=null && json.length()>=2000) {
+								  logger.info(json.substring(0,2000));
+							  }else {
+								  logger.info(json);
+							  }
+							  
 							  logger.info(dtoConfig.toString());  
 							  //(3) check what format to serialize (xml or json)
 							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
