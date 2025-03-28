@@ -49,7 +49,16 @@ public class MapperMessageOutbound {
 	public MapperMessageOutbound(String version) {
 		this.version = version;
 	}
-	public MessageOutbound mapMessageOutbound(SadmomfDto masterRecord, String receiverName, String receiverOrgnr, Boolean attachmentsExist, String attachmentsPath) {
+	/**
+	 * 
+	 * @param masterDto
+	 * @param receiverName
+	 * @param receiverOrgnr
+	 * @param attachmentsExist
+	 * @param attachmentsPath
+	 * @return
+	 */
+	public MessageOutbound mapMessageOutbound(SadmomfDto masterDto, String receiverName, String receiverOrgnr, Boolean attachmentsExist, String attachmentsPath) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOMaster");
 		msg.setVersion(this.version);
@@ -57,26 +66,26 @@ public class MapperMessageOutbound {
 		msg.setMessageNumber(uuid);
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
 		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
-		msg.setDocumentID(masterRecord.getEmdkm());
-		msg.setNote(masterRecord.getTransportDto().getEtavd() + "-" + masterRecord.getTransportDto().getEtpro());
+		msg.setDocumentID(masterDto.getEmdkm());
+		msg.setNote(masterDto.getTransportDto().getEtavd() + "-" + masterDto.getTransportDto().getEtpro());
 		//Sender
 		Sender sender = new Sender();
-		sender.setName(masterRecord.getTransportDto().getEtnar());
-		sender.setIdentificationNumber(masterRecord.getTransportDto().getEtrgr());
+		sender.setName(masterDto.getTransportDto().getEtnar());
+		sender.setIdentificationNumber(masterDto.getTransportDto().getEtrgr());
 		//Communication
 		List commList = new ArrayList();
-		if(masterRecord.getTransportDto().getEtemrt()!=null ){
-			if("EM".equals(masterRecord.getTransportDto().getEtemrt()) ){
-				if(StringUtils.isNotEmpty(masterRecord.getTransportDto().getEtemr())) {
+		if(masterDto.getTransportDto().getEtemrt()!=null ){
+			if("EM".equals(masterDto.getTransportDto().getEtemrt()) ){
+				if(StringUtils.isNotEmpty(masterDto.getTransportDto().getEtemr())) {
 					Communication comm = new Communication();
-					comm.setEmailAddress(masterRecord.getTransportDto().getEtemr());
+					comm.setEmailAddress(masterDto.getTransportDto().getEtemr());
 					//sender.setCommunication(comm);
 					commList.add(comm);
 				}
-			}else if ("TE".equals(masterRecord.getTransportDto().getEtemrt()) ){
-				if(StringUtils.isNotEmpty(masterRecord.getTransportDto().getEtemr())) {
+			}else if ("TE".equals(masterDto.getTransportDto().getEtemrt()) ){
+				if(StringUtils.isNotEmpty(masterDto.getTransportDto().getEtemr())) {
 					Communication comm = new Communication();
-					comm.setTelephoneNumber(masterRecord.getTransportDto().getEtemr());
+					comm.setTelephoneNumber(masterDto.getTransportDto().getEtemr());
 					//sender.setCommunication(comm);
 					commList.add(comm);
 				}
@@ -96,7 +105,7 @@ public class MapperMessageOutbound {
 			List attachmentList = new ArrayList();
 			//get files previously serialized in the GUI (upload UC)
 			FileAttachmentService fileAttachmentService = new FileAttachmentService(attachmentsPath);
-			List <Path> x = fileAttachmentService.getFileAttachments(masterRecord.getEmdkm(), receiverOrgnr);
+			List <Path> x = fileAttachmentService.getFileAttachments(masterDto.getEmdkm(), receiverOrgnr);
 			for (Path file : x) {
 				//System.out.println(file.getFileName().toString());
 				DocumentReferences docReferences = new DocumentReferences();
@@ -122,42 +131,42 @@ public class MapperMessageOutbound {
 				msg.setAttachments(attachmentList);
 			}
 			//clean up and delete files from file system
-			fileAttachmentService.deleteFileAttachments(masterRecord.getEmdkm(), receiverOrgnr);
+			fileAttachmentService.deleteFileAttachments(masterDto.getEmdkm(), receiverOrgnr);
 		}
 		
 		
 		
 		//Consignor
 		Consignor consignor = new Consignor();
-		consignor.setName(masterRecord.getEmnas());
+		consignor.setName(masterDto.getEmnas());
 		msg.setConsignor(consignor);
 		//Consignee
 		Consignee consignee = new Consignee();
-		consignee.setName(masterRecord.getEmnam());
+		consignee.setName(masterDto.getEmnam());
 		msg.setConsignee(consignee);
 		
 		
 		//Customs Office
 		CustomsOfficeOfFirstEntry custOffice = new CustomsOfficeOfFirstEntry();
-		custOffice.setReferenceNumber(masterRecord.getTransportDto().getEttsd());
+		custOffice.setReferenceNumber(masterDto.getTransportDto().getEttsd());
 		//Since we do not have seconds in time we must add this to the integer: 1000(HHmm) will be 100000(HHmmss)
-		Integer etaTime = masterRecord.getTransportDto().getEtetat() * 100;
-		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterRecord.getTransportDto().getEtetad(), etaTime));
+		Integer etaTime = masterDto.getTransportDto().getEtetat() * 100;
+		msg.setEstimatedDateAndTimeOfArrival(new DateUtils().getZuluTimeWithoutMilliseconds(masterDto.getTransportDto().getEtetad(), etaTime));
 		msg.setCustomsOfficeOfFirstEntry(custOffice);
 		ActiveBorderTransportMeans abtranspMeans = new ActiveBorderTransportMeans();
-		abtranspMeans.setIdentificationNumber(masterRecord.getTransportDto().getEtkmrk());
-		abtranspMeans.setTypeOfIdentification(masterRecord.getTransportDto().getEtktyp());
-		abtranspMeans.setCountryCode(masterRecord.getTransportDto().getEtklk());
-		abtranspMeans.setModeOfTransportCode(masterRecord.getTransportDto().getEtktkd());
+		abtranspMeans.setIdentificationNumber(masterDto.getTransportDto().getEtkmrk());
+		abtranspMeans.setTypeOfIdentification(masterDto.getTransportDto().getEtktyp());
+		abtranspMeans.setCountryCode(masterDto.getTransportDto().getEtklk());
+		abtranspMeans.setModeOfTransportCode(masterDto.getTransportDto().getEtktkd());
 		msg.setActiveBorderTransportMeans(abtranspMeans);
 		
 		//Carrier Id (Orgnr)
 		ConsignmentMasterLevel consignmentMasterLevel = new ConsignmentMasterLevel();
-		consignmentMasterLevel.setTotalGrossMass(masterRecord.getEmvkb());
-		consignmentMasterLevel.setCarrierIdentificationNumber(masterRecord.getTransportDto().getEtrgt());
+		consignmentMasterLevel.setTotalGrossMass(masterDto.getEmvkb());
+		consignmentMasterLevel.setCarrierIdentificationNumber(masterDto.getTransportDto().getEtrgt());
 		TransportDocumentMasterLevel transportDocumentMasterLevel = new TransportDocumentMasterLevel();
-		transportDocumentMasterLevel.setDocumentNumber(masterRecord.getEmdkm());
-		transportDocumentMasterLevel.setType(masterRecord.getEmdkmt());
+		transportDocumentMasterLevel.setDocumentNumber(masterDto.getEmdkm());
+		transportDocumentMasterLevel.setType(masterDto.getEmdkmt());
 		consignmentMasterLevel.setTransportDocumentMasterLevel(transportDocumentMasterLevel);
 		
 		msg.setConsignmentMasterLevel(consignmentMasterLevel);
@@ -170,9 +179,11 @@ public class MapperMessageOutbound {
 	 * @param houseRecord
 	 * @param receiverName
 	 * @param receiverOrgnr
+	 * @param attachmentsExist
+	 * @param attachmentsPath
 	 * @return
 	 */
-	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseDto, String receiverName, String receiverOrgnr) {
+	public MessageOutbound mapMessageOutboundExternalHouse(SadmocfDto dtoConfig, SadmohfDto houseDto, String receiverName, String receiverOrgnr, Boolean attachmentsExist, String attachmentsPath) {
 		MessageOutbound msg = new MessageOutbound();
 		msg.setMessageType("DigitalMOHouse");
 		msg.setVersion(this.version);
@@ -190,13 +201,15 @@ public class MapperMessageOutbound {
 		//=======
 		Sender sender = new Sender();
 		//default
-		if(StringUtils.isNotEmpty(dtoConfig.getAvsname()) && StringUtils.isNotEmpty(dtoConfig.getAvsorgnr())) {
+		
+		if( (StringUtils.isNotEmpty(dtoConfig.getAvsname()) &&  !dtoConfig.getAvsname().equals("null")) 
+				&& (StringUtils.isNotEmpty(dtoConfig.getAvsorgnr()) && !dtoConfig.getAvsorgnr().equals("null")) ) {
 			sender.setName(dtoConfig.getAvsname());
 			sender.setIdentificationNumber(dtoConfig.getAvsorgnr());
 		}else {
 			//product owner's orgnr (sender of the external house to toll.no)
-			sender.setName("AVSNAME empty ?");
-			sender.setIdentificationNumber("AVSORGNR empty ?");
+			sender.setName("SADMOCF.AVSNAME empty ?");
+			sender.setIdentificationNumber("SADMOCF.AVSORGNR empty ?");
 			
 		}
 		
@@ -229,6 +242,42 @@ public class MapperMessageOutbound {
 		receiver.setName(receiverName);
 		receiver.setIdentificationNumber(receiverOrgnr);
 		msg.setReceiver(receiver);
+		
+		
+		if(attachmentsExist) {
+			List docReferencesList = new ArrayList();
+			List attachmentList = new ArrayList();
+			//get files previously serialized in the GUI (upload UC)
+			FileAttachmentService fileAttachmentService = new FileAttachmentService(attachmentsPath);
+			List <Path> x = fileAttachmentService.getFileAttachments(houseDto.getEhdkh(), receiverOrgnr);
+			for (Path file : x) {
+				//System.out.println(file.getFileName().toString());
+				DocumentReferences docReferences = new DocumentReferences();
+				docReferences.setReferenceId(file.getFileName().toString());
+				docReferences.setTypeOfReference("docReference"); //vet inte om det är faktura eller annat...
+				docReferencesList.add(docReferences);
+				try {
+		            String payloadPath = fileAttachmentService.getAttachmentsPath() + File.separator + file.getFileName().toString();
+		            String base64String = fileAttachmentService.convertImageToBase64(payloadPath);
+		            Attachments attachments = new Attachments();
+					attachments.setDocumentName(file.getFileName().toString());
+					attachments.setContent(base64String);
+					attachmentList.add(attachments);
+		        } catch (IOException e) {
+		        	logger.error(e.toString());
+		            e.printStackTrace();
+		        }
+			}
+			if(!docReferencesList.isEmpty()) {
+				msg.setDocumentReferences(docReferencesList);
+			}
+			if(!attachmentList.isEmpty()) {
+				msg.setAttachments(attachmentList);
+			}
+			//clean up and delete files from file system
+			fileAttachmentService.deleteFileAttachments(houseDto.getEhdkh(), receiverOrgnr);
+		}
+		
 		
 		//Consignor-Avsändare
 		Consignor consignor = new Consignor();

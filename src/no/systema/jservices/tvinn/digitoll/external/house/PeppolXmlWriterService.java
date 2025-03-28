@@ -167,7 +167,11 @@ public class PeppolXmlWriterService implements XmlWriterInterface {
 	    TransformerFactory tf = TransformerFactory.newInstance();
 	    Transformer transformer = tf.newTransformer();
 	    transformer.transform(domSource, result);
-	    return writer.toString();
+	    String returnStr = writer.toString();
+	    if(returnStr!=null && returnStr.length()>2000) {
+	    	returnStr = returnStr.substring(0,2000);
+	    }
+	    return returnStr;
 	}
 	
 	private void addScopeElement(Document doc, Element parent, String typeValue, String idValue) {

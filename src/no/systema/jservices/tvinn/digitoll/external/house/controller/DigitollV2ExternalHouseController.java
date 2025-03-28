@@ -129,15 +129,21 @@ public class DigitollV2ExternalHouseController {
 	 * 
 	 * The carrier sends the masterId to an external product owner.
 	 * @param request
-	 * @param applicationUser
+	 * @param user
 	 * @param emlnrt
 	 * @param emlnrm
-	 * @param orgNr
+	 * @param receiverName
+	 * @param receiverOrgnr
+	 * @param attachmentsExist
+	 * 
 	 * @return
+	 * 
+	 * 
 	 */
 	@RequestMapping(value = "/digitollv2/send_masterId_toExternalParty.do", method = {RequestMethod.GET, RequestMethod.POST})
 	  public @ResponseBody String sendMasterIdToPart(HttpServletRequest request, @RequestParam String user, @RequestParam String emlnrt,
-			  						@RequestParam String emlnrm, @RequestParam String receiverName, @RequestParam String receiverOrgnr, @RequestParam Boolean attachmentsExist ) {
+			  						@RequestParam String emlnrm, @RequestParam String receiverName, @RequestParam String receiverOrgnr, 
+			  						@RequestParam Boolean attachmentsExist ) {
 		
 		  String serverRoot = ServerRoot.getServerRoot(request);
 		  StringBuilder result = new StringBuilder();
@@ -160,7 +166,7 @@ public class DigitollV2ExternalHouseController {
 						  for (SadmomfDto masterDto: list) {
 							  masterDto.setTransportDto(sadmotfService.getSadmotfDto(serverRoot, user, emlnrt));
 							  logger.trace(masterDto.toString());
-							  //(2) Map to MessageOutbound
+							  //(2) Map to MessageOutbound including attachments (if applicable)
 							  MessageOutbound msg = new MapperMessageOutbound(this.specVersion).mapMessageOutbound(masterDto, receiverName, receiverOrgnr, attachmentsExist, attachmentsPath);
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
@@ -295,11 +301,13 @@ public class DigitollV2ExternalHouseController {
 	 * @param ehlnrh
 	 * @param receiverName
 	 * @param receiverOrgnr
+	 * @param attachmentsExist
 	 * @return
 	 */
 	@RequestMapping(value = "/digitollv2/send_externalHouse_toExternalParty.do", method = {RequestMethod.GET, RequestMethod.POST})
 	  public @ResponseBody String sendExternalHouseToParty(HttpServletRequest request, @RequestParam String user, @RequestParam String ehlnrt,
-			  						@RequestParam String ehlnrm, @RequestParam String ehlnrh, @RequestParam String receiverName, @RequestParam String receiverOrgnr ) {
+			  						@RequestParam String ehlnrm, @RequestParam String ehlnrh, @RequestParam String receiverName, @RequestParam String receiverOrgnr,
+			  						@RequestParam Boolean attachmentsExist ) {
 		
 		  String serverRoot = ServerRoot.getServerRoot(request);
 		  StringBuilder result = new StringBuilder();
@@ -310,6 +318,7 @@ public class DigitollV2ExternalHouseController {
 		  logger.info("ehlnrh:" + ehlnrh);
 		  logger.info("file-receiver name:" + receiverName);
 		  logger.info("file-receiver orgNr:" + receiverOrgnr);
+		  logger.info("attachmentsExist:" + attachmentsExist); //in case there are pdf:s (ZH or other) to send to the receiver
 		  
 		  try {
 			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(ehlnrt) 
@@ -327,11 +336,16 @@ public class DigitollV2ExternalHouseController {
 							  String emdkm_ff = houseDto.getMasterDto().getEmdkm_ff();
 							  houseDto.setCarrierMasterIdDto(zadmomlfService.getZadmomlf(serverRoot, user, emdkm_ff));
 							  logger.trace(houseDto.toString());
-							  //(2) Map to MessageOutbound
-							  MessageOutbound msg = new MapperMessageOutbound(specVersion).mapMessageOutboundExternalHouse(dtoConfig, houseDto, receiverName, receiverOrgnr);
+							  //(2) Map to MessageOutbound including attachments (if applicable)
+							  MessageOutbound msg = new MapperMessageOutbound(specVersion).mapMessageOutboundExternalHouse(dtoConfig, houseDto, receiverName, receiverOrgnr, attachmentsExist, attachmentsPath);
 							  ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 							  String json = ow.writeValueAsString(msg);
-							  logger.info(json);
+							  if(json!=null && json.length()>=2000) {
+								  logger.info(json.substring(0,2000));
+							  }else {
+								  logger.info(json);
+							  }
+							  
 							  logger.info(dtoConfig.toString());  
 							  //(3) check what format to serialize (xml or json)
 							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
@@ -339,7 +353,7 @@ public class DigitollV2ExternalHouseController {
 								  if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_PEPPOL)) {
 									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
 									  String jsonPayload = filenameService.writeToString(msg);
-									  logger.info(jsonPayload);
+									  logger.trace(jsonPayload);
 									  logger.info(result.toString());
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
