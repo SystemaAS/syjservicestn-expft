@@ -49,6 +49,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
 import no.systema.jservices.tvinn.digitoll.external.house.JsonWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService;
+import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService_TransportExecutionPlanGroup;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
@@ -106,6 +107,8 @@ public class DigitollV2ExternalHouseController {
 	
 	@Autowired
 	private PeppolXmlWriterService peppolXmlWriterService;
+	@Autowired
+	private PeppolXmlWriterService_TransportExecutionPlanGroup peppolXmlWriterService_TransportExecution;
 	
 	@Autowired
 	private EvryXmlWriterService evryXmlWriterService;
@@ -175,6 +178,8 @@ public class DigitollV2ExternalHouseController {
 							  }else {
 								  logger.info(json);
 							  }
+							  //output the new XML
+							  int _retval = this.peppolXmlWriterService_TransportExecution.writeFileOnDisk(msg);
 							  
 							  logger.info(dtoConfig.toString());  
 							  //(3) check what format to serialize (xml or json)
@@ -188,6 +193,9 @@ public class DigitollV2ExternalHouseController {
 									  try {
 										  //(3.2) wrap it in PEPPOL XML (when applicable)
 										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+											  //TEST with new TranportExecutionPlanRequest
+											  //TODO
+											  //END TEST
 											  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto(masterDto, msg), "A");
 											  if(tmp!=null && !tmp.isEmpty()) {
 												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());

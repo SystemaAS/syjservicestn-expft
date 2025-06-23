@@ -1,5 +1,11 @@
 package no.systema.jservices.tvinn.expressfortolling2.util;
 
+import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Date;
+
 public class TesterDate {
 
 	public static void main(String[] args) {
@@ -7,14 +13,16 @@ public class TesterDate {
 		//String dateZulu = "2022-08-25T19:43:36Z";
 		//String tmp = dateZulu.replaceAll("-", "").substring(0,8);
 		//System.out.println(tmp);
-		
 		DateUtils dateUtil = new DateUtils();
-		String zulu = dateUtil.getZuluTimeWithoutMillisecondsUTC(20221129, 13000);
-		System.out.println(zulu);
 		
-		//DateUtils dUtil = new DateUtils("yyyyMMdd", "yyyy-MM-dd");
-		//System.out.println(dUtil.getDate("20220820"));
+		
+		System.out.println(dateUtil.getZuluTimeWithoutMillisecondsUTC());
+		System.out.println(dateUtil.getZuluTimeWithoutMillisecondsWithOffset());
+		System.out.println(dateUtil.getZuluTimeWithoutMillisecondsWithOffset("2025-06-23T13:52:36Z"));
+		
 		
 	}
+	
+	
 
 }

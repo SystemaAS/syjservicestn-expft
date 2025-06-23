@@ -3,7 +3,9 @@ package no.systema.jservices.tvinn.expressfortolling2.util;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -69,6 +71,23 @@ public class DateUtils {
 		String zoneDateString = formatter.format(zonedDateTime);
 		
 		return zoneDateString;
+	}
+	
+	public String getZuluTimeWithoutMillisecondsWithOffset(String dateStr) {
+		ZonedDateTime date = ZonedDateTime.parse(dateStr);
+		//ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(date.toInstant());
+		ZoneOffset offset = ZoneId.of("Z").getRules().getOffset(date.toInstant());
+		ZonedDateTime dateInMyZone = date.withZoneSameInstant(offset);
+		
+		return dateInMyZone.toString() ;
+	}
+	public String getZuluTimeWithoutMillisecondsWithOffset() {
+		ZonedDateTime date = ZonedDateTime.now().truncatedTo(ChronoUnit.SECONDS).withZoneSameInstant(ZoneId.of("UTC"));
+		//ZoneOffset offset = ZoneId.systemDefault().getRules().getOffset(date.toInstant());
+		ZoneOffset offset = ZoneId.of("Europe/Stockholm").getRules().getOffset(date.toInstant());
+		ZonedDateTime dateInMyZone = date.withZoneSameInstant(offset);
+		
+		return dateInMyZone.toString() ;
 	}
 	
 	/**
