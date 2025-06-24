@@ -134,8 +134,6 @@ public class MapperMessageOutbound {
 			fileAttachmentService.deleteFileAttachments(masterDto.getEmdkm(), receiverOrgnr);
 		}
 		
-		
-		
 		//Consignor
 		Consignor consignor = new Consignor();
 		consignor.setName(masterDto.getEmnas());
@@ -144,7 +142,6 @@ public class MapperMessageOutbound {
 		Consignee consignee = new Consignee();
 		consignee.setName(masterDto.getEmnam());
 		msg.setConsignee(consignee);
-		
 		
 		//Customs Office
 		CustomsOfficeOfFirstEntry custOffice = new CustomsOfficeOfFirstEntry();

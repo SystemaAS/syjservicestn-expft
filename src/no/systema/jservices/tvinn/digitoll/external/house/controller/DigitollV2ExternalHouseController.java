@@ -49,7 +49,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.FilenameService;
 import no.systema.jservices.tvinn.digitoll.external.house.JsonWriterService;
 import no.systema.jservices.tvinn.digitoll.external.house.MapperMessageOutbound;
 import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService;
-import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService_TransportExecutionPlanGroup;
+import no.systema.jservices.tvinn.digitoll.external.house.PeppolXmlWriterService_TransportExecutionPlanRequest;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
@@ -108,7 +108,7 @@ public class DigitollV2ExternalHouseController {
 	@Autowired
 	private PeppolXmlWriterService peppolXmlWriterService;
 	@Autowired
-	private PeppolXmlWriterService_TransportExecutionPlanGroup peppolXmlWriterService_TransportExecution;
+	private PeppolXmlWriterService_TransportExecutionPlanRequest peppolXmlWriterService_TransExecPlanRequest;
 	
 	@Autowired
 	private EvryXmlWriterService evryXmlWriterService;
@@ -178,9 +178,7 @@ public class DigitollV2ExternalHouseController {
 							  }else {
 								  logger.info(json);
 							  }
-							  //output the new XML
-							  int _retval = this.peppolXmlWriterService_TransportExecution.writeFileOnDisk(msg);
-							  
+							 
 							  logger.info(dtoConfig.toString());  
 							  //(3) check what format to serialize (xml or json)
 							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
@@ -191,8 +189,11 @@ public class DigitollV2ExternalHouseController {
 									  logger.trace(jsonPayload);
 									  logger.info(result.toString());
 									  try {
-										  //(3.2) wrap it in PEPPOL XML (when applicable)
-										  if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+										  //OBSOLETE -->(3.2) wrap it in PEPPOL XML (when applicable)
+										  //if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
+										  
+										  //New Peppol - Transport Execution Plan - Family - no json at all ...
+										  if(this.peppolXmlWriterService_TransExecPlanRequest.writeFileOnDisk(msg) == 0) {
 											  //TEST with new TranportExecutionPlanRequest
 											  //TODO
 											  //END TEST

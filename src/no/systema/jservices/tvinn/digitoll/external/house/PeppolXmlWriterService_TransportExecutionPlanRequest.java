@@ -22,15 +22,17 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import no.systema.jservices.tvinn.digitoll.external.house.dao.Attachments;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
+import no.systema.jservices.tvinn.digitoll.external.house.dao.DocumentReferences;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumPeppolID;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumPeppolTransportServiceCodes;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 @Service
-public class PeppolXmlWriterService_TransportExecutionPlanGroup {
-	private static Logger logger = LoggerFactory.getLogger(PeppolXmlWriterService_TransportExecutionPlanGroup.class.getName());
+public class PeppolXmlWriterService_TransportExecutionPlanRequest {
+	private static Logger logger = LoggerFactory.getLogger(PeppolXmlWriterService_TransportExecutionPlanRequest.class.getName());
 	
 	@Autowired
 	private FilenameService filenameService;
@@ -196,6 +198,38 @@ public class PeppolXmlWriterService_TransportExecutionPlanGroup {
 		  this.setCompleteElement(transportServiceCode, mainTransportService, EnumPeppolTransportServiceCodes._CustomsDeclaration.toString()); //
 		  this.setCompleteElement(transportationServiceDescription, mainTransportService, msg.getMessageType());
 		  transportExecutionPlanRequest.appendChild(mainTransportService);
+		  
+		  //Document Refs with Attachments (when applicable)
+		  if(msg.getDocumentReferences()!=null && msg.getDocumentReferences().size()>0) {
+			  int docRefCounter = 1;
+			  int attachmentCounter = 1;
+			  
+			  for(DocumentReferences documentReferences : msg.getDocumentReferences()) {
+				  Element additionalDocumentReference = doc.createElement("cac:AdditionalDocumentReference");
+				  Element docRefId = doc.createElement("cbc:ID");
+				  this.setCompleteElement(docRefId, additionalDocumentReference, documentReferences.getReferenceId());
+				  Element documentType = doc.createElement("cbc:DocumentType");
+				  this.setCompleteElement(documentType, additionalDocumentReference, documentReferences.getTypeOfReference());
+				  
+				  //Attachments
+				  if(msg.getAttachments()!=null && msg.getAttachments().size()>0) {
+					  for(Attachments attachment : msg.getAttachments()) {
+						  if (docRefCounter == attachmentCounter) { //in order to get the correct attachment on the list of document references...
+							  Element cacAttachment = doc.createElement("cac:Attachment");
+							  Element embeddedDocBinaryObject = doc.createElement("cbc:EmbeddedDocumentBinaryObject");
+							  embeddedDocBinaryObject.setAttribute("mimeCode", "application/pdf");
+							  embeddedDocBinaryObject.setAttribute("filename", attachment.getDocumentName());
+							  this.setCompleteElement(embeddedDocBinaryObject, cacAttachment, attachment.getContent());
+							  additionalDocumentReference.appendChild(cacAttachment);							  
+						  }
+						  attachmentCounter++; 
+					  }
+				  }
+				  transportExecutionPlanRequest.appendChild(additionalDocumentReference);
+				  docRefCounter++;
+			
+			  }
+		  }
 		  
 		  //==================
 		  //START Consignment
