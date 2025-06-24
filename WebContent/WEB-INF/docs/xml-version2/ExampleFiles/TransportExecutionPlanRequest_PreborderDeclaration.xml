@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ubl:TransportExecutionPlanRequest xmlns:ubl="urn:oasis:names:specification:ubl:schema:xsd:TransportExecutionPlanRequest-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns:ext="urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" xmlns:no="www.norstella.no">
+	<cbc:CustomizationID>urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1</cbc:CustomizationID>
+	<cbc:ProfileID>urn:fdc:peppol.eu:logistics:bis:transport_notification:1</cbc:ProfileID>
+	<cbc:ProfileExecutionID><?documentID?>1234</cbc:ProfileExecutionID>
+	<cbc:ID><?messageNumber?>565</cbc:ID>
+	<cbc:VersionID><?version?>1.0</cbc:VersionID>
+	<cbc:IssueDate><?messageIssueDate?>2025-05-09</cbc:IssueDate>
+	<cbc:IssueTime>09:49:00+02:00</cbc:IssueTime>
+	<cbc:DocumentStatusCode>9</cbc:DocumentStatusCode>
+	<cbc:Notes><?note?>Some notes from the requester</cbc:Notes>
+	<cbc:TransportUserRemarks><?terms?>Some terms for approval</cbc:TransportUserRemarks>
+	<cac:SenderParty>
+		<cbc:EndpointID schemeID="0198">41955619</cbc:EndpointID>
+		<cac:PartyIdentification>
+			<cbc:ID><?sender.identificationsnummer?>123456789</cbc:ID>
+		</cac:PartyIdentification>		
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName><?sender.name?>Transport Sender A/S</cbc:RegistrationName>			
+		</cac:PartyLegalEntity>
+		<cac:Contact>			
+			<cbc:Telephone><?sender.communication.telephoneNumber?>0158 1233714</cbc:Telephone>
+			<cbc:ElectronicMail>transport-user@transportuser.dk</cbc:ElectronicMail>
+		</cac:Contact>
+	</cac:SenderParty>
+	<cac:ReceiverParty>
+		<cbc:EndpointID schemeID="0198">85955619</cbc:EndpointID>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName><?receiver.name?>Transport Receiver A/S</cbc:RegistrationName>			
+		</cac:PartyLegalEntity>		
+	</cac:ReceiverParty>
+	<!-- the requester of the transportation service -->
+	<cac:TransportUserParty>
+		<cbc:EndpointID schemeID="0198">41955619</cbc:EndpointID>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName><?sender.name?>Transport UserParty A/S</cbc:RegistrationName>			
+		</cac:PartyLegalEntity>
+	</cac:TransportUserParty>
+	<cac:TransportServiceProviderParty>
+		<cbc:EndpointID schemeID="0198">85955619</cbc:EndpointID>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName><?receiver.name?>Transport provider A/S</cbc:RegistrationName>			
+		</cac:PartyLegalEntity>		
+	</cac:TransportServiceProviderParty>	
+	<cac:PayeeParty>
+		<cac:PartyLegalEntity>
+			<cbc:RegistrationName><?goodsReceipient.name?>Varemottaker A/S</cbc:RegistrationName>			
+		</cac:PartyLegalEntity>
+	</cac:PayeeParty>		 
+	<cac:AdditionalDocumentReference>
+		<cbc:ID><?documentReferences.referenceId?>inv-123456</cbc:ID>		
+		<cbc:DocumentType><?documentReferences.typeOfReference?>SenderInvoiceReference</cbc:DocumentType>
+		<cac:Attachment>
+			<cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="ArivalNotice.pdf"><?attachment.content?>aHR0cHM6Ly90ZXN0LXZlZmEuZGlmaS5uby9wZXBwb2xiaXMvcG9hY2MvYmlsbGluZy8zLjAvYmlzLw==</cbc:EmbeddedDocumentBinaryObject>
+			<cac:ExternalReference>
+				<cbc:URI><?Attachments.URI?>https://documents.semantic.biz?documentID=d1b34d9d-8020-49a2-a43c-75f5518d77e6</cbc:URI>
+			</cac:ExternalReference>
+		</cac:Attachment>
+	</cac:AdditionalDocumentReference>
+	<cac:MainTransportationService>
+		<cbc:TransportServiceCode>19</cbc:TransportServiceCode>
+		<cbc:TransportationServiceDescription><?messageType?>PreborderDeclaration<?messageType?></cbc:TransportationServiceDescription>
+	</cac:MainTransportationService>	
+	<cac:Consignment>
+		<cbc:ID>12535157654567654</cbc:ID>		
+		<cbc:DeclaredCustomsValueAmount currencyID="NOK"><?transport.value?>1000</cbc:DeclaredCustomsValueAmount>
+		<cbc:GrossWeightMeasure unitCode="KGM">103</cbc:GrossWeightMeasure>				
+		<cbc:TotalTransportHandlingUnitQuantity unitCode="EA"><?consignmentHouseLevel.numberOfPackages?>6</cbc:TotalTransportHandlingUnitQuantity>		
+		<cac:CustomsDeclaration>
+			<ext:UBLExtensions>
+				<ext:UBLExtension>
+					<no:CustomsDeclarationExtension>						
+						<cbc:DigitalMOIndicator><?CustomsDeclaration.DigitalMo?>true</cbc:DigitalMOIndicator>											
+					</no:CustomsDeclarationExtension>					
+				</ext:UBLExtension>
+			</ext:UBLExtensions>
+			<cbc:ID><?exportFromEU.exportId?>3456234567</cbc:ID>
+			<cbc:FunctionCode listID="TB_EKSPORTTYPE"><?exportFromEU.typeOdExport?>UGE_EXPORT</cbc:FunctionCode>			
+			<cac:AdditionalDocumentReference>
+				<cbc:ID><?PreviousDocuments.ReferenceNumber?>mnr2342322</cbc:ID>
+				<cbc:DocumentTypeCode listID="CL228">N270</cbc:DocumentTypeCode>		
+			</cac:AdditionalDocumentReference>
+		</cac:CustomsDeclaration>				  
+		<cac:ConsigneeParty>			
+			<cac:PartyName>
+				<cbc:Name><?consignee.name?>Importer AS</cbc:Name>				
+			</cac:PartyName>			
+		</cac:ConsigneeParty>
+		<cac:ConsignorParty>			
+			<cac:PartyName>
+				<cbc:Name><?consignor.name?>Exporter AS</cbc:Name>				
+			</cac:PartyName>			
+		</cac:ConsignorParty>		
+				   
+		<cac:MainCarriageShipmentStage>
+			<cbc:TransportModeCode><?activeBorderTransportMeans.countryCode?>3</cbc:TransportModeCode>						
+			<cac:TransportMeans>
+				<cbc:RegistrationNationalityID><?activeBorderTransportMeans.countryCode?>NO</cbc:RegistrationNationalityID>
+				<cac:RoadTransport>
+					<cbc:LicensePlateID><?activeBorderTransportMeans.identificationNumber?>AB12345</cbc:LicensePlateID>
+				</cac:RoadTransport>
+			</cac:TransportMeans>			
+		</cac:MainCarriageShipmentStage>
+		<cac:TransportHandlingUnit>
+			<cbc:ID>11111222222222</cbc:ID>
+			<cbc:TransportHandlingUnitTypeCode>AG</cbc:TransportHandlingUnitTypeCode>			
+			<cac:TransportEquipment>
+				<cbc:ID><?transportEquipment.containerIdentificationNumber?>1234567</cbc:ID>
+				<cbc:TransportEquipmentTypeCode>CN</cbc:TransportEquipmentTypeCode>				
+			</cac:TransportEquipment>			
+			<cac:MeasurementDimension>
+				<cbc:AttributeID>AAB</cbc:AttributeID>
+				<cbc:Measure unitCode="KGM">103</cbc:Measure>
+			</cac:MeasurementDimension>			
+			<cac:GoodsItem>				
+				<cbc:Description><?goodsItem.goodsDescription?>Torsk sl u/h fersk fulliset 20kg iso 2-4 kg</cbc:Description>										
+			</cac:GoodsItem>
+		</cac:TransportHandlingUnit>						
+		<cac:OfficeOfEntryLocation>
+			<cbc:ID><?customsOfficeOfFirstEntry.referenceNumber?>NO351001</cbc:ID>
+		</cac:OfficeOfEntryLocation>					 					  
+	</cac:Consignment>
+</ubl:TransportExecutionPlanRequest>

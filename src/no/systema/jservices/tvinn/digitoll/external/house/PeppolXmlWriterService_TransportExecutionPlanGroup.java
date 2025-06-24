@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumPeppolID;
+import no.systema.jservices.tvinn.expressfortolling2.enums.EnumPeppolTransportServiceCodes;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 @Service
@@ -189,37 +190,16 @@ public class PeppolXmlWriterService_TransportExecutionPlanGroup {
 		  //add party
 		  transportExecutionPlanRequest.appendChild(receiverParty);
 		  
-		  //MainTransportationService
-		  /*
-		  <cac:MainTransportationService>
-			<cbc:TransportServiceCode>19</cbc:TransportServiceCode>
-			<cbc:TransportationServiceDescription><?messageType?>DigitalMOMaster<?messageType?></cbc:TransportationServiceDescription>
-		</cac:MainTransportationService>
-		  */
 		  Element mainTransportService = doc.createElement("cac:MainTransportationService");
 		  Element transportServiceCode = doc.createElement("cbc:TransportServiceCode");
 		  Element transportationServiceDescription = doc.createElement("cbc:TransportationServiceDescription");
-		  //TODO ? this.setCompleteElement(transportServiceCode, mainTransportService, "19?");
+		  this.setCompleteElement(transportServiceCode, mainTransportService, EnumPeppolTransportServiceCodes._CustomsDeclaration.toString()); //
 		  this.setCompleteElement(transportationServiceDescription, mainTransportService, msg.getMessageType());
 		  transportExecutionPlanRequest.appendChild(mainTransportService);
-		  //Consignment
-		  /*
-		   * <cac:Consignment>
-		<cbc:ID>12535157654567654</cbc:ID>		
-		<cbc:DeclaredCustomsValueAmount currencyID="NOK"><?transport.value?>1000</cbc:DeclaredCustomsValueAmount>
-		<cbc:GrossWeightMeasure unitCode="KGM">103</cbc:GrossWeightMeasure>				
-		<cbc:TotalTransportHandlingUnitQuantity unitCode="EA"><?consignmentHouseLevel.numberOfPackages?>6</cbc:TotalTransportHandlingUnitQuantity>		
-		<cac:ConsigneeParty>			
-			<cac:PartyName>
-				<cbc:Name><?consignee.name?>Importer AS</cbc:Name>				
-			</cac:PartyName>			
-		</cac:ConsigneeParty>
-		<cac:ConsignorParty>			
-			<cac:PartyName>
-				<cbc:Name><?consignor.name?>Exporter AS</cbc:Name>				
-			</cac:PartyName>			
-		</cac:ConsignorParty>  
-		   */
+		  
+		  //==================
+		  //START Consignment
+		  //==================
 		  Element consignment = doc.createElement("cac:Consignment");
 		  Element consignee = doc.createElement("cac:ConsigneeParty");
 		  this.setConsigneeConsignorParty(consignee, doc, msg, true);
@@ -227,6 +207,16 @@ public class PeppolXmlWriterService_TransportExecutionPlanGroup {
 		  this.setConsigneeConsignorParty(consignor, doc, msg, false);
 		  consignment.appendChild(consignee);
 		  consignment.appendChild(consignor);
+		  
+		  //carrier identification number
+		  Element carrierParty = doc.createElement("cac:CarrierParty");
+		  Element partyLegalEntity = doc.createElement("cac:PartyLegalEntity");
+		  Element carrierName = doc.createElement("cbc:RegistrationName");
+		  this.setCompleteElement(carrierName, partyLegalEntity, "-");
+		  Element carrierIdentificationNumber = doc.createElement("cbc:CompanyID");
+		  this.setCompleteElement(carrierIdentificationNumber, partyLegalEntity, msg.getConsignmentMasterLevel().getCarrierIdentificationNumber());
+		  carrierParty.appendChild(partyLegalEntity);
+		  consignment.appendChild(carrierParty);
 		  
 		  //Time of arrival
 		  Element transportEvent = doc.createElement("cac:TransportEvent");
@@ -245,19 +235,31 @@ public class PeppolXmlWriterService_TransportExecutionPlanGroup {
 		  transportEvent.appendChild(period);
 		  consignment.appendChild(transportEvent);
 		  
+		  //TransportMeans (Road, Rail, Maritime, Air)
+		  this.setTransportMeans(doc, consignment, msg);
+		  
 		  //Office of Entry
 		  Element offOfEntry = doc.createElement("cac:OfficeOfEntryLocation");
 		  Element referenceNumber = doc.createElement("cac:ID");
 		  this.setCompleteElement(referenceNumber, offOfEntry, msg.getCustomsOfficeOfFirstEntry().getReferenceNumber());
 		  consignment.appendChild(offOfEntry);
 		  
+		  //Master level - Document Reference
+		  Element documentReferenceMasterLevel = doc.createElement("cac:DocumentReference");
+		  Element docRefId = doc.createElement("cbc:ID");
+		  this.setCompleteElement(docRefId, documentReferenceMasterLevel, msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getDocumentNumber());
+		  Element docRefType = doc.createElement("cbc:Type");
+		  this.setCompleteElement(docRefType, documentReferenceMasterLevel, msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getType());
+		  consignment.appendChild(documentReferenceMasterLevel);
+		  //================
+		  //END Consignment
+		  //================
 		  
 		  //add consignment
 		  transportExecutionPlanRequest.appendChild(consignment);
 		  
 		  //add to root
 		  rootElement.appendChild(transportExecutionPlanRequest);
-		  
 		  
 		  /*
 		  //=====================================
@@ -294,6 +296,59 @@ public class PeppolXmlWriterService_TransportExecutionPlanGroup {
 		}
 		
 		return retval;
+	}
+	
+	/**
+	 * TransportMeans
+	 * @param doc
+	 * @param consignment
+	 * @param msg
+	 */
+	public void setTransportMeans(Document doc, Element consignment,  MessageOutbound msg) {
+		Element mainCarriageShipmentStage = doc.createElement("cac:MainCarriageShipmentStage");
+		  Element modeOfTransportCode = doc.createElement("cbc:TransportModeCode");
+		  this.setCompleteElement(modeOfTransportCode, mainCarriageShipmentStage, msg.getActiveBorderTransportMeans().getModeOfTransportCode());
+		  mainCarriageShipmentStage.appendChild(modeOfTransportCode);
+		  //
+		  Element transportMeans = doc.createElement("cac:TransportMeans");
+		  Element activeBorderCountryCode = doc.createElement("cbc:RegistrationNationalityID");
+		  this.setCompleteElement(activeBorderCountryCode, transportMeans, msg.getActiveBorderTransportMeans().getCountryCode());
+		  
+		  //Rail
+		  if(msg.getActiveBorderTransportMeans().getModeOfTransportCode().equals("2")) {
+			  Element railTransport = doc.createElement("cac:RailTransport");
+			  Element activeBorderIdentificationNumber = doc.createElement("cbc:TrainID");
+			  this.setCompleteElement(activeBorderIdentificationNumber, railTransport, msg.getActiveBorderTransportMeans().getIdentificationNumber());
+			  Element railCarId = doc.createElement("cbc:RailCarID");
+ 			  this.setCompleteElement(railCarId, railTransport, "turref..."); //saknas ref i mappade object msg (det är sadmotf.etcref)
+			  transportMeans.appendChild(railTransport);
+			  
+		  //Road	  
+		  }else if (msg.getActiveBorderTransportMeans().getModeOfTransportCode().equals("3")) { 
+			  Element roadTransport = doc.createElement("cac:RoadTransport");
+			  Element activeBorderIdentificationNumber = doc.createElement("cbc:LicensePlateID");
+			  this.setCompleteElement(activeBorderIdentificationNumber, roadTransport, msg.getActiveBorderTransportMeans().getIdentificationNumber());
+			  transportMeans.appendChild(roadTransport);
+			  
+		  //Sjö	  
+		  }else if (msg.getActiveBorderTransportMeans().getModeOfTransportCode().equals("1")) {
+			  Element roadTransport = doc.createElement("cac:MaritimeTransport");
+			  Element activeBorderIdentificationNumber = doc.createElement("cbc:VesselID");
+			  this.setCompleteElement(activeBorderIdentificationNumber, roadTransport, msg.getActiveBorderTransportMeans().getIdentificationNumber());
+			  transportMeans.appendChild(roadTransport);
+			  
+		  //Flyg	  
+		  }else if (msg.getActiveBorderTransportMeans().getModeOfTransportCode().equals("4")) {
+			  Element airTransport = doc.createElement("cac:AirTransport");
+			  Element activeBorderIdentificationNumber = doc.createElement("cbc:AircraftID");
+			  this.setCompleteElement(activeBorderIdentificationNumber, airTransport, msg.getActiveBorderTransportMeans().getIdentificationNumber());
+			  transportMeans.appendChild(airTransport);
+		  }
+		  //append to parent
+		  mainCarriageShipmentStage.appendChild(transportMeans);
+		  consignment.appendChild(mainCarriageShipmentStage);
+		  
+		
 	}
 	/**
 	 * 
