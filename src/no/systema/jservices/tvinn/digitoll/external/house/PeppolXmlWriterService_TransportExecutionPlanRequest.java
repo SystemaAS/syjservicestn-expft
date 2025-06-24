@@ -62,9 +62,9 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  rootElement.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xs", "http://www.w3.org/2001/XMLSchema");
 		  doc.appendChild(rootElement);
 		  
-		  //=========
-		  //Header
-		  //=========
+		  //======================================
+		  //START HEADER for SBDH-Peppol Envelope
+		  //======================================
 		  Element header = doc.createElement("StandardBusinessDocumentHeader");
 		  //staff.setTextContent(new String (bytesBase64Encoded));
 		  Element headerVersion = doc.createElement("HeaderVersion");
@@ -126,10 +126,14 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  header.appendChild(businessScope);
 		  //add header to root
 		  rootElement.appendChild(header);
+		  //======================================
+		  //END HEADER for SBDH-Peppol Envelope
+		  //======================================
 		  
-		  //==================
-		  //Transport document
-		  //==================
+		  
+		  //=========================================================
+		  //START Transport document - TransportExecutionPlanRequest
+		  //=========================================================
 		  Element transportExecutionPlanRequest = doc.createElement("ubl:TransportExecutionPlanRequest");
 		  transportExecutionPlanRequest.setAttribute("xmlns:ubl","urn:oasis:names:specification:ubl:schema:xsd:TransportExecutionPlanRequest-2" );
 		  transportExecutionPlanRequest.setAttribute("xmlns:cac","urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" );
@@ -217,8 +221,8 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 						  if (docRefCounter == attachmentCounter) { //in order to get the correct attachment on the list of document references...
 							  Element cacAttachment = doc.createElement("cac:Attachment");
 							  Element embeddedDocBinaryObject = doc.createElement("cbc:EmbeddedDocumentBinaryObject");
-							  embeddedDocBinaryObject.setAttribute("mimeCode", "application/pdf");
 							  embeddedDocBinaryObject.setAttribute("filename", attachment.getDocumentName());
+							  embeddedDocBinaryObject.setAttribute("mimeCode", "application/pdf");
 							  this.setCompleteElement(embeddedDocBinaryObject, cacAttachment, attachment.getContent());
 							  additionalDocumentReference.appendChild(cacAttachment);							  
 						  }
@@ -231,9 +235,9 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 			  }
 		  }
 		  
-		  //==================
+		  //-------------------
 		  //START Consignment
-		  //==================
+		  //-------------------
 		  Element consignment = doc.createElement("cac:Consignment");
 		  Element consignee = doc.createElement("cac:ConsigneeParty");
 		  this.setConsigneeConsignorParty(consignee, doc, msg, true);
@@ -285,32 +289,20 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  Element docRefType = doc.createElement("cbc:Type");
 		  this.setCompleteElement(docRefType, documentReferenceMasterLevel, msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getType());
 		  consignment.appendChild(documentReferenceMasterLevel);
-		  //================
+		  //----------------
 		  //END Consignment
-		  //================
+		  //----------------
 		  
 		  //add consignment
 		  transportExecutionPlanRequest.appendChild(consignment);
+		  //=========================================================
+		  //END Transport document - TransportExecutionPlanRequest
+		  //=========================================================
+		
 		  
-		  //add to root
+		  //add to root finally
 		  rootElement.appendChild(transportExecutionPlanRequest);
 		  
-		  /*
-		  //=====================================
-		  //add to BinaryContent - json payload as Base64
-		  //=====================================
-		  byte[] bytesEncoded = Base64.encodeBase64(jsonPayload.getBytes());
-		  logger.trace("Encoded value is " + new String(bytesEncoded));
-		  
-		  //add the base64-string in BinaryContent-tag
-		  Element binaryContent = doc.createElement("BinaryContent");
-		  binaryContent.setAttribute("xmlns", "http://peppol.eu/xsd/ticc/envelope/1.0");
-		  binaryContent.setAttribute("mimeType", "application/json");
-		  binaryContent.setAttribute("encoding", "Base64Binary");
-		  binaryContent.setTextContent(new String (bytesEncoded));
-		  //add BinaryContent to root
-		  rootElement.appendChild(binaryContent);
-		  */
 		  
 		  
 		  
@@ -321,8 +313,6 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  // write dom document to a file
 		  FileOutputStream output = new FileOutputStream(this.filenameService.getFileNameXml(msg)); 
 		  writeXml(doc, output);
-		  
-		 
 		  
 		}catch (Exception e) {
 			retval = -1;
