@@ -193,7 +193,7 @@ public class DigitollV2ExternalHouseController {
 										  //if(this.peppolXmlWriterService.writeFileOnDisk(msg, jsonPayload) == 0) {
 										  
 										  //New Peppol - Transport Execution Plan - Family - no json at all ...
-										  if(this.peppolXmlWriterService_TransExecPlanRequest.writeFileOnDisk(msg) == 0) {
+										  if(this.peppolXmlWriterService_TransExecPlanRequest.writeFileOnDisk(msg, masterDto) == 0) {
 											  //TEST with new TranportExecutionPlanRequest
 											  //TODO
 											  //END TEST

@@ -26,6 +26,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.Attachments;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.Communication;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.DocumentReferences;
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumPeppolID;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumPeppolTransportServiceCodes;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
@@ -41,7 +42,7 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 	 * 
 	 * @param msg
 	 */
-	public int writeFileOnDisk (MessageOutbound msg) {
+	public int writeFileOnDisk (MessageOutbound msg, SadmomfDto masterDto ) {
 		int retval = 0;
 		try {
 		
@@ -250,7 +251,7 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  Element carrierParty = doc.createElement("cac:CarrierParty");
 		  Element partyLegalEntity = doc.createElement("cac:PartyLegalEntity");
 		  Element carrierName = doc.createElement("cbc:RegistrationName");
-		  this.setCompleteElement(carrierName, partyLegalEntity, "-");
+		  this.setCompleteElement(carrierName, partyLegalEntity, masterDto.getTransportDto().getEtnat());
 		  Element carrierIdentificationNumber = doc.createElement("cbc:CompanyID");
 		  this.setCompleteElement(carrierIdentificationNumber, partyLegalEntity, msg.getConsignmentMasterLevel().getCarrierIdentificationNumber());
 		  carrierParty.appendChild(partyLegalEntity);
