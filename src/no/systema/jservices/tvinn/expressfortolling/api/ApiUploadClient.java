@@ -3,6 +3,8 @@ package no.systema.jservices.tvinn.expressfortolling.api;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -81,8 +83,17 @@ public class ApiUploadClient  {
 	}
 	
 	public ApiUploadClient(){
-		restTemplate = this.restTemplate();
+		this.restTemplate = this.restTemplate();
 	}
+	
+	@Value("${digitoll.access.use.proxy}")
+	String proxyIsUsed;
+	
+	@Value("${digitoll.access.proxy.host}")
+	String proxyHost;
+	
+	@Value("${digitoll.access.proxy.port}")
+	Integer proxyPort;
 	
 	
 	/**
@@ -788,11 +799,22 @@ public class ApiUploadClient  {
 	  * @throws Exception
 	  */
 	 private String postFile(InputStream inputStream, String fileName, TokenResponseDto authTokenDto, String declarationId, String documentType) throws Exception {
-
-		    SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-		    requestFactory.setBufferRequestBody(false);
-		    restTemplate.setRequestFactory(requestFactory);
-
+		 	
+		 	logger.info(this.proxyIsUsed);
+		 	//reset for proxy if needed (DHL)
+		 	if(Boolean.parseBoolean(proxyIsUsed)) {
+		 		logger.info("Inside resetTemplate with PROXY:" + proxyHost);
+				Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+				SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+				requestFactory.setProxy(proxy);
+				requestFactory.setBufferRequestBody(false);
+				restTemplate.setRequestFactory(requestFactory);
+		 	}else {
+		 		logger.info("Inside resetTemplate normal ... (no proxy)");
+		 		SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+		    	requestFactory.setBufferRequestBody(false);
+		    	restTemplate.setRequestFactory(requestFactory);
+		 	}
 		    
 		    InputStreamResource inputStreamResource = new InputStreamResource(inputStream) {
 		        @Override public String getFilename() { return fileName; }
