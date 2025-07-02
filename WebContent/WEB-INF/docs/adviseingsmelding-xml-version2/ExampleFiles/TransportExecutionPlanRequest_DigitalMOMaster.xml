@@ -93,7 +93,6 @@
 					<cbc:LicensePlateID><?activeBorderTransportMeans.identificationNumber?>AB12345</cbc:LicensePlateID>
 				</cac:RoadTransport>
 			</cac:TransportMeans>	
-			
 			<cac:TransportMeans>
 				<cbc:RegistrationNationalityID><?activeBorderTransportMeans.countryCode?>NO</cbc:RegistrationNationalityID>
 				<cac:RailTransport>
