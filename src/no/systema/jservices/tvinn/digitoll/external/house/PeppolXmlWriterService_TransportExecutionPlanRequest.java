@@ -240,6 +240,10 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  //START Consignment
 		  //-------------------
 		  Element consignment = doc.createElement("cac:Consignment");
+		  Element grossWeight = doc.createElement("cbc:GrossWeightMeasure");
+		  grossWeight.setAttribute("unitCode", "KGM"); //standard ??
+		  this.setCompleteElement(grossWeight, consignment, String.valueOf(masterDto.getEmvkb()));
+		  //Consignee/Consignor
 		  Element consignee = doc.createElement("cac:ConsigneeParty");
 		  this.setConsigneeConsignorParty(consignee, doc, msg, true);
 		  Element consignor = doc.createElement("cac:ConsignorParty");
