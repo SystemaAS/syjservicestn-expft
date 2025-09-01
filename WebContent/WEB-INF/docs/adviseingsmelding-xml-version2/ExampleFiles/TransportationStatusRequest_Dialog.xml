@@ -3,52 +3,41 @@
                                  xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2"
                                  xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
    <cbc:CustomizationID>urn:fdc:peppol.eu:logistics:trns:transportation_status_request:1</cbc:CustomizationID>
-	<cbc:ProfileID>urn:fdc:peppol.eu:logistics:bis:transport_notification:1</cbc:ProfileID>
-	<cbc:ProfileExecutionID><?documentID?>1234</cbc:ProfileExecutionID>
-   <cbc:ID>TSR_1</cbc:ID>
-   <cbc:IssueDate>2011-10-06</cbc:IssueDate>
+   <cbc:ProfileID>urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1</cbc:ProfileID>
+   <cbc:ProfileExecutionID>341c5b68-79d0-11f0-8de9-0242ac120002</cbc:ProfileExecutionID>
+   <cbc:ID>49ce4692-79d0-11f0-8de9-0242ac120002</cbc:ID>
+   <cbc:IssueDate>2025-06-06</cbc:IssueDate>
    <cbc:IssueTime>09:29:30+02:00</cbc:IssueTime>
    <cbc:Description>A have a question for a dialog</cbc:Description>
+   <cbc:ShippingOrderID>1234</cbc:ShippingOrderID>
    <cbc:TransportationStatusTypeCode>3</cbc:TransportationStatusTypeCode>
    <cac:SenderParty>
       <cbc:EndpointID schemeID="0198">41955619</cbc:EndpointID>
-		<cac:PartyIdentification>
-			<cbc:ID><?sender.identificationsnummer?>123456789</cbc:ID>
-		</cac:PartyIdentification>		
-		<cac:PartyLegalEntity>
-			<cbc:RegistrationName><?sender.name?>Transport UserParty A/S</cbc:RegistrationName>			
+      <cac:PartyIdentification>
+         <cbc:ID>41955619</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyLegalEntity>
+			<cbc:RegistrationName>Transport UserParty A/S</cbc:RegistrationName>			
 		</cac:PartyLegalEntity>
 		<cac:Contact>			
-			<cbc:Telephone><?sender.communication.telephoneNumber?>0158 1233714</cbc:Telephone>
-			<cbc:ElectronicMail>transport-user@transportuser.dk</cbc:ElectronicMail>
-		</cac:Contact>
+         <cbc:Telephone>004710233714</cbc:Telephone>
+         <cbc:ElectronicMail>msreceiver@tplogistics.no</cbc:ElectronicMail>    
+      </cac:Contact>
    </cac:SenderParty>
    <cac:ReceiverParty>
 		<cbc:EndpointID schemeID="0198">85955619</cbc:EndpointID>
-		<cac:PartyIdentification>
-			<cbc:ID schemeID="0088"><?receiver.identificationsnummer?>3452453432</cbc:ID>
-		</cac:PartyIdentification>				
-		<cac:PartyLegalEntity>
-			<cbc:RegistrationName><?receiver.name?>Transport provider A/S</cbc:RegistrationName>			
+      <cac:PartyIdentification>
+         <cbc:ID>85955619</cbc:ID>
+      </cac:PartyIdentification>
+      <cac:PartyLegalEntity>
+			<cbc:RegistrationName>Transport provider A/S</cbc:RegistrationName>			
 		</cac:PartyLegalEntity>
-		<cac:Contact>			 
-			 <cbc:Telephone>0158 1233714</cbc:Telephone>
-			 <cbc:ElectronicMail>msreceiver@tplogistics.co.uk</cbc:ElectronicMail>    
-		</cac:Contact>  
    </cac:ReceiverParty>
-   <cac:TransportExecutionPlanDocumentReference>
-      <cbc:ID>7648779</cbc:ID>
-      <cbc:IssueDate>2021-09-29</cbc:IssueDate>
-      <cbc:IssueTime>07:49:00+02:00</cbc:IssueTime>  
-   </cac:TransportExecutionPlanDocumentReference>
    <cac:DocumentReference>
-		<cbc:ID><?documentReferences.referenceId?>inv-123456</cbc:ID>		
-		<cbc:DocumentType><?documentReferences.typeOfReference?>SenderInvoiceReference</cbc:DocumentType>
+		<cbc:ID>inv-123456</cbc:ID>		
+		<cbc:DocumentType>SenderInvoiceReference</cbc:DocumentType>
 		<cac:Attachment>
 			<cbc:EmbeddedDocumentBinaryObject mimeCode="application/pdf" filename="ArivalNotice.pdf"><?attachment.content?>aHR0cHM6Ly90ZXN0LXZlZmEuZGlmaS5uby9wZXBwb2xiaXMvcG9hY2MvYmlsbGluZy8zLjAvYmlzLw==</cbc:EmbeddedDocumentBinaryObject>			
-			<cac:ExternalReference>
-				<cbc:URI>https://documents.semantic.biz?documentID=d1b34d9d-8020-49a2-a43c-75f5518d77e6</cbc:URI>
-			</cac:ExternalReference>
 		</cac:Attachment>
    </cac:DocumentReference>
 </ubl:TransportationStatusRequest>
