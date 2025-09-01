@@ -145,13 +145,15 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  Element customizationId = doc.createElement("cbc:CustomizationID");
 		  this.setCompleteElement(customizationId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1" );
 		  Element profileId = doc.createElement("cbc:ProfileID");
-		  this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:transport_notification:1" );
-		  Element documentId = doc.createElement("cbc:ProfileExecutionID");
+		  this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1" );
+		  Element documentId = doc.createElement("cbc:ProfileExecutionID"); //UUID
 		  this.setCompleteElement(documentId, transportExecutionPlanRequest, msg.getDocumentID());
-		  Element messageNumber = doc.createElement("cbc:ID");
+		  Element messageNumber = doc.createElement("cbc:ID"); //UUID
 		  this.setCompleteElement(messageNumber, transportExecutionPlanRequest, msg.getMessageNumber());
-		  Element version = doc.createElement("cbc:VersionID");
-		  this.setCompleteElement(version, transportExecutionPlanRequest, msg.getVersion());
+		  
+		  //Obsolete
+		  //Element version = doc.createElement("cbc:VersionID");
+		  //this.setCompleteElement(version, transportExecutionPlanRequest, msg.getVersion());
 		  
 		  //==============================
 		  //START IssueDate and IssueTime

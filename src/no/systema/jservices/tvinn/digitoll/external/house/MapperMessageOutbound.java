@@ -63,10 +63,14 @@ public class MapperMessageOutbound {
 		msg.setMessageType("DigitalMOMaster");
 		msg.setVersion(this.version);
 		String uuid = UUID.randomUUID().toString();
+		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable) - One per message sending
 		msg.setMessageNumber(uuid);
-		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
 		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
-		msg.setDocumentID(masterDto.getEmdkm());
+		
+		//msg.setDocumentID(masterDto.getEmdkm()); not applicable here
+		String uuidDocId = UUID.randomUUID().toString();
+		msg.setDocumentID(uuidDocId); //Common DocumentID for all messages in a notification exchange. Must be UUID
+		
 		msg.setNote(masterDto.getTransportDto().getEtavd() + "-" + masterDto.getTransportDto().getEtpro());
 		//Sender
 		Sender sender = new Sender();
@@ -189,7 +193,8 @@ public class MapperMessageOutbound {
 		msg.setUuid(uuid); //in order to use it in Peppol-XML-Wrapper (if applicable)
 		msg.setMessageIssueDate(new DateUtils().getZuluTimeWithoutMillisecondsUTC());
 	
-		msg.setDocumentID(houseDto.getEhdkh());
+		//msg.setDocumentID(houseDto.getEhdkh());
+		msg.setDocumentID(UUID.randomUUID().toString());
 		/*
 		msg.setNote(masterRecord.getTransportDto().getEtavd() + "-" + masterRecord.getTransportDto().getEtpro());
 		*/
