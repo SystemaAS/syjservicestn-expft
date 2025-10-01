@@ -41,7 +41,12 @@ public class MapperTransport {
 			rep.setAddress(this.setAddress(sourceDto.getEtpsr(), sourceDto.getEtlkr(), sourceDto.getEtpnr(), sourceDto.getEtad1r(), sourceDto.getEtnrr()));
 			//
 			List rcommList = new ArrayList();
-			rcommList.add(this.populateCommunication(sourceDto.getEtemr(), sourceDto.getEtemrt()));
+			if(StringUtils.isNotEmpty(sourceDto.getEtemr())){
+				rcommList.add(this.populateCommunication(sourceDto.getEtemr(), sourceDto.getEtemrt()));
+			}
+			if(StringUtils.isNotEmpty(sourceDto.getEtemrx())){
+				rcommList.add(this.populateCommunication(sourceDto.getEtemrx(), sourceDto.getEtemrtx()));
+			}
 			rep.setCommunication(rcommList);
 			transport.setRepresentative(rep);
 
@@ -55,9 +60,16 @@ public class MapperTransport {
 		carrier.setName(sourceDto.getEtnat());
 		carrier.setIdentificationNumber(sourceDto.getEtrgt());
 		carrier.setAddress(this.setAddress(sourceDto.getEtpst(), sourceDto.getEtlkt(), sourceDto.getEtpnt(), sourceDto.getEtad1t(), sourceDto.getEtnrt()));
+		List rcommListCarrier = new ArrayList();
 		if(StringUtils.isNotEmpty(sourceDto.getEtemt())) {
-			carrier.setCommunication(this.setCommunication(sourceDto.getEtemt() , sourceDto.getEtemtt()));
+			rcommListCarrier.add(this.populateCommunication(sourceDto.getEtemt(), sourceDto.getEtemtt()));
+			//Original carrier.setCommunication(this.setCommunication(sourceDto.getEtemt) , sourceDto.getEtemtt()));
 		}
+		if(StringUtils.isNotEmpty(sourceDto.getEtemtx())) {
+			rcommListCarrier.add(this.populateCommunication(sourceDto.getEtemtx(), sourceDto.getEtemttx()));
+			//Original carrier.setCommunication(this.setCommunication(sourceDto.getEtemtx() , sourceDto.getEtemttx()));
+		}
+		carrier.setCommunication(rcommListCarrier);
 		transport.setCarrier(carrier);
 		
 		//(Mandatory) CustomsOffice

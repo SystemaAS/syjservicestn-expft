@@ -44,6 +44,9 @@ public class SadmotfDto {
 	
 	private String etemr = ""; // varchar(50), Epostadr/tlf  
 	private String etemrt = ""; // varchar(2),   Epostadr/tlf typ (TE-EM)
+	private String etemrx = ""; // varchar(50), Epostadr/tlf  
+	private String etemrtx = ""; // varchar(2),   Epostadr/tlf typ (TE-EM)
+	
 	private String etkmrk = ""; // varchar(30), Kjennemerke (reg.nr)
 	private String etktm= ""; // varchar(4), Transportmiddel type
 	private String etktyp = ""; // varchar(2), Kjøretøy type
@@ -67,6 +70,8 @@ public class SadmotfDto {
 	private String etpbt = ""; // varchar(15) , Postbox
 	private String etemt = ""; // varchar(50), Epostadr/tlf 
 	private String etemtt = ""; // varchar(2), Epostadr/tlf typ (TE-EM)
+	private String etemtx = ""; // varchar(50), Epostadr/tlf 
+	private String etemttx = ""; // varchar(2), Epostadr/tlf typ (TE-EM)
 	
 	//IMPORTANT- this fields are not used since the references must be a list of all master-consignments documentnrs (emdkm && emdkmt)
 	private String etdkm = ""; // varchar(50), Master Dokumentnr 
