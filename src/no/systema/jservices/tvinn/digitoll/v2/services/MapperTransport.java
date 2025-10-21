@@ -69,7 +69,9 @@ public class MapperTransport {
 			rcommListCarrier.add(this.populateCommunication(sourceDto.getEtemtx(), sourceDto.getEtemttx()));
 			//Original carrier.setCommunication(this.setCommunication(sourceDto.getEtemtx() , sourceDto.getEtemttx()));
 		}
-		carrier.setCommunication(rcommListCarrier);
+		if(!rcommListCarrier.isEmpty()) {
+			carrier.setCommunication(rcommListCarrier);
+		}
 		transport.setCarrier(carrier);
 		
 		//(Mandatory) CustomsOffice
