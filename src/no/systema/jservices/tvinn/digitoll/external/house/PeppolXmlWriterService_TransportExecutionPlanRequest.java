@@ -28,6 +28,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.DocumentReferences
 import no.systema.jservices.tvinn.digitoll.external.house.dao.MessageOutbound;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumPeppolID;
+import no.systema.jservices.tvinn.digitoll.v2.util.PeppolSchemaIdRecognizer;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumPeppolTransportServiceCodes;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
@@ -105,8 +106,8 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  //<Type>TransportationStatus</Type>
 		  Element type = doc.createElement("Type");
 		  //type.setTextContent("TransportationStatus");
-		  type.setTextContent("adviseringsmelding");
-		  //type.setTextContent("TransportExecutionPlanRequest-2");
+		  //type.setTextContent("adviseringsmelding");
+		  type.setTextContent("TransportExecutionPlanRequest-2");
 		  documentIdentification.appendChild(type);
 		  //<CreationDateAndTime>2023-12-04T15:42:10Z</CreationDateAndTime>  
 		  Element creationDateAndTime = doc.createElement("CreationDateAndTime");
@@ -142,8 +143,8 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  transportExecutionPlanRequest.setAttribute("xmlns:ubl","urn:oasis:names:specification:ubl:schema:xsd:TransportExecutionPlanRequest-2" );
 		  transportExecutionPlanRequest.setAttribute("xmlns:cac","urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" );
 		  transportExecutionPlanRequest.setAttribute("xmlns:cbc","urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" );
-		  transportExecutionPlanRequest.setAttribute("xmlns:ext","urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" );
-		  transportExecutionPlanRequest.setAttribute("xmlns:no","www.norstella.no" );
+		  //NOT REQUIRED ? transportExecutionPlanRequest.setAttribute("xmlns:ext","urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2" );
+		  //OBSOLETE transportExecutionPlanRequest.setAttribute("xmlns:no","www.norstella.no" );
 		  ////map with java object
 		  Element customizationId = doc.createElement("cbc:CustomizationID");
 		  this.setCompleteElement(customizationId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1" );
@@ -190,25 +191,35 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  //========
 		  //Parties
 		  //========
-		  //SENDER
+		  //Check XSD and Norstella PDF
+		  
+		  //SENDER-Mandatory is called TransportUserParty in this document type
+		  Element senderParty_TransportUserParty = doc.createElement("cac:TransportUserParty");
+		  this.setSenderParty(senderParty_TransportUserParty, doc, msg);
+		  //add party
+		  transportExecutionPlanRequest.appendChild(senderParty_TransportUserParty);
+		  
+		  //RECEIVER-Mandatory is called TransportServiceProviderParty in this document type
+		  Element receiverParty_TransportServiceProviderParty = doc.createElement("cac:TransportServiceProviderParty");
+		  this.setReceiverParty(receiverParty_TransportServiceProviderParty, doc, msg);
+		  //add party
+		  transportExecutionPlanRequest.appendChild(receiverParty_TransportServiceProviderParty);
+		  
+ 		  
+ 		  /*
+		  //SENDER - Ref. above TransportUserParty
 		  Element senderParty = doc.createElement("cac:SenderParty");
 		  this.setSenderParty(senderParty, doc, msg);
 		  //add party
 		  transportExecutionPlanRequest.appendChild(senderParty);
 		  
-		  //RECEIVER
+		  //RECEIVER - Ref above = TransportServiceProviderParty
 		  Element receiverParty = doc.createElement("cac:ReceiverParty");
 		  this.setReceiverParty(receiverParty, doc, msg);
 		  //add party
 		  transportExecutionPlanRequest.appendChild(receiverParty);
-		  
-		  Element mainTransportService = doc.createElement("cac:MainTransportationService");
-		  Element transportServiceCode = doc.createElement("cbc:TransportServiceCode");
-		  Element transportationServiceDescription = doc.createElement("cbc:TransportationServiceDescription");
-		  this.setCompleteElement(transportServiceCode, mainTransportService, EnumPeppolTransportServiceCodes._CustomsDeclaration.toString()); //
-		  this.setCompleteElement(transportationServiceDescription, mainTransportService, msg.getMessageType());
-		  transportExecutionPlanRequest.appendChild(mainTransportService);
-		  
+		  */
+ 		  
 		  //Document Refs with Attachments (when applicable)
 		  if(msg.getDocumentReferences()!=null && msg.getDocumentReferences().size()>0) {
 			  int docRefCounter = 1;
@@ -241,10 +252,23 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 			  }
 		  }
 		  
+		  Element mainTransportService = doc.createElement("cac:MainTransportationService");
+		  Element transportServiceCode = doc.createElement("cbc:TransportServiceCode");
+		  Element transportationServiceDescription = doc.createElement("cbc:TransportationServiceDescription");
+		  this.setCompleteElement(transportServiceCode, mainTransportService, EnumPeppolTransportServiceCodes._CustomsDeclaration.toString()); //
+		  this.setCompleteElement(transportationServiceDescription, mainTransportService, msg.getMessageType());
+		  transportExecutionPlanRequest.appendChild(mainTransportService);
+		  
 		  //-------------------
 		  //START Consignment
 		  //-------------------
 		  Element consignment = doc.createElement("cac:Consignment");
+		  // mandatory in peppol. May contain a dummy value
+		  Element dummyId = doc.createElement("cbc:ID");
+		  String DUMMY_VALUE = "12535678901234567";
+		  this.setCompleteElement(dummyId, consignment, DUMMY_VALUE);
+		  
+		  //gross weight
 		  Element grossWeight = doc.createElement("cbc:GrossWeightMeasure");
 		  grossWeight.setAttribute("unitCode", "KGM"); //standard ??
 		  this.setCompleteElement(grossWeight, consignment, String.valueOf(masterDto.getEmvkb()));
@@ -262,7 +286,14 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  Element carrierName = doc.createElement("cbc:RegistrationName");
 		  this.setCompleteElement(carrierName, partyLegalEntity, masterDto.getTransportDto().getEtnat());
 		  Element carrierIdentificationNumber = doc.createElement("cbc:CompanyID");
-		  this.setCompleteElement(carrierIdentificationNumber, partyLegalEntity, msg.getConsignmentMasterLevel().getCarrierIdentificationNumber());
+		  //send the country code and get the schemeID for Carrier (0192 (NO), 0007 (SE), 0198 (DK), etc)
+		  carrierIdentificationNumber.setAttribute("schemeID", PeppolSchemaIdRecognizer.getPeppolIdPrefix(masterDto.getTransportDto().getEtlkt()));
+		  //wash the orgnr in case this is with the land code prefix since Peppol does not accept EORI-numbers 
+		  String tmpIdNr = msg.getConsignmentMasterLevel().getCarrierIdentificationNumber();
+		  if(masterDto.getTransportDto().getEtlkt().equals(msg.getConsignmentMasterLevel().getCarrierIdentificationNumber().substring(0,2))) {
+			  tmpIdNr = tmpIdNr.substring(2);
+		  }
+		  this.setCompleteElement(carrierIdentificationNumber, partyLegalEntity, tmpIdNr);
 		  carrierParty.appendChild(partyLegalEntity);
 		  consignment.appendChild(carrierParty);
 		  
@@ -339,7 +370,7 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 	 * @param msg
 	 */
 	public void setTransportMeans(Document doc, Element consignment,  MessageOutbound msg) {
-		Element mainCarriageShipmentStage = doc.createElement("cac:MainCarriageShipmentStage");
+		  Element mainCarriageShipmentStage = doc.createElement("cac:MainCarriageShipmentStage");
 		  Element modeOfTransportCode = doc.createElement("cbc:TransportModeCode");
 		  this.setCompleteElement(modeOfTransportCode, mainCarriageShipmentStage, msg.getActiveBorderTransportMeans().getModeOfTransportCode());
 		  mainCarriageShipmentStage.appendChild(modeOfTransportCode);
@@ -392,8 +423,47 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 	 */
 	private void setSenderParty(Element party, Document doc, MessageOutbound msg) {
 		Element identificationNumber = doc.createElement("cbc:EndpointID");
-		identificationNumber.setAttribute("schemeID", "0198");
+		identificationNumber.setAttribute("schemeID", EnumPeppolID.Norway_Orgnr.toString());
 		this.setCompleteElement(identificationNumber, party, msg.getSender().getIdentificationNumber());
+		
+		//Party Identification - mandatory in Peppol
+		Element partyIdentification = doc.createElement("cac:PartyIdentification");
+		Element peppolId = doc.createElement("cbc:ID");
+		this.setCompleteElement(peppolId, partyIdentification, msg.getSender().getIdentificationNumber());
+		party.appendChild(partyIdentification);
+				
+		//Sender - legalEntity
+		Element partyLegalEntity = doc.createElement("cac:PartyLegalEntity");
+		Element name = doc.createElement("cbc:RegistrationName");
+		this.setCompleteElement(name, partyLegalEntity, msg.getSender().getName());
+		party.appendChild(partyLegalEntity);
+		//Sender - contact
+		Element contact = doc.createElement("cac:Contact");
+		Element telephone = doc.createElement("cbc:Telephone");
+		Element email = doc.createElement("cbc:ElectronicMail");
+		for(Communication comm : msg.getSender().getCommunication()){
+		  if(comm.getTelephoneNumber()!=null && StringUtils.isNotEmpty(comm.getTelephoneNumber())){
+			  this.setCompleteElement(telephone, contact, comm.getTelephoneNumber());
+			  
+		  }else if(comm.getEmailAddress()!=null && StringUtils.isNotEmpty(comm.getEmailAddress())){
+			  this.setCompleteElement(email, contact, comm.getEmailAddress());
+		  }
+		}
+		party.appendChild(contact);
+		  
+	}
+	/*
+	private void setTransportUserParty(Element party, Document doc, MessageOutbound msg) {
+		Element identificationNumber = doc.createElement("cbc:EndpointID");
+		identificationNumber.setAttribute("schemeID", "0192");
+		this.setCompleteElement(identificationNumber, party, msg.getSender().getIdentificationNumber());
+		
+		//Party Identification - mandatory in Peppol
+		Element partyIdentification = doc.createElement("cac:PartyIdentification");
+		Element peppolId = doc.createElement("cbc:ID");
+		this.setCompleteElement(peppolId, partyIdentification, msg.getSender().getIdentificationNumber());
+		party.appendChild(partyIdentification);
+		
 		//Sender - legalEntity
 		Element partyLegalEntity = doc.createElement("cac:PartyLegalEntity");
 		Element name = doc.createElement("cbc:RegistrationName");
@@ -413,11 +483,37 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		}
 		party.appendChild(contact);
 		  
-	}
+	}*/
 	private void setReceiverParty(Element party, Document doc, MessageOutbound msg) {
 		Element identificationNumber = doc.createElement("cbc:EndpointID");
-		identificationNumber.setAttribute("schemeID", "0198");
+		identificationNumber.setAttribute("schemeID", EnumPeppolID.Norway_Orgnr.toString());
 		this.setCompleteElement(identificationNumber, party, msg.getReceiver().getIdentificationNumber());
+		
+		//Party Identification - mandatory in Peppol
+		Element partyIdentification = doc.createElement("cac:PartyIdentification");
+		Element peppolId = doc.createElement("cbc:ID");
+		this.setCompleteElement(peppolId, partyIdentification, msg.getReceiver().getIdentificationNumber());
+		party.appendChild(partyIdentification);
+				
+		//Receiver - legalEntity
+		Element partyLegalEntity = doc.createElement("cac:PartyLegalEntity");
+		Element name = doc.createElement("cbc:RegistrationName");
+		this.setCompleteElement(name, partyLegalEntity, msg.getReceiver().getName());
+		party.appendChild(partyLegalEntity);
+		  
+	}
+	/*
+	private void setTransportServiceProviderParty(Element party, Document doc, MessageOutbound msg) {
+		Element identificationNumber = doc.createElement("cbc:EndpointID");
+		identificationNumber.setAttribute("schemeID", "0192");
+		this.setCompleteElement(identificationNumber, party, msg.getReceiver().getIdentificationNumber());
+		
+		//Party Identification - mandatory in Peppol
+		Element partyIdentification = doc.createElement("cac:PartyIdentification");
+		Element peppolId = doc.createElement("cbc:ID");
+		this.setCompleteElement(peppolId, partyIdentification, msg.getReceiver().getIdentificationNumber());
+		party.appendChild(partyIdentification);
+		
 		//Sender - legalEntity
 		Element partyLegalEntity = doc.createElement("cac:PartyLegalEntity");
 		Element name = doc.createElement("cbc:RegistrationName");
@@ -425,7 +521,7 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		party.appendChild(partyLegalEntity);
 		  
 	}
-	
+	*/
 	private void setConsigneeConsignorParty(Element party, Document doc, MessageOutbound msg, boolean consignee) {
 		Element partyName = doc.createElement("cac:PartyName");
 		Element name = doc.createElement("cbc:Name");
