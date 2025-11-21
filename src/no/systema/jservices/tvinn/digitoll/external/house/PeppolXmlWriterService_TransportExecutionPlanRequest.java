@@ -290,9 +290,17 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  carrierIdentificationNumber.setAttribute("schemeID", PeppolSchemaIdRecognizer.getPeppolIdPrefix(masterDto.getTransportDto().getEtlkt()));
 		  //wash the orgnr in case this is with the land code prefix since Peppol does not accept EORI-numbers 
 		  String tmpIdNr = msg.getConsignmentMasterLevel().getCarrierIdentificationNumber();
-		  if(masterDto.getTransportDto().getEtlkt().equals(msg.getConsignmentMasterLevel().getCarrierIdentificationNumber().substring(0,2))) {
-			  tmpIdNr = tmpIdNr.substring(2);
+		  //start washin the EORI or Orgnr since Peppol does not handle peppolid-prefix for EORI
+		  if(msg.getConsignmentMasterLevel().getCarrierIdentificationNumber().startsWith(masterDto.getTransportDto().getEtlkt())) {
+			  //Austria = special case with eori. Example: ATEOS1000132085 (ref. Nortrail)
+			  if("AT".equals(masterDto.getTransportDto().getEtlkt())){
+				  tmpIdNr = tmpIdNr.substring(5);
+			  }else {
+				  //rest of the countries (so far)
+				  tmpIdNr = tmpIdNr.substring(2);
+			  }
 		  }
+		  
 		  this.setCompleteElement(carrierIdentificationNumber, partyLegalEntity, tmpIdNr);
 		  carrierParty.appendChild(partyLegalEntity);
 		  consignment.appendChild(carrierParty);
