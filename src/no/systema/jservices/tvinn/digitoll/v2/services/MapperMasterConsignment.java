@@ -41,11 +41,20 @@ public class MapperMasterConsignment {
 				rep.setIdentificationNumber(dto.getTransportDto().getEtrgr());
 				//(Mandatory) this.setAddress("Oslo", "NO", "0010", "Hausemanns gate", "52");
 				rep.setAddress(this.setAddress(dto.getTransportDto().getEtpsr(), dto.getTransportDto().getEtlkr(), dto.getTransportDto().getEtpnr(), dto.getTransportDto().getEtad1r(), dto.getTransportDto().getEtnrr()));
-				//
+				
+				//Communication (email or tel) ombud
 				List rcommList = new ArrayList();
-				rcommList.add(this.populateCommunication(dto.getTransportDto().getEtemr(), dto.getTransportDto().getEtemrt()));
-				rep.setCommunication(rcommList);
-				//confirmastion emails
+				logger.info("email ombud:" + dto.getTransportDto().getEtemr() + " type:" + dto.getTransportDto().getEtemrt());
+				logger.info("telefon ombud:" + dto.getTransportDto().getEtemrt() + " type:" + dto.getTransportDto().getEtemrtx());
+				if(StringUtils.isNotEmpty(dto.getTransportDto().getEtemr())){
+					rcommList.add(this.populateCommunication(dto.getTransportDto().getEtemr(), dto.getTransportDto().getEtemrt()));
+				}if(StringUtils.isNotEmpty(dto.getTransportDto().getEtemrx())){
+					rcommList.add(this.populateCommunication(dto.getTransportDto().getEtemrx(), dto.getTransportDto().getEtemrtx()));
+				}
+				if(rcommList != null && !rcommList.isEmpty()) {
+					rep.setCommunication(rcommList);
+				}
+				//confirmation emails
 				List rconfirmationList = new ArrayList();
 				rconfirmationList.add(this.populateConfirmation(dto.getEmrcem1()));
 				if(StringUtils.isNotEmpty(dto.getEmrcem2())) {
