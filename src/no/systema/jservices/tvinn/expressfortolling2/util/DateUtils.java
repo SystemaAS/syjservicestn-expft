@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
@@ -235,4 +236,21 @@ public class DateUtils {
 		}
 		return  retval; 
 	}
+	
+	/**
+	 * returns time of type +-HH:mm as in: 09:25:00+01:00
+	 * @param timeValue of Zulu-format: 15:04:53Z
+	 * @return
+	 */
+	public String getDateTimeWithZoneOffset(String timeValue) {
+		String retval = timeValue;
+		
+	  	OffsetTime currentOffsetDateTime = OffsetTime.now();
+        ZoneOffset currentZoneOffset = currentOffsetDateTime.getOffset();
+        logger.debug("Current ZoneOffset: " + currentZoneOffset);
+        retval = timeValue.replace("Z", currentZoneOffset.toString());
+        
+        return retval;
+	}
+	
 }

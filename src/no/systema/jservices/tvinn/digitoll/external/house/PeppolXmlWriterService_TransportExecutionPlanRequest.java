@@ -3,6 +3,10 @@ package no.systema.jservices.tvinn.digitoll.external.house;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -32,6 +36,24 @@ import no.systema.jservices.tvinn.digitoll.v2.util.PeppolSchemaIdRecognizer;
 import no.systema.jservices.tvinn.expressfortolling2.enums.EnumPeppolTransportServiceCodes;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
+
+/**
+ * 
+ * @author oscardelatorre
+ * @date Nov-2025
+ * 
+ * This Document type is used in Digitoll when:
+ * 1) The Carrier/Representative initiates the flow by sending its Master_ID to the importer/product owner.
+ * 	  This importer/product owner will declare its houses by itself (meaning making its own customs declarations and Digitoll houses).
+
+ * 2) Upon this request, the importer/product owner will send a Confirmation to the carrier through the document type: TransportExecutionPlan (ConfirmationDigitalMOMaster).
+ * 	  This document type is part of another implementation-class and will not be handled here. This class handles only the initial TransportExecutionPlanRequest xml-building
+ * 	
+ *  Note that Norstella uses this Peppol documents as they fit into Digitoll and not strictly as Peppol would use them.
+ *  The whole project has aimed to use some Peppol document types that fit as placeholders for Digitoll and not the other way around.
+ *  Therefore, the Norstella mapping document (Mapping...xls) is the ultimate guide for the use of these Peppol documents, and not the Peppol guides.
+ *  However, all xml fields mandatory and optionals will follow the Peppol guidelines and XSD requirements
+ */
 @Service
 public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 	private static Logger logger = LoggerFactory.getLogger(PeppolXmlWriterService_TransportExecutionPlanRequest.class.getName());
@@ -148,8 +170,14 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  ////map with java object
 		  Element customizationId = doc.createElement("cbc:CustomizationID");
 		  this.setCompleteElement(customizationId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1" );
+		  
+		  
 		  Element profileId = doc.createElement("cbc:ProfileID");
+		  //According to Norstella: norstella.no 
 		  this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1" );
+		  //According to Peppol: https://bis.beast.se/syntax/TransportExecutionPlanRequest/
+		  //this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:transport_execution_plan_w_request:1" );
+		  
 		  Element documentId = doc.createElement("cbc:ProfileExecutionID"); //UUID
 		  this.setCompleteElement(documentId, transportExecutionPlanRequest, msg.getDocumentID());
 		  Element messageNumber = doc.createElement("cbc:ID"); //UUID
@@ -174,6 +202,9 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 			  issueDate = issueDateTime[0];
 			  issueTime = issueDateTime[1];
 		  }
+		  //Offset for time
+		  issueTime = new DateUtils().getDateTimeWithZoneOffset(issueTime);
+		  
 		  this.setCompleteElement(messageIssueDate, transportExecutionPlanRequest, issueDate);
 		  Element messageIssueTime = doc.createElement("cbc:IssueTime");
 		  this.setCompleteElement(messageIssueTime, transportExecutionPlanRequest, issueTime);
@@ -182,28 +213,31 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  
 		  Element documentStatusCode = doc.createElement("cbc:DocumentStatusCode");
 		  this.setCompleteElement(documentStatusCode, transportExecutionPlanRequest, "9");
-		  Element note = doc.createElement("cbc:Notes");
+		  Element note = doc.createElement("cbc:Note"); //0..1
 		  this.setCompleteElement(note, transportExecutionPlanRequest, msg.getNote());
-		  Element terms = doc.createElement("cbc:TransportUserRemarks");
-		  this.setCompleteElement(terms, transportExecutionPlanRequest, "todo");
+		  //Element terms = doc.createElement("cbc:TransportUserRemarks"); //0..1
+		  //this.setCompleteElement(terms, transportExecutionPlanRequest, "todo");
 		  
 		  //...todo more
 		  //========
 		  //Parties
 		  //========
-		  //Check XSD and Norstella PDF
+		  //Norstella PDF & Mapping xls file
 		  
-		  //SENDER-Mandatory is called TransportUserParty in this document type
-		  Element senderParty_TransportUserParty = doc.createElement("cac:TransportUserParty");
-		  this.setSenderParty(senderParty_TransportUserParty, doc, msg);
+		  //TransportUserParty (Mandatory) in this document type
+		  //The party requesting a service related to customs clearance. In most cases the carrier.
+		  Element transportUserParty = doc.createElement("cac:TransportUserParty");
+		  this.setSenderParty(transportUserParty, doc, msg);
 		  //add party
-		  transportExecutionPlanRequest.appendChild(senderParty_TransportUserParty);
+		  transportExecutionPlanRequest.appendChild(transportUserParty);
 		  
-		  //RECEIVER-Mandatory is called TransportServiceProviderParty in this document type
-		  Element receiverParty_TransportServiceProviderParty = doc.createElement("cac:TransportServiceProviderParty");
-		  this.setReceiverParty(receiverParty_TransportServiceProviderParty, doc, msg);
+		  
+		  //TransportServiceProviderParty (Mandatory) in this document type
+		  //The party receiving a request for service. In most cases a freight forwarder/importer/product owner.
+		  Element transportServiceProviderParty = doc.createElement("cac:TransportServiceProviderParty");
+		  this.setReceiverParty(transportServiceProviderParty, doc, msg);
 		  //add party
-		  transportExecutionPlanRequest.appendChild(receiverParty_TransportServiceProviderParty);
+		  transportExecutionPlanRequest.appendChild(transportServiceProviderParty);
 		  
  		  
  		  /*
@@ -317,6 +351,9 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 			  etaDate = etaDateTime[0];
 			  etaTime = etaDateTime[1];
 		  }
+		  //Offset for time
+		  etaTime = new DateUtils().getDateTimeWithZoneOffset(etaTime);
+		  
 		  this.setCompleteElement(startDate, period, etaDate);
 		  this.setCompleteElement(startTime, period, etaTime);
 		  transportEvent.appendChild(period);
@@ -327,7 +364,7 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  
 		  //Office of Entry
 		  Element offOfEntry = doc.createElement("cac:OfficeOfEntryLocation");
-		  Element referenceNumber = doc.createElement("cac:ID");
+		  Element referenceNumber = doc.createElement("cbc:ID");
 		  this.setCompleteElement(referenceNumber, offOfEntry, msg.getCustomsOfficeOfFirstEntry().getReferenceNumber());
 		  consignment.appendChild(offOfEntry);
 		  
@@ -335,7 +372,7 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  Element documentReferenceMasterLevel = doc.createElement("cac:DocumentReference");
 		  Element docRefId = doc.createElement("cbc:ID");
 		  this.setCompleteElement(docRefId, documentReferenceMasterLevel, msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getDocumentNumber());
-		  Element docRefType = doc.createElement("cbc:Type");
+		  Element docRefType = doc.createElement("cbc:DocumentType");
 		  this.setCompleteElement(docRefType, documentReferenceMasterLevel, msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getType());
 		  consignment.appendChild(documentReferenceMasterLevel);
 		  //----------------
