@@ -212,8 +212,10 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  
 		  Element documentStatusCode = doc.createElement("cbc:DocumentStatusCode");
 		  this.setCompleteElement(documentStatusCode, transportExecutionPlanRequest, "9");
-		  Element note = doc.createElement("cbc:Note"); //0..1
-		  this.setCompleteElement(note, transportExecutionPlanRequest, msg.getNote());
+		  if(StringUtils.isNotEmpty(msg.getNote())) {
+			  Element note = doc.createElement("cbc:Note"); //0..1
+			  this.setCompleteElement(note, transportExecutionPlanRequest, msg.getNote());
+		  }
 		  //Element terms = doc.createElement("cbc:TransportUserRemarks"); //0..1
 		  //this.setCompleteElement(terms, transportExecutionPlanRequest, "todo");
 		  
