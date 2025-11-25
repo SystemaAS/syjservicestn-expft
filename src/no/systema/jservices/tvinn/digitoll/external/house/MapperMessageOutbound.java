@@ -33,6 +33,7 @@ import no.systema.jservices.tvinn.digitoll.external.house.dao.TransportDocumentM
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmocfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmohfDto;
 import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
+import no.systema.jservices.tvinn.digitoll.v2.dto.SadmotfDto;
 import no.systema.jservices.tvinn.expressfortolling2.util.DateUtils;
 
 /**
@@ -71,7 +72,9 @@ public class MapperMessageOutbound {
 		String uuidDocId = UUID.randomUUID().toString();
 		msg.setDocumentID(uuidDocId); //Common DocumentID for all messages in a notification exchange. Must be UUID
 		
-		msg.setNote(masterDto.getTransportDto().getEtavd() + "-" + masterDto.getTransportDto().getEtpro());
+		//msg.setNote(masterDto.getTransportDto().getEtavd() + "-" + masterDto.getTransportDto().getEtpro());
+		msg.setNote("TRANSPORT MRN:" + masterDto.getTransportDto().getEtmid());
+		
 		//Sender
 		Sender sender = new Sender();
 		sender.setName(masterDto.getTransportDto().getEtnar());
