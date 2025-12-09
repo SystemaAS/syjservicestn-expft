@@ -114,8 +114,8 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  //<Standard>urn:oasis:names:specification:ubl:schema:xsd:TransportationStatus-2</Standard>
 		  Element standard = doc.createElement("Standard");
 		  //standard.setTextContent("urn:fdc:norstella.no:toll:trns:adviseringsmelding:1");
-		  //standard.setTextContent("urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1::2.4");
-		  standard.setTextContent("urn:fdc:peppol.eu:logistics:trns:transport_execution_plan:1");
+		  standard.setTextContent("urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1::2.4");
+		  //standard.setTextContent("urn:fdc:peppol.eu:logistics:trns:transport_execution_plan:1");
 		  documentIdentification.appendChild(standard);
 		  //<TypeVersion>2.3</TypeVersion>
 		  Element typeVersion = doc.createElement("TypeVersion");
@@ -142,9 +142,10 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  
 		  //BusinessScope
 		  Element businessScope = doc.createElement("BusinessScope");
-		  //this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:oasis:names:specification:ubl:schema:xsd:TransportExecutionPlanRequest-2::TransportExecutionPlanRequest##urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1::2.4");
-		  this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan:1");
-		  this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1");
+		  this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:oasis:names:specification:ubl:schema:xsd:TransportExecutionPlanRequest-2::TransportExecutionPlanRequest##urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1::2.4");
+		  //this.addScopeElement(doc, businessScope, "DOCUMENTID", "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan:1");
+		  //this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1");
+		  this.addScopeElement(doc, businessScope, "PROCESSID", "urn:fdc:peppol.eu:logistics:bis:transport_execution_plan_w_request:1");
 		  
 		  this.addScopeElement(doc, businessScope, "COUNTRY_C1", "NO");
 		  
@@ -168,14 +169,14 @@ public class PeppolXmlWriterService_TransportExecutionPlanRequest {
 		  //OBSOLETE transportExecutionPlanRequest.setAttribute("xmlns:no","www.norstella.no" );
 		  ////map with java object
 		  Element customizationId = doc.createElement("cbc:CustomizationID");
-		  this.setCompleteElement(customizationId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1" );
+		  this.setCompleteElement(customizationId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:trns:transport_execution_plan_request:1::2.4" );
 		  
 		  
 		  Element profileId = doc.createElement("cbc:ProfileID");
 		  //According to Norstella: norstella.no 
-		  this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1" );
+		  //this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:advanced_transport_execution_plan:1" );
 		  //According to Peppol: https://bis.beast.se/syntax/TransportExecutionPlanRequest/
-		  //this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:transport_execution_plan_w_request:1" );
+		  this.setCompleteElement(profileId, transportExecutionPlanRequest, "urn:fdc:peppol.eu:logistics:bis:transport_execution_plan_w_request:1" );
 		  
 		  Element documentId = doc.createElement("cbc:ProfileExecutionID"); //UUID
 		  this.setCompleteElement(documentId, transportExecutionPlanRequest, msg.getDocumentID());
