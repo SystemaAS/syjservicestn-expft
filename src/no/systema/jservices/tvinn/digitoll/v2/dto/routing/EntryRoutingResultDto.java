@@ -11,5 +11,6 @@ import lombok.Data;
 public class EntryRoutingResultDto {
 	private String id;
 	private String routing;
+	private String documentIssueDate;
 	
 }
