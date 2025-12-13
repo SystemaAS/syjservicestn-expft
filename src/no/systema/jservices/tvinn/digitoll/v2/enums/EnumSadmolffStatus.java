@@ -10,5 +10,6 @@ package no.systema.jservices.tvinn.digitoll.v2.enums;
  */
 public enum EnumSadmolffStatus {
 	C,
+	SMTP,
 	
 }

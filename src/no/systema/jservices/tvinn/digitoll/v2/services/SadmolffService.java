@@ -48,8 +48,10 @@ private static final Logger logger = LoggerFactory.getLogger(SadmolffService.cla
 				.queryParam("emlnrt", dto.getEmlnrt())
 				.queryParam("uuid", dto.getUuid())
 				.queryParam("status", dto.getStatus())
+				.queryParam("statustxt", dto.getStatustxt())
 				.queryParam("avsid", dto.getAvsid())
 				.queryParam("motid", dto.getMotid())
+				.queryParam("msgtype", dto.getMsgtype())
 				
 				.build()
 				.encode()

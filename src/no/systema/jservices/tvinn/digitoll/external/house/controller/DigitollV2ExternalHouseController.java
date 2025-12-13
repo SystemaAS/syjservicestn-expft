@@ -59,6 +59,8 @@ import no.systema.jservices.tvinn.digitoll.v2.dto.SadmomfDto;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfCommtype;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmocfFormat;
 import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmolffStatus;
+import no.systema.jservices.tvinn.digitoll.v2.enums.EnumSadmolffStatustxt;
+import no.systema.jservices.tvinn.digitoll.v2.services.RestSmtpService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmocfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmohfService;
 import no.systema.jservices.tvinn.digitoll.v2.services.SadmolffService;
@@ -82,6 +84,7 @@ public class DigitollV2ExternalHouseController {
 	private static Logger logger = LoggerFactory.getLogger(DigitollV2ExternalHouseController.class.getName());
 	private static String CHANNEL_PEPPOL = "peppol";
 	private static String CHANNEL_EVRY = "evry";
+	private static String CHANNEL_SMTP = "smtp";
 
 	@Autowired
 	private BridfDaoService bridfDaoService;	
@@ -115,6 +118,9 @@ public class DigitollV2ExternalHouseController {
 	
 	@Autowired
 	private JsonWriterService jsonWriterService;
+	
+	@Autowired
+	private RestSmtpService restSmtpService;
 	
 	
 	@Value("${expft.external.house.spec.version}")
@@ -160,7 +166,7 @@ public class DigitollV2ExternalHouseController {
 		  
 		  try {
 			  if(StringUtils.isNotEmpty(receiverName) && StringUtils.isNotEmpty(receiverOrgnr) && StringUtils.isNotEmpty(emlnrt) && StringUtils.isNotEmpty(emlnrm)) {
-				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the format type (json or xml-peppol)
+				  //(0) check if this party exists in the SADMOCF-db-table (in order to know the format type (json or xml-peppol or text (smtp))
 				  SadmocfDto dtoConfig = new SadmocfDto();
 				  if(partyExists(serverRoot, user, receiverOrgnr, receiverName, dtoConfig)) {
 					  if(dtoConfig!=null) {
@@ -181,7 +187,7 @@ public class DigitollV2ExternalHouseController {
 							 
 							  logger.info(dtoConfig.toString());  
 							  //(3) check what format to serialize (xml or json)
-							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString())) {
+							  if(dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.xml.toString()) || dtoConfig.getFormat().equalsIgnoreCase(EnumSadmocfFormat.text.toString())) {
 								  //(3.1) wrap json in correct xml format (peppol will act as an envelope...)
 								  if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_PEPPOL)) {
 									  //get the real JSON-payload to wrap within the peppol-xml-wrapper format;
@@ -229,6 +235,28 @@ public class DigitollV2ExternalHouseController {
 									  	  }
 									  }catch(Exception e) {
 										  result.append("ERROR. evryXmlWriterService " + e.toString());
+									  }
+								
+								  //SMTP...
+								  }else if(dtoConfig.getXmlxsd().toLowerCase().contains(CHANNEL_SMTP)) {
+									  logger.debug("Preparing SMTP gateway ...");
+									  boolean sendmail = restSmtpService.sendEmail(msg, dtoConfig, "errMsgTODO"); //filenameService.writeToString(msg);
+									  try {
+										  if(sendmail) {
+											  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  
+											  List tmp = sadmolffService.insertLogRecord(serverRoot, user, this.getSadmolffDto_SMTP(masterDto, msg), "A");
+											  if(tmp!=null && !tmp.isEmpty()) {
+												  result.append("OK " + dtoConfig.getCommtype() + " " + dtoConfig.getFormat());
+											  }else {
+												  result.append("ERROR. restSmtpService logRecordSadmolff ???? ");
+											  }
+											  
+									  	  }else {
+									  		result.append("ERROR. restSmtpService sendEmail ???? ");
+									  	  }
+									  }catch(Exception e) {
+										  result.append("ERROR. restSmtpService " + e.toString());
 									  }
 								
 								  
@@ -456,14 +484,33 @@ public class DigitollV2ExternalHouseController {
 	private SadmolffDto getSadmolffDto(SadmomfDto masterDto, MessageOutbound msg) {
 		
 		SadmolffDto dto = new SadmolffDto();
-		dto.setEmdkm(msg.getDocumentID());
+		dto.setEmdkm(msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getDocumentNumber());
 		dto.setUuid(msg.getUuid());
 		dto.setEmlnrt(String.valueOf(masterDto.getEmlnrt()));
 		dto.setStatus(EnumSadmolffStatus.C.toString());
+		dto.setStatustxt(EnumSadmolffStatustxt.VALID.toString());
 		//
 		dto.setAvsid(msg.getSender().getIdentificationNumber());
 		dto.setMotid(msg.getReceiver().getIdentificationNumber());
+		//
+		dto.setMsgtype("DigitalMOMaster");
 		
+		return dto;
+	}
+	
+	private SadmolffDto getSadmolffDto_SMTP(SadmomfDto masterDto, MessageOutbound msg) {
+		
+		SadmolffDto dto = new SadmolffDto();
+		dto.setEmdkm(msg.getConsignmentMasterLevel().getTransportDocumentMasterLevel().getDocumentNumber());
+		dto.setUuid(msg.getUuid());
+		dto.setEmlnrt(String.valueOf(masterDto.getEmlnrt()));
+		dto.setStatus(EnumSadmolffStatus.SMTP.toString());
+		dto.setStatustxt(EnumSadmolffStatustxt.VALID.toString());
+		//
+		dto.setAvsid(msg.getSender().getIdentificationNumber());
+		dto.setMotid(msg.getReceiver().getIdentificationNumber());
+		//
+		dto.setMsgtype("DigitalMOMaster");
 		
 		return dto;
 	}
@@ -509,6 +556,10 @@ public class DigitollV2ExternalHouseController {
 				dto.setXmlxsd(tmpDto.getXmlxsd());
 				dto.setAvsname(tmpDto.getAvsname());
 				dto.setAvsorgnr(tmpDto.getAvsorgnr());
+				//smtp
+				dto.setEmail_adr(tmpDto.getEmail_adr());
+				dto.setEmail_attdir(tmpDto.getEmail_attdir());
+				
 				retval = true;
 			}
 		}

@@ -11,5 +11,6 @@ package no.systema.jservices.tvinn.digitoll.v2.enums;
 public enum EnumSadmocfFormat {
 	xml,
 	json,
+	text,
 
 }

@@ -27,5 +27,8 @@ public class SadmocfDto   {
 	//
 	private String avsorgnr  = "";//      tegn      30     
 	private String avsname  = "";//      tegn      30  
+	//email
+	private String email_adr  = "";		//  tegn     500     
+	private String email_attdir  = "";	//  tegn      70
 	
 }
